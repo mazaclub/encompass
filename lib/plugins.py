@@ -14,12 +14,12 @@ def init_plugins(config):
         fp, pathname, description = imp.find_module('plugins')
         plugin_names = [name for a, name, b in pkgutil.iter_modules([pathname])]
         plugin_names = filter( lambda name: os.path.exists(os.path.join(pathname,name+'.py')), plugin_names)
-        imp.load_module('electrum_plugins', fp, pathname, description)
-        plugin_modules = map(lambda name: imp.load_source('electrum_plugins.'+name, os.path.join(pathname,name+'.py')), plugin_names)
+        imp.load_module('chainkey_plugins', fp, pathname, description)
+        plugin_modules = map(lambda name: imp.load_source('chainkey_plugins.'+name, os.path.join(pathname,name+'.py')), plugin_names)
     else:
-        import electrum_plugins
-        plugin_names = [name for a, name, b in pkgutil.iter_modules(electrum_plugins.__path__)]
-        plugin_modules = [ __import__('electrum_plugins.'+name, fromlist=['electrum_plugins']) for name in plugin_names]
+        import chainkey_plugins
+        plugin_names = [name for a, name, b in pkgutil.iter_modules(chainkey_plugins.__path__)]
+        plugin_modules = [ __import__('chainkey_plugins.'+name, fromlist=['chainkey_plugins']) for name in plugin_names]
 
     for name, p in zip(plugin_names, plugin_modules):
         try:

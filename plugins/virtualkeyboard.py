@@ -1,6 +1,6 @@
 from PyQt4.QtGui import *
-from electrum.plugins import BasePlugin, hook
-from electrum.i18n import _
+from chainkey.plugins import BasePlugin, hook
+from chainkey.i18n import _
 
 class Plugin(BasePlugin):
 

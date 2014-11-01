@@ -22,12 +22,12 @@ try:
 except ImportError as e:
     loaded_qweb = False
 
-from electrum.plugins import BasePlugin, hook
-from electrum.i18n import _, set_language
-from electrum.util import user_dir
-from electrum.util import appdata_dir
-from electrum.util import format_satoshis
-from electrum_gui.qt import ElectrumGui
+from chainkey.plugins import BasePlugin, hook
+from chainkey.i18n import _, set_language
+from chainkey.util import user_dir
+from chainkey.util import appdata_dir
+from chainkey.util import format_satoshis
+from chainkey_gui.qt import ElectrumGui
 
 SATOSHIS_PER_BTC = float(100000000)
 COINBASE_ENDPOINT = 'https://coinbase.com'

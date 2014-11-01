@@ -1,6 +1,6 @@
 import time, electrum, Queue
-from electrum import Interface, SimpleConfig
-from electrum.network import filter_protocol, parse_servers
+from chainkey import Interface, SimpleConfig
+from chainkey.network import filter_protocol, parse_servers
 
 # electrum.util.set_verbosity(1)
 

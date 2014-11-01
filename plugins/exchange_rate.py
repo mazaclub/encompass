@@ -9,10 +9,10 @@ import threading
 import time
 import re
 from decimal import Decimal
-from electrum.plugins import BasePlugin, hook
-from electrum.i18n import _
-from electrum_gui.qt.util import *
-from electrum_gui.qt.amountedit import AmountEdit
+from chainkey.plugins import BasePlugin, hook
+from chainkey.i18n import _
+from chainkey_gui.qt.util import *
+from chainkey_gui.qt.amountedit import AmountEdit
 
 
 EXCHANGES = ["BitcoinAverage",

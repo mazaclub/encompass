@@ -22,9 +22,9 @@
 from __future__ import absolute_import
 import android
 
-from electrum import SimpleConfig, Wallet, WalletStorage, format_satoshis, mnemonic_encode, mnemonic_decode
-from electrum.bitcoin import is_valid
-from electrum import util
+from chainkey import SimpleConfig, Wallet, WalletStorage, format_satoshis, mnemonic_encode, mnemonic_decode
+from chainkey.bitcoin import is_valid
+from chainkey import util
 from decimal import Decimal
 import datetime, re
 

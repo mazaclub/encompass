@@ -1,4 +1,4 @@
-from electrum.util import print_error
+from chainkey.util import print_error
 
 import httplib, urllib
 import socket
@@ -18,11 +18,11 @@ import PyQt4.QtGui as QtGui
 import aes
 import base64
 
-import electrum
-from electrum.plugins import BasePlugin, hook
-from electrum.i18n import _
+import chainkey
+from chainkey.plugins import BasePlugin, hook
+from chainkey.i18n import _
 
-from electrum_gui.qt import HelpButton, EnterButton
+from chainkey_gui.qt import HelpButton, EnterButton
 
 class Plugin(BasePlugin):
 

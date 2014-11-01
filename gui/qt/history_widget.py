@@ -1,5 +1,5 @@
 from PyQt4.QtGui import *
-from electrum.i18n import _
+from chainkey.i18n import _
 
 class HistoryWidget(QTreeWidget):
 

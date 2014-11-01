@@ -2,7 +2,7 @@
 
 import sys
 import time
-import electrum
+import chainkey
 
 try:
     addr = sys.argv[1]
