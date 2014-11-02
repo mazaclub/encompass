@@ -43,13 +43,13 @@ def print_json(obj):
 
 def user_dir():
     if "HOME" in os.environ:
-        return os.path.join(os.environ["HOME"], ".electrum")
+        return os.path.join(os.environ["HOME"], ".chainkey")
     elif "APPDATA" in os.environ:
-        return os.path.join(os.environ["APPDATA"], "Electrum")
+        return os.path.join(os.environ["APPDATA"], "Chainkey")
     elif "LOCALAPPDATA" in os.environ:
-        return os.path.join(os.environ["LOCALAPPDATA"], "Electrum")
+        return os.path.join(os.environ["LOCALAPPDATA"], "Chainkey")
     elif 'ANDROID_DATA' in os.environ:
-        return "/sdcard/electrum/"
+        return "/sdcard/chainkey/"
     else:
         #raise Exception("No home directory found in environment variables.")
         return
@@ -68,15 +68,15 @@ def usr_share_dir():
 def appdata_dir():
     """Find the path to the application data directory; add an electrum folder and return path."""
     if platform.system() == "Windows":
-        return os.path.join(os.environ["APPDATA"], "Electrum")
+        return os.path.join(os.environ["APPDATA"], "Chainkey")
     elif platform.system() == "Linux":
-        return os.path.join(usr_share_dir(), "electrum")
+        return os.path.join(usr_share_dir(), "chainkey")
     elif (platform.system() == "Darwin" or
           platform.system() == "DragonFly" or
           platform.system() == "OpenBSD" or
           platform.system() == "FreeBSD" or
 	  platform.system() == "NetBSD"):
-        return "/Library/Application Support/Electrum"
+        return "/Library/Application Support/Chainkey"
     else:
         raise Exception("Unknown system")
 

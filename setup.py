@@ -83,6 +83,7 @@ setup(
         'chainkey.bitcoin',
         'chainkey.blockchain',
         'chainkey.bmp',
+        'chainkey.chainparams',
         'chainkey.commands',
         'chainkey.daemon',
         'chainkey.i18n',

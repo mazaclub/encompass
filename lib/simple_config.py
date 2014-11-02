@@ -4,7 +4,7 @@ import os
 
 from util import user_dir, print_error, print_msg
 
-SYSTEM_CONFIG_PATH = "/etc/electrum.conf"
+SYSTEM_CONFIG_PATH = "/etc/chainkey.conf"
 
 config = None
 
@@ -91,12 +91,12 @@ class SimpleConfig(object):
         if not os.path.exists(self.path):
             os.mkdir(self.path)
 
-        print_error( "electrum directory", self.path)
+        print_error( "chainkey directory", self.path)
 
     def set_key(self, key, value, save = True):
         if not self.is_modifiable(key):
             print "Warning: not changing key '%s' because it is not modifiable" \
-                  " (passed as command line option or defined in /etc/electrum.conf)"%key
+                  " (passed as command line option or defined in /etc/chainkey.conf)"%key
             return
 
         with self.lock:
@@ -140,7 +140,7 @@ def read_system_config(path=SYSTEM_CONFIG_PATH):
         try:
             import ConfigParser
         except ImportError:
-            print "cannot parse electrum.conf. please install ConfigParser"
+            print "cannot parse chainkey.conf. please install ConfigParser"
             return
 
         p = ConfigParser.ConfigParser()
