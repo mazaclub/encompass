@@ -24,7 +24,12 @@ _known_chains = (
 
 _known_chain_dict = dict((i.code, i) for i in _known_chains)
 
-_known_chain_names = [i.code for i in _known_chains]
+_known_chain_codes = [i.code for i in _known_chains]
+
+def is_known_chain(code):
+    if code in _known_chain_codes:
+        return True
+    return False
 
 def get_chainparam(code, property):
     code = code.upper()
@@ -32,6 +37,9 @@ def get_chainparam(code, property):
     if chain:
         return getattr(chain, property)
     return None
+
+def get_chain_index(code):
+    return get_chainparam(code, 'chain_index')
 
 def get_code_from_index(index):
     for chain in _known_chains:

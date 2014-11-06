@@ -175,6 +175,10 @@ if __name__ == '__main__':
 
     config = SimpleConfig(config_options)
 
+    # Set the active chain to btc if unset
+    if config.get_active_chain() is None:
+        config.set_active_chain('btc')
+
     if len(args) == 0:
         url = None
         cmd = 'gui'

@@ -93,14 +93,33 @@ class SimpleConfig(object):
 
         print_error( "chainkey directory", self.path)
 
+    def set_active_chain(self, value, save = True):
+        """Easy way to account for the config being divided by chain indices"""
+        if not chainparams.is_known_chain(value):
+            return
+        with self.lock:
+            self.user_config['active_chain'] = value
+            # Make an empty dict if nothing is there
+            if len(self.user_config[value]) == 0:
+                self.user_config[value] = {}
+            if save:
+                self.save_user_config()
+
+    def get_active_chain(self, default=None):
+        out = None
+        with self.lock:
+            out = self.user_config.get('active_chain', default)
+        return out
+
     def set_key(self, key, value, save = True):
         if not self.is_modifiable(key):
             print "Warning: not changing key '%s' because it is not modifiable" \
                   " (passed as command line option or defined in /etc/chainkey.conf)"%key
             return
 
+        active_chain = self.get_active_chain()
         with self.lock:
-            self.user_config[key] = value
+            self.user_config[active_chain][key] = value
             if save:
                 self.save_user_config()
 
@@ -108,10 +127,14 @@ class SimpleConfig(object):
 
     def get(self, key, default=None):
         out = None
+        active_chain = self.get_active_chain()
         with self.lock:
             out = self.read_only_options.get(key)
             if not out:
-                out = self.user_config.get(key, default)
+                try:
+                    out = self.user_config[active_chain].get(key, default)
+                except KeyError:
+                    out = None
         return out
 
     def is_modifiable(self, key):
