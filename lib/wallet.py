@@ -26,6 +26,7 @@ import time
 import math
 import json
 import copy
+import chainparams
 
 from util import print_msg, print_error
 
@@ -56,6 +57,13 @@ class WalletStorage(object):
         print_error( "wallet path", self.path )
         if self.path:
             self.read(self.path)
+        self._init_chains()
+
+    def _init_chains(self):
+        """Make sure there's a dictionary for each chain"""
+        for code in chainparams._known_chain_codes:
+            if self.get(code) is None:
+                self.put(code, {})
 
     def init_path(self, config):
         """Set the path of the wallet."""
@@ -108,7 +116,7 @@ class WalletStorage(object):
                 self.data[key] = value
         self.file_exists = True
 
-    def get(self, key, default=None):
+    def get_above_chain(self, key, default=None):
         with self.lock:
             v = self.data.get(key)
             if v is None:
@@ -117,7 +125,18 @@ class WalletStorage(object):
                 v = copy.deepcopy(v)
             return v
 
-    def put(self, key, value, save = True):
+    def get(self, key, default=None):
+        active_chain = self.config.get_active_chain()
+        with self.lock:
+            v = self.data[active_chain].get(key)
+            if v is None:
+                v = default
+            else:
+                v = copy.deepcopy(v)
+            return v
+
+    def put_above_chain(self, key, value, save = True):
+        '''Bypass the usual practice of storing something in the active chain's dict'''
         try:
             json.dumps(key)
             json.dumps(value)
@@ -129,6 +148,21 @@ class WalletStorage(object):
                 self.data[key] = copy.deepcopy(value)
             elif key in self.data:
                 self.data.pop(key)
+            if save:
+                self.write()
+
+    def put(self, key, value, save = True):
+        try:
+            json.dumps(key)
+            json.dumps(value)
+        except:
+            print_error("json error: cannot save", key)
+        active_chain = self.config.get_active_chain()
+        with self.lock:
+            if value is not None:
+                self.data[active_chain][key] = copy.deepcopy(value)
+            elif key in self.data[active_chain]:
+                self.data[active_chain].pop(key)
             if save:
                 self.write()
 
