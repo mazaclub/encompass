@@ -186,6 +186,8 @@ class Abstract_Wallet(object):
         self.electrum_version = ELECTRUM_VERSION
         self.gap_limit_for_change = 3 # constant
         # saved fields
+        self.active_chain_code     = storage.config.get_active_chain_code()
+        self.active_chain          = chainparams.get_chain_instance(self.active_chain_code)
         self.seed_version          = storage.get('seed_version', NEW_SEED_VERSION)
         self.use_change            = storage.get('use_change',True)
         self.use_encryption        = storage.get('use_encryption', False)
@@ -1492,6 +1494,12 @@ class NewWallet(BIP32_HD_Wallet, Mnemonic):
     root_name = 'x/'
     root_derivation = "m/44'/0'"
     wallet_type = 'standard'
+
+    def __init__(self, storage):
+        chain_code = storage.config.get_active_chain_code()
+        chain_index = chainparams.get_chain_index(chain_code)
+        self.root_derivation = "m/44'/{}'".format(chain_index)
+        BIP32_HD_Wallet.__init__(self, storage)
 
 
 class Wallet_2of2(BIP32_Wallet, Mnemonic):
