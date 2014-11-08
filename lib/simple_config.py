@@ -96,12 +96,13 @@ class SimpleConfig(object):
 
     def set_active_chain_code(self, value, save = True):
         """Easy way to account for the config being divided by chain indices"""
+        value = value.upper()
         if not chainparams.is_known_chain(value):
             return
         with self.lock:
             self.user_config['active_chain_code'] = value
             # Make an empty dict if nothing is there
-            if len(self.user_config[value]) == 0:
+            if self.user_config.get(value, None) is None:
                 self.user_config[value] = {}
             if save:
                 self.save_user_config()

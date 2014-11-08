@@ -1,4 +1,5 @@
 '''Chain-specific Bitcoin code'''
+from cryptocur import CryptoCur
 
 class Bitcoin(CryptoCur):
     chain_index = 0

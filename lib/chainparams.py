@@ -57,10 +57,14 @@ def get_chain_instance(code):
     code = code.upper()
     if not is_known_chain(code): return None
     params = get_params(code)
-    full_module_name = '.'.join('chains', params.module_name)
-    classname = params.class_name
-    
-    coin_module = importlib.import_module(full_module_name)
-    classobj = getattr(coin_module, classname, None)
-    class_instance = classobj()
+#    full_module_name = '.'.join(['chains', params.module_name])
+    module_name = params.module_name
+
+    # This is not elegant or particularly wise but it's gonna have to work for now
+    if module_name == 'bitcoin':
+        import chains.bitcoin
+        class_instance = chains.bitcoin.Bitcoin()
+    elif module_name == 'mazacoin':
+        import chains.mazacoin
+        class_instance = chains.mazacoin.Mazacoin()
     return class_instance

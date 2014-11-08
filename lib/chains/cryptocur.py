@@ -1,7 +1,5 @@
 '''The abstract class for a cryptocurrency.'''
 
-import chainparams
-
 class CryptoCur(object):
     '''Abstract class containing cryptocurrency-specific code'''
 

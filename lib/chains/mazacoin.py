@@ -1,4 +1,5 @@
 '''Chain-specific Mazacoin code'''
+from cryptocur import CryptoCur
 
 class Mazacoin(CryptoCur):
     chain_index = 1 # CHANGE THIS after registration

@@ -62,8 +62,8 @@ class WalletStorage(object):
     def _init_chains(self):
         """Make sure there's a dictionary for each chain"""
         for code in chainparams._known_chain_codes:
-            if self.get(code) is None:
-                self.put(code, {})
+            if self.get_above_chain(code, None) is None:
+                self.put_above_chain(code, {})
 
     def init_path(self, config):
         """Set the path of the wallet."""
