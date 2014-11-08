@@ -4,6 +4,7 @@ import os
 
 from util import user_dir, print_error, print_msg
 
+import chainparams
 SYSTEM_CONFIG_PATH = "/etc/chainkey.conf"
 
 config = None

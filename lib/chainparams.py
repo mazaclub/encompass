@@ -26,6 +26,7 @@ _known_chain_dict = dict((i.code, i) for i in _known_chains)
 _known_chain_codes = [i.code for i in _known_chains]
 
 def is_known_chain(code):
+    code = code.upper()
     if code in _known_chain_codes:
         return True
     return False
