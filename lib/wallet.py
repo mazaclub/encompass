@@ -126,9 +126,9 @@ class WalletStorage(object):
             return v
 
     def get(self, key, default=None):
-        active_chain = self.config.get_active_chain()
+        active_chain_code = self.config.get_active_chain_code()
         with self.lock:
-            v = self.data[active_chain].get(key)
+            v = self.data[active_chain_code].get(key)
             if v is None:
                 v = default
             else:
@@ -157,12 +157,12 @@ class WalletStorage(object):
             json.dumps(value)
         except:
             print_error("json error: cannot save", key)
-        active_chain = self.config.get_active_chain()
+        active_chain_code = self.config.get_active_chain_code()
         with self.lock:
             if value is not None:
-                self.data[active_chain][key] = copy.deepcopy(value)
-            elif key in self.data[active_chain]:
-                self.data[active_chain].pop(key)
+                self.data[active_chain_code][key] = copy.deepcopy(value)
+            elif key in self.data[active_chain_code]:
+                self.data[active_chain_code].pop(key)
             if save:
                 self.write()
 

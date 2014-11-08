@@ -176,8 +176,8 @@ if __name__ == '__main__':
     config = SimpleConfig(config_options)
 
     # Set the active chain to btc if unset
-    if config.get_active_chain() is None:
-        config.set_active_chain('btc')
+    if config.get_active_chain_code() is None:
+        config.set_active_chain_code('btc')
 
     if len(args) == 0:
         url = None
