@@ -286,6 +286,7 @@ class Abstract_Wallet(object):
             elif v.get('xpub2'):
                 self.accounts[k] = BIP32_Account_2of2(v)
             elif v.get('xpub'):
+                v.update({'p2pkh':self.active_chain.p2pkh_version})
                 self.accounts[k] = BIP32_Account(v)
             elif v.get('pending'):
                 self.accounts[k] = PendingAccount(v)
