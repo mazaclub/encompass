@@ -25,6 +25,7 @@ from util import print_msg
 
 class Account(object):
     def __init__(self, v):
+        self.p2pkh_version       = v.get('p2pkh', 0)
         self.receiving_pubkeys   = v.get('receiving', [])
         self.change_pubkeys      = v.get('change', [])
         # addresses will not be stored on disk
@@ -64,7 +65,7 @@ class Account(object):
         return address
 
     def pubkeys_to_address(self, pubkey):
-        return public_key_to_bc_address(pubkey.decode('hex'))
+        return public_key_to_bc_address(pubkey.decode('hex'), self.p2pkh_version)
 
     def has_change(self):
         return True

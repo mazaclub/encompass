@@ -408,7 +408,7 @@ class Abstract_Wallet(object):
         return key.sign_message(message, compressed, address)
 
     def decrypt_message(self, pubkey, message, password):
-        address = public_key_to_bc_address(pubkey.decode('hex'))
+        address = public_key_to_bc_address(pubkey.decode('hex'), self.active_chain.p2pkh)
         keys = self.get_private_key(address, password)
         secret = keys[0]
         ec = regenerate_key(secret)
@@ -1051,7 +1051,7 @@ class Abstract_Wallet(object):
 
     def get_private_key_from_xpubkey(self, x_pubkey, password):
         if x_pubkey[0:2] in ['02','03','04']:
-            addr = bitcoin.public_key_to_bc_address(x_pubkey.decode('hex'))
+            addr = bitcoin.public_key_to_bc_address(x_pubkey.decode('hex'), self.active_chain.p2pkh)
             if self.is_mine(addr):
                 return self.get_private_key(addr, password)[0]
         elif x_pubkey[0:2] == 'ff':
@@ -1077,7 +1077,7 @@ class Abstract_Wallet(object):
 
     def can_sign_xpubkey(self, x_pubkey):
         if x_pubkey[0:2] in ['02','03','04']:
-            addr = bitcoin.public_key_to_bc_address(x_pubkey.decode('hex'))
+            addr = bitcoin.public_key_to_bc_address(x_pubkey.decode('hex'), self.active_chain.p2pkh)
             return self.is_mine(addr)
         elif x_pubkey[0:2] == 'ff':
             xpub, sequence = BIP32_Account.parse_xpubkey(x_pubkey)
@@ -1427,7 +1427,7 @@ class BIP32_HD_Wallet(BIP32_Wallet):
         self.add_master_public_key(derivation, xpub)
         if xprv:
             self.add_master_private_key(derivation, xprv, password)
-        account = BIP32_Account({'xpub':xpub})
+        account = BIP32_Account({'xpub':xpub, 'p2pkh':self.active_chain.p2pkh_version})
         addr = account.first_address()
         self.add_address(addr)
         return account_id, xpub, addr
@@ -1440,7 +1440,7 @@ class BIP32_HD_Wallet(BIP32_Wallet):
 
     def create_account(self, name, password):
         account_id, xpub, addr = self.get_next_account(password)
-        account = BIP32_Account({'xpub':xpub})
+        account = BIP32_Account({'xpub':xpub, 'p2pkh':self.active_chain.p2pkh_version})
         self.add_account(account_id, account)
         self.set_label(account_id, name)
         # add address of the next account

@@ -236,9 +236,9 @@ def hash_160(public_key):
         return md.digest()
 
 
-def public_key_to_bc_address(public_key):
+def public_key_to_bc_address(public_key, addrtype=0):
     h160 = hash_160(public_key)
-    return hash_160_to_bc_address(h160)
+    return hash_160_to_bc_address(h160, addrtype)
 
 def hash_160_to_bc_address(h160, addrtype = 0):
     vh160 = chr(addrtype) + h160
@@ -371,7 +371,7 @@ def public_key_from_private_key(sec):
     return public_key.encode('hex')
 
 
-def address_from_private_key(sec):
+def address_from_private_key(sec, addrtype=0):
     public_key = public_key_from_private_key(sec)
     address = public_key_to_bc_address(public_key.decode('hex'))
     return address
