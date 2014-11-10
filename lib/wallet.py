@@ -188,10 +188,10 @@ class Abstract_Wallet(object):
         # saved fields
         self.active_chain_code     = storage.config.get_active_chain_code()
         self.active_chain          = chainparams.get_chain_instance(self.active_chain_code)
-        self.seed_version          = storage.get('seed_version', NEW_SEED_VERSION)
+        self.seed_version          = storage.get_above_chain('seed_version', NEW_SEED_VERSION)
         self.use_change            = storage.get('use_change',True)
-        self.use_encryption        = storage.get('use_encryption', False)
-        self.seed                  = storage.get('seed', '')               # encrypted
+        self.use_encryption        = storage.get_above_chain('use_encryption', False)
+        self.seed                  = storage.get_above_chain('seed', '')               # encrypted
         self.labels                = storage.get('labels', {})
         self.frozen_addresses      = storage.get('frozen_addresses',[])
         self.addressbook           = storage.get('contacts', [])
@@ -1158,9 +1158,9 @@ class Deterministic_Wallet(Abstract_Wallet):
         else:
             self.use_encryption = False
 
-        self.storage.put('seed', self.seed, True)
-        self.storage.put('seed_version', self.seed_version, True)
-        self.storage.put('use_encryption', self.use_encryption,True)
+        self.storage.put_above_chain('seed', self.seed, True)
+        self.storage.put_above_chain('seed_version', self.seed_version, True)
+        self.storage.put_above_chain('use_encryption', self.use_encryption,True)
 
     def get_seed(self, password):
         return pw_decode(self.seed, password)
@@ -1500,6 +1500,14 @@ class NewWallet(BIP32_HD_Wallet, Mnemonic):
         chain_index = chainparams.get_chain_index(chain_code)
         self.root_derivation = "m/44'/{}'".format(chain_index)
         BIP32_HD_Wallet.__init__(self, storage)
+
+    def get_action(self):
+        if self.seed == '':
+            return 'create_seed'
+        if not self.get_master_public_key():
+            return 'add_chain'
+        if not self.accounts:
+            return 'create_accounts'
 
 
 class Wallet_2of2(BIP32_Wallet, Mnemonic):

@@ -371,6 +371,10 @@ class InstallWizard(QDialog):
                 wallet.add_seed(seed, password)
                 wallet.create_master_keys(password)
 
+            elif action == 'add_chain':
+                password = self.password_dialog()
+                wallet.create_master_keys(password)
+
             elif action == 'add_cosigner':
                 xpub1 = wallet.master_public_keys.get("x1/")
                 r = self.multi_mpk_dialog(xpub1, 1)
