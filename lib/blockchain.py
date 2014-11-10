@@ -20,7 +20,7 @@
 import threading, time, Queue, os, sys, shutil
 from util import user_dir, appdata_dir, print_error
 from bitcoin import *
-
+import chainparams
 
 class Blockchain(threading.Thread):
 
@@ -28,14 +28,22 @@ class Blockchain(threading.Thread):
         threading.Thread.__init__(self)
         self.daemon = True
         self.config = config
+
+        self.set_active_chain()
+
         self.network = network
         self.lock = threading.Lock()
         self.local_height = 0
         self.running = False
-        self.headers_url = 'http://headers.electrum.org/blockchain_headers'
+        # Currently disabled until chain-specific URLs implemented
+        self.headers_url = ''#'http://headers.electrum.org/blockchain_headers'
         self.set_local_height()
         self.queue = Queue.Queue()
 
+    def set_active_chain(self):
+        self.active_chain_code = self.config.get_active_chain_code()
+        self.active_chain = chainparams.get_chain_instance(self.active_chain_code)
+        self.chunk_size = self.active_chain.chunk_size
 
     def height(self):
         return self.local_height
@@ -105,90 +113,98 @@ class Blockchain(threading.Thread):
 
     def verify_chain(self, chain):
 
-        first_header = chain[0]
-        prev_header = self.read_header(first_header.get('block_height') -1)
-
-        for header in chain:
-
-            height = header.get('block_height')
-
-            prev_hash = self.hash_header(prev_header)
-            bits, target = self.get_target(height/2016, chain)
-            _hash = self.hash_header(header)
-            try:
-                assert prev_hash == header.get('prev_block_hash')
-                assert bits == header.get('bits')
-                assert int('0x'+_hash,16) < target
-            except Exception:
-                return False
-
-            prev_header = header
-
-        return True
+        return self.active_chain.verify_chain(chain)
+#        first_header = chain[0]
+#        prev_header = self.read_header(first_header.get('block_height') -1)
+#
+#        for header in chain:
+#
+#            height = header.get('block_height')
+#
+#            prev_hash = self.hash_header(prev_header)
+#            bits, target = self.get_target(height/2016, chain)
+#            _hash = self.hash_header(header)
+#            try:
+#                assert prev_hash == header.get('prev_block_hash')
+#                assert bits == header.get('bits')
+#                assert int('0x'+_hash,16) < target
+#            except Exception:
+#                return False
+#
+#            prev_header = header
+#
+#        return True
 
 
 
     def verify_chunk(self, index, hexdata):
-        data = hexdata.decode('hex')
-        height = index*2016
-        num = len(data)/80
-
-        if index == 0:
-            previous_hash = ("0"*64)
-        else:
-            prev_header = self.read_header(index*2016-1)
-            if prev_header is None: raise
-            previous_hash = self.hash_header(prev_header)
-
-        bits, target = self.get_target(index)
-
-        for i in range(num):
-            height = index*2016 + i
-            raw_header = data[i*80:(i+1)*80]
-            header = self.header_from_string(raw_header)
-            _hash = self.hash_header(header)
-            assert previous_hash == header.get('prev_block_hash')
-            assert bits == header.get('bits')
-            assert int('0x'+_hash,16) < target
-
-            previous_header = header
-            previous_hash = _hash
-
-        self.save_chunk(index, data)
-        print_error("validated chunk %d"%height)
+        self.active_chain.verify_chunk(index, hexdata)
+        self.set_local_height()
+#        data = hexdata.decode('hex')
+#        height = index*2016
+#        num = len(data)/80
+#
+#        if index == 0:
+#            previous_hash = ("0"*64)
+#        else:
+#            prev_header = self.read_header(index*2016-1)
+#            if prev_header is None: raise
+#            previous_hash = self.hash_header(prev_header)
+#
+#        bits, target = self.get_target(index)
+#
+#        for i in range(num):
+#            height = index*2016 + i
+#            raw_header = data[i*80:(i+1)*80]
+#            header = self.header_from_string(raw_header)
+#            _hash = self.hash_header(header)
+#            assert previous_hash == header.get('prev_block_hash')
+#            assert bits == header.get('bits')
+#            assert int('0x'+_hash,16) < target
+#
+#            previous_header = header
+#            previous_hash = _hash
+#
+#        self.save_chunk(index, data)
+#        print_error("validated chunk %d"%height)
 
 
 
     def header_to_string(self, res):
-        s = int_to_hex(res.get('version'),4) \
-            + rev_hex(res.get('prev_block_hash')) \
-            + rev_hex(res.get('merkle_root')) \
-            + int_to_hex(int(res.get('timestamp')),4) \
-            + int_to_hex(int(res.get('bits')),4) \
-            + int_to_hex(int(res.get('nonce')),4)
-        return s
+        return self.active_chain.header_to_string(res)
+#        s = int_to_hex(res.get('version'),4) \
+#            + rev_hex(res.get('prev_block_hash')) \
+#            + rev_hex(res.get('merkle_root')) \
+#            + int_to_hex(int(res.get('timestamp')),4) \
+#            + int_to_hex(int(res.get('bits')),4) \
+#            + int_to_hex(int(res.get('nonce')),4)
+#        return s
 
 
     def header_from_string(self, s):
-        hex_to_int = lambda s: int('0x' + s[::-1].encode('hex'), 16)
-        h = {}
-        h['version'] = hex_to_int(s[0:4])
-        h['prev_block_hash'] = hash_encode(s[4:36])
-        h['merkle_root'] = hash_encode(s[36:68])
-        h['timestamp'] = hex_to_int(s[68:72])
-        h['bits'] = hex_to_int(s[72:76])
-        h['nonce'] = hex_to_int(s[76:80])
-        return h
+        return self.active_chain.header_from_string(s)
+#        hex_to_int = lambda s: int('0x' + s[::-1].encode('hex'), 16)
+#        h = {}
+#        h['version'] = hex_to_int(s[0:4])
+#        h['prev_block_hash'] = hash_encode(s[4:36])
+#        h['merkle_root'] = hash_encode(s[36:68])
+#        h['timestamp'] = hex_to_int(s[68:72])
+#        h['bits'] = hex_to_int(s[72:76])
+#        h['nonce'] = hex_to_int(s[76:80])
+#        return h
 
     def hash_header(self, header):
-        return rev_hex(Hash(self.header_to_string(header).decode('hex')).encode('hex'))
+        return self.active_chain.hash_header(header)
+#        return rev_hex(Hash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def path(self):
-        return os.path.join( self.config.path, 'blockchain_headers')
+        headers_file_name = '_'.join(['blockchain_headers', self.active_chain_code.lower()])
+        return os.path.join( self.config.path, headers_file_name)
 
     def init_headers_file(self):
         filename = self.path()
         if os.path.exists(filename):
+            self.active_chain.set_headers_path(filename)
             return
 
         try:
@@ -200,24 +216,27 @@ class Blockchain(threading.Thread):
         except Exception:
             print_error( "download failed. creating file", filename )
             open(filename,'wb+').close()
+        self.active_chain.set_headers_path(self.path())
 
     def save_chunk(self, index, chunk):
-        filename = self.path()
-        f = open(filename,'rb+')
-        f.seek(index*2016*80)
-        h = f.write(chunk)
-        f.close()
+        self.active_chain.save_chunk(index, chunk)
+#        filename = self.path()
+#        f = open(filename,'rb+')
+#        f.seek(index*2016*80)
+#        h = f.write(chunk)
+#        f.close()
         self.set_local_height()
 
     def save_header(self, header):
-        data = self.header_to_string(header).decode('hex')
-        assert len(data) == 80
-        height = header.get('block_height')
-        filename = self.path()
-        f = open(filename,'rb+')
-        f.seek(height*80)
-        h = f.write(data)
-        f.close()
+        self.active_chain.save_header(header)
+#        data = self.header_to_string(header).decode('hex')
+#        assert len(data) == 80
+#        height = header.get('block_height')
+#        filename = self.path()
+#        f = open(filename,'rb+')
+#        f.seek(height*80)
+#        h = f.write(data)
+#        f.close()
         self.set_local_height()
 
 
@@ -230,61 +249,20 @@ class Blockchain(threading.Thread):
 
 
     def read_header(self, block_height):
-        name = self.path()
-        if os.path.exists(name):
-            f = open(name,'rb')
-            f.seek(block_height*80)
-            h = f.read(80)
-            f.close()
-            if len(h) == 80:
-                h = self.header_from_string(h)
-                return h
+        return self.active_chain.read_header(block_height)
+#        name = self.path()
+#        if os.path.exists(name):
+#            f = open(name,'rb')
+#            f.seek(block_height*80)
+#            h = f.read(80)
+###            f.close()
+#            if len(h) == 80:
+#                h = self.header_from_string(h)
+#                return h
 
 
     def get_target(self, index, chain=None):
-        if chain is None:
-            chain = []  # Do not use mutables as default values!
-
-        max_target = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
-        if index == 0: return 0x1d00ffff, max_target
-
-        first = self.read_header((index-1)*2016)
-        last = self.read_header(index*2016-1)
-        if last is None:
-            for h in chain:
-                if h.get('block_height') == index*2016-1:
-                    last = h
-
-        nActualTimespan = last.get('timestamp') - first.get('timestamp')
-        nTargetTimespan = 14*24*60*60
-        nActualTimespan = max(nActualTimespan, nTargetTimespan/4)
-        nActualTimespan = min(nActualTimespan, nTargetTimespan*4)
-
-        bits = last.get('bits')
-        # convert to bignum
-        MM = 256*256*256
-        a = bits%MM
-        if a < 0x8000:
-            a *= 256
-        target = (a) * pow(2, 8 * (bits/MM - 3))
-
-        # new target
-        new_target = min( max_target, (target * nActualTimespan)/nTargetTimespan )
-
-        # convert it to bits
-        c = ("%064X"%new_target)[2:]
-        i = 31
-        while c[0:2]=="00":
-            c = c[2:]
-            i -= 1
-
-        c = int('0x'+c[0:6],16)
-        if c >= 0x800000:
-            c /= 256
-            i += 1
-
-        new_bits = c + MM * i
-        return new_bits, new_target
+        return self.active_chain.get_target(index, chain)
 
 
     def request_header(self, i, h, queue):
@@ -340,8 +318,8 @@ class Blockchain(threading.Thread):
     def get_and_verify_chunks(self, i, header, height):
 
         queue = Queue.Queue()
-        min_index = (self.local_height + 1)/2016
-        max_index = (height + 1)/2016
+        min_index = (self.local_height + 1)/self.chunk_size
+        max_index = (height + 1)/self.chunk_size
         n = min_index
         while n < max_index + 1:
             print_error( "Requesting chunk:", n )
