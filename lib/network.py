@@ -3,6 +3,7 @@ from util import user_dir, appdata_dir, print_error, print_msg
 from bitcoin import *
 import interface
 from blockchain import Blockchain
+import chainparams
 
 DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}
 
@@ -26,10 +27,11 @@ DEFAULT_SERVERS = {
 DISCONNECTED_RETRY_INTERVAL = 60
 
 
-def parse_servers(result):
+def parse_servers(result, defaultports = None):
     """ parse servers list into dict format"""
     from version import PROTOCOL_VERSION
     servers = {}
+    if defaultports is None: defaultports = DEFAULT_PORTS
     for item in result:
         host = item[1]
         out = {}
@@ -39,7 +41,7 @@ def parse_servers(result):
             for v in item[2]:
                 if re.match("[stgh]\d*", v):
                     protocol, port = v[0], v[1:]
-                    if port == '': port = DEFAULT_PORTS[protocol]
+                    if port == '': port = defaultports[protocol]
                     out[protocol] = port
                 elif re.match("v(.?)+", v):
                     version = v[1:]
@@ -67,8 +69,9 @@ def filter_protocol(servers, p):
     return l
 
 
-def pick_random_server(p='s'):
-    return random.choice( filter_protocol(DEFAULT_SERVERS,p) )
+def pick_random_server(p='s', servers=None):
+    if servers is None: servers = DEFAULT_SERVERS
+    return random.choice( filter_protocol(servers,p) )
 
 from simple_config import SimpleConfig
 
@@ -82,6 +85,9 @@ class Network(threading.Thread):
         threading.Thread.__init__(self)
         self.daemon = True
         self.config = SimpleConfig(config) if type(config) == type({}) else config
+
+        self.set_active_chain()
+
         self.lock = threading.Lock()
         self.num_server = 8 if not self.config.get('oneserver') else 0
         self.blockchain = Blockchain(self.config, self)
@@ -93,7 +99,7 @@ class Network(threading.Thread):
         # Server for addresses and transactions
         self.default_server = self.config.get('server')
         if not self.default_server:
-            self.default_server = pick_random_server(self.protocol)
+            self.default_server = pick_random_server(self.protocol, self.default_servers)
 
         self.irc_servers = {} # returned by interface (list from irc)
 
@@ -119,6 +125,12 @@ class Network(threading.Thread):
         self.connection_status = 'connecting'
         self.requests_queue = Queue.Queue()
 
+
+    def set_active_chain(self):
+        self.active_chain_code = self.config.get_active_chain_code()
+        self.active_chain = chainparams.get_chain_instance(self.active_chain_code)
+        self.default_servers = self.active_chain.DEFAULT_SERVERS
+        self.default_ports = self.active_chain.DEFAULT_PORTS
 
     def get_server_height(self):
         return self.heights.get(self.default_server,0)
@@ -189,7 +201,7 @@ class Network(threading.Thread):
         if self.irc_servers:
             out = self.irc_servers
         else:
-            out = DEFAULT_SERVERS
+            out = self.default_servers
             for s in self.recent_servers:
                 host, port, protocol = s.split(':')
                 if host not in out:
@@ -457,7 +469,7 @@ class Network(threading.Thread):
 
     def on_peers(self, i, r):
         if not r: return
-        self.irc_servers = parse_servers(r.get('result'))
+        self.irc_servers = parse_servers(r.get('result'), self.default_ports)
         self.notify('servers')
 
     def on_banner(self, i, r):
