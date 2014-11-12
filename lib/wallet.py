@@ -234,10 +234,11 @@ class Abstract_Wallet(object):
         tx_list = self.storage.get('transactions',{})
         for k, raw in tx_list.items():
             try:
-                tx = Transaction.deserialize(raw)
+                tx = Transaction.deserialize(raw, self.active_chain)
             except Exception:
                 print_msg("Warning: Cannot deserialize transactions. skipping")
                 continue
+            tx.chain = self.active_chain
             self.add_pubkey_addresses(tx)
             self.transactions[k] = tx
         for h,tx in self.transactions.items():
@@ -256,6 +257,7 @@ class Abstract_Wallet(object):
         for type, x, v in tx.outputs:
             if type == 'pubkey':
                 for tx2 in self.transactions.values():
+                    tx2.chain = self.active_chain
                     tx2.add_pubkey_addresses({h:tx})
 
     def get_action(self):
@@ -452,6 +454,7 @@ class Abstract_Wallet(object):
 
     def update_tx_outputs(self, tx_hash):
         tx = self.transactions.get(tx_hash)
+        tx.chain = self.active_chain
 
         for i, (addr, value) in enumerate(tx.get_outputs()):
             key = tx_hash+ ':%d'%i
@@ -473,6 +476,7 @@ class Abstract_Wallet(object):
             tx = self.transactions.get(tx_hash)
             if not tx: continue
 
+            tx.chain = self.active_chain
             for i, (addr, value) in enumerate(tx.get_outputs()):
                 if addr == address:
                     key = tx_hash + ':%d'%i
@@ -544,6 +548,7 @@ class Abstract_Wallet(object):
             for tx_hash, tx_height in h:
                 tx = self.transactions.get(tx_hash)
                 if tx is None: raise Exception("Wallet not synchronized")
+                tx.chain = self.active_chain
                 is_coinbase = tx.inputs[0].get('prevout_hash') == '0'*64
                 for i, (address, value) in enumerate(tx.get_outputs()):
                     output = {'address':address, 'value':value, 'prevout_n':i}
@@ -585,6 +590,7 @@ class Abstract_Wallet(object):
 
     def receive_tx_callback(self, tx_hash, tx, tx_height):
 
+        tx.chain = self.active_chain
         with self.transaction_lock:
             self.add_pubkey_addresses(tx)
             if not self.check_new_tx(tx_hash, tx):
@@ -910,7 +916,7 @@ class Abstract_Wallet(object):
             for tx_hash, height in hist:
                 tx = self.transactions.get(tx_hash)
                 if not tx: continue
-                if not tx.has_address(addr):
+                if not tx.has_address(addr, self.active_chain.p2pkh_version):
                     return False
 
         # check that we are not "orphaning" a transaction

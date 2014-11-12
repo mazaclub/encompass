@@ -419,7 +419,7 @@ def parse_scriptSig(d, bytes):
 
 
 
-def get_address_from_output_script(bytes):
+def get_address_from_output_script(bytes, addr_type=0):
     decoded = [ x for x in script_GetOp(bytes) ]
 
     # The Genesis Block, self-payments, and pay-by-IP-address payments look like:
@@ -432,7 +432,7 @@ def get_address_from_output_script(bytes):
     # DUP HASH160 20 BYTES:... EQUALVERIFY CHECKSIG
     match = [ opcodes.OP_DUP, opcodes.OP_HASH160, opcodes.OP_PUSHDATA4, opcodes.OP_EQUALVERIFY, opcodes.OP_CHECKSIG ]
     if match_decoded(decoded, match):
-        return 'address', hash_160_to_bc_address(decoded[2][1])
+        return 'address', hash_160_to_bc_address(decoded[2][1], addr_type)
 
     # p2sh
     match = [ opcodes.OP_HASH160, opcodes.OP_PUSHDATA4, opcodes.OP_EQUAL ]
@@ -471,17 +471,17 @@ def parse_input(vds):
     return d
 
 
-def parse_output(vds, i):
+def parse_output(vds, i, addr_type=0):
     d = {}
     d['value'] = vds.read_int64()
     scriptPubKey = vds.read_bytes(vds.read_compact_size())
-    d['type'], d['address'] = get_address_from_output_script(scriptPubKey)
+    d['type'], d['address'] = get_address_from_output_script(scriptPubKey, addr_type)
     d['scriptPubKey'] = scriptPubKey.encode('hex')
     d['prevout_n'] = i
     return d
 
 
-def deserialize(raw):
+def deserialize(raw, addr_type=0):
     vds = BCDataStream()
     vds.write(raw.decode('hex'))
     d = {}
@@ -490,7 +490,7 @@ def deserialize(raw):
     n_vin = vds.read_compact_size()
     d['inputs'] = list(parse_input(vds) for i in xrange(n_vin))
     n_vout = vds.read_compact_size()
-    d['outputs'] = list(parse_output(vds,i) for i in xrange(n_vout))
+    d['outputs'] = list(parse_output(vds,i, addr_type) for i in xrange(n_vout))
     d['lockTime'] = vds.read_uint32()
     return d
 
@@ -509,15 +509,21 @@ class Transaction:
         self.outputs = outputs
         self.locktime = locktime
         self.raw = None
+        self.chain = None
 
     @classmethod
-    def deserialize(klass, raw):
+    def deserialize(klass, raw, active_chain=None):
         self = klass([],[])
+        self.chain = active_chain
         self.update(raw)
         return self
 
     def update(self, raw):
-        d = deserialize(raw)
+        try:
+            version_byte = self.chain.p2pkh_version
+        except:
+            version_byte = 0
+        d = deserialize(raw, version_byte)
         self.raw = raw
         self.inputs = d['inputs']
         self.outputs = map(lambda x: (x['type'], x['address'], x['value']), d['outputs'])
@@ -764,6 +770,10 @@ class Transaction:
 
 
     def add_pubkey_addresses(self, txlist):
+        try:
+            addr_type = self.chain.p2pkh_version
+        except:
+            addr_type = 0
         for i in self.inputs:
             if i.get("address") == "(pubkey)":
                 prev_tx = txlist.get(i.get('prevout_hash'))
@@ -775,12 +785,16 @@ class Transaction:
 
     def get_outputs(self):
         """convert pubkeys to addresses"""
+        try:
+            addr_type = self.chain.p2pkh_version
+        except:
+            addr_type = 0
         o = []
         for type, x, v in self.outputs:
             if type == 'address':
                 addr = x
             elif type == 'pubkey':
-                addr = public_key_to_bc_address(x.decode('hex'))
+                addr = public_key_to_bc_address(x.decode('hex'), addr_type)
             elif type == 'op_return':
                 try:
                     addr = 'OP_RETURN: "' + x.decode('utf8') + '"'
