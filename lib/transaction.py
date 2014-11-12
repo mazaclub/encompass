@@ -322,7 +322,7 @@ def x_to_xpub(x_pubkey):
 
 
 
-def parse_xpub(x_pubkey):
+def parse_xpub(x_pubkey, addr_type=0):
     if x_pubkey[0:2] in ['02','03','04']:
         pubkey = x_pubkey
     elif x_pubkey[0:2] == 'ff':
@@ -341,11 +341,11 @@ def parse_xpub(x_pubkey):
     else:
         raise BaseException("Cannnot parse pubkey")
     if pubkey:
-        address = public_key_to_bc_address(pubkey.decode('hex'))
+        address = public_key_to_bc_address(pubkey.decode('hex'), addr_type)
     return pubkey, address
 
 
-def parse_scriptSig(d, bytes):
+def parse_scriptSig(d, bytes, addr_type = 0):
     try:
         decoded = [ x for x in script_GetOp(bytes) ]
     except Exception:
@@ -373,7 +373,7 @@ def parse_scriptSig(d, bytes):
         x_pubkey = decoded[1][1].encode('hex')
         try:
             signatures = parse_sig([sig])
-            pubkey, address = parse_xpub(x_pubkey)
+            pubkey, address = parse_xpub(x_pubkey, addr_type)
         except:
             import traceback
             traceback.print_exc(file=sys.stdout)
@@ -451,7 +451,7 @@ def get_address_from_output_script(bytes, addr_type=0):
 
 
 
-def parse_input(vds):
+def parse_input(vds, addr_type = 0):
     d = {}
     prevout_hash = hash_encode(vds.read_bytes(32))
     prevout_n = vds.read_uint32()
@@ -468,7 +468,7 @@ def parse_input(vds):
         d['signatures'] = {}
         d['address'] = None
         if scriptSig:
-            parse_scriptSig(d, scriptSig)
+            parse_scriptSig(d, scriptSig, addr_type)
     return d
 
 
@@ -489,7 +489,7 @@ def deserialize(raw, addr_type=0):
     start = vds.read_cursor
     d['version'] = vds.read_int32()
     n_vin = vds.read_compact_size()
-    d['inputs'] = list(parse_input(vds) for i in xrange(n_vin))
+    d['inputs'] = list(parse_input(vds, addr_type) for i in xrange(n_vin))
     n_vout = vds.read_compact_size()
     d['outputs'] = list(parse_output(vds,i, addr_type) for i in xrange(n_vout))
     d['lockTime'] = vds.read_uint32()
