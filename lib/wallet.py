@@ -712,6 +712,7 @@ class Abstract_Wallet(object):
         return tx.get_fee()
 
     def estimated_fee(self, tx):
+        tx.chain = self.active_chain
         estimated_size = len(tx.serialize(-1))/2
         fee = int(self.fee_per_kb*estimated_size/1000.)
         if fee < MIN_RELAY_TX_FEE: # and tx.requires_fee(self.verifier):
@@ -739,6 +740,7 @@ class Abstract_Wallet(object):
         total = fee = 0
         inputs = []
         tx = Transaction(inputs, outputs)
+        tx.chain = self.active_chain
         for item in coins:
             if item.get('coinbase') and item.get('height') + COINBASE_MATURITY > self.network.get_local_height():
                 continue
@@ -817,6 +819,7 @@ class Abstract_Wallet(object):
     def sign_transaction(self, tx, password):
         if self.is_watching_only():
             return
+        tx.chain = self.active_chain
         # check that the password is correct. This will raise if it's not.
         self.check_password(password)
         keypairs = {}
@@ -916,7 +919,8 @@ class Abstract_Wallet(object):
             for tx_hash, height in hist:
                 tx = self.transactions.get(tx_hash)
                 if not tx: continue
-                if not tx.has_address(addr, self.active_chain.p2pkh_version):
+                tx.chain = self.active_chain
+                if not tx.has_address(addr):
                     return False
 
         # check that we are not "orphaning" a transaction

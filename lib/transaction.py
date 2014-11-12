@@ -25,6 +25,7 @@ from bitcoin import *
 from util import print_error
 import time
 import struct
+import chainparams
 
 #
 # Workalike python implementation of Bitcoin's CDataStream class.
@@ -587,18 +588,19 @@ class Transaction:
 
 
     @classmethod
-    def pay_script(self, type, addr):
+    def pay_script(self, type, addr, active_chain = None):
+        self.chain = active_chain
         if type == 'op_return':
             h = addr.encode('hex')
             return '6a' + push_script(h)
         else:
             assert type == 'address'
         addrtype, hash_160 = bc_address_to_hash_160(addr)
-        if addrtype == 0:
+        if addrtype == self.chain.p2pkh_version:
             script = '76a9'                                      # op_dup, op_hash_160
             script += push_script(hash_160.encode('hex'))
             script += '88ac'                                     # op_equalverify, op_checksig
-        elif addrtype == 5:
+        elif addrtype == self.chain.p2sh_version:
             script = 'a9'                                        # op_hash_160
             script += push_script(hash_160.encode('hex'))
             script += '87'                                       # op_equal
@@ -664,7 +666,7 @@ class Transaction:
                     script += push_script(redeem_script)
 
             elif for_sig==i:
-                script = txin['redeemScript'] if p2sh else self.pay_script('address', address)
+                script = txin['redeemScript'] if p2sh else self.pay_script('address', address, self.chain)
             else:
                 script = ''
 
@@ -676,7 +678,7 @@ class Transaction:
         for output in outputs:
             type, addr, amount = output
             s += int_to_hex( amount, 8)                              # amount
-            script = self.pay_script(type, addr)
+            script = self.pay_script(type, addr, self.chain)
             s += var_int( len(script)/2 )                           #  script length
             s += script                                             #  script
         s += int_to_hex(0,4)                                        #  lock time
