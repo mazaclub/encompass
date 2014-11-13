@@ -57,6 +57,7 @@ payto_syntax = "payto <recipient> <amount> [label]\n<recipient> can be a bitcoin
 paytomany_syntax = "paytomany <recipient> <amount> [<recipient> <amount> ...]\n<recipient> can be a bitcoin address or a label"
 signmessage_syntax = 'signmessage <address> <message>\nIf you want to lead or end a message with spaces, or want double spaces inside the message make sure you quote the string. I.e. " Hello  This is a weird String "'
 verifymessage_syntax = 'verifymessage <address> <signature> <message>\nIf you want to lead or end a message with spaces, or want double spaces inside the message make sure you quote the string. I.e. " Hello  This is a weird String "'
+setchain_syntax = 'setchain <chain_code>\nChain code is case-insensitive and in the form BTC, MZC, etc.'
 
 
 #                command
@@ -112,6 +113,8 @@ register_command('sweep',                2, 3, True, False, False, 'Sweep a priv
 register_command('make_seed',            3, 3, False, False, False, 'Create a seed.','options: --nbits --entropy --lang')
 register_command('check_seed',           1,-1, False, False, False, 'Check that a seed was generated with external entropy. Option: --entropy --lang')
 
+register_command('getchain',             0, 0, False, True, False, 'Return the code of the active blockchain')
+register_command('setchain',             1, 1, False, True, False, 'Set the code of the new active blockchain', setchain_syntax)
 
 class Commands:
 
@@ -392,3 +395,11 @@ class Commands:
 
     def decrypt(self, pubkey, message):
         return self.wallet.decrypt_message(pubkey, message, self.password)
+
+    def getchain(self):
+        return self.wallet.active_chain_code
+
+    def setchain(self, chaincode):
+        result = self.wallet.set_chain(chaincode)
+        if result == False:
+            return "Invalid chain code"

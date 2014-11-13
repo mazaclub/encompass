@@ -228,6 +228,11 @@ class Abstract_Wallet(object):
         if self.storage.get('wallet_type') is None:
             self.storage.put('wallet_type', self.wallet_type, True)
 
+    def set_chain(self, chaincode):
+        result = self.storage.config.set_active_chain_code(chaincode)
+        if result == False:
+            return False # Invalid chain
+        self.__init__(self.storage)
 
     def load_transactions(self):
         self.transactions = {}
