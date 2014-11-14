@@ -17,6 +17,14 @@ class Mazacoin(CryptoCur):
     RECOMMENDED_FEE = 50000
     COINBASE_MATURITY = 100
 
+    block_explorers = {
+        'Mazacha.in': 'https://mazacha.in/tx/'
+    }
+
+    base_units = {
+        'MZC': 8
+    }
+
     chunk_size = 2016
 
     DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}

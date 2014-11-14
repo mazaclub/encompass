@@ -17,6 +17,19 @@ class Bitcoin(CryptoCur):
     RECOMMENDED_FEE = 50000
     COINBASE_MATURITY = 100
 
+    block_explorers = {
+        'Blockchain.info': 'https://blockchain.info/tx/',
+        'Blockr.io': 'https://blockr.io/tx/info/',
+        'Insight.is': 'http://live.insight.is/tx/',
+        'Blocktrail.com': 'https://www.blocktrail.com/tx/'
+    }
+
+    base_units = {
+        'BTC': 8,
+        'mBTC': 5,
+        'bits': 2
+    }
+
     chunk_size = 2016
 
     # Network

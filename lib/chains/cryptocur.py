@@ -49,6 +49,21 @@ class CryptoCur(object):
     RECOMMENDED_FEE = 50000
     COINBASE_MATURITY = 100
 
+
+    # Block explorers {name : URL}
+    block_explorers = {
+        'Blockchain.info': 'https://blockchain.info/tx/',
+        'Blockr.io': 'https://blockr.io/tx/info/',
+        'Insight.is': 'http://live.insight.is/tx/',
+        'Blocktrail.com': 'https://www.blocktrail.com/tx/'
+    }
+
+    # Currency units {decimal point : name}
+    base_units = {
+        'COIN': 8,
+        'mCOIN': 5
+    }
+
     ### Electrum constants ###
 
     # Number of headers in one chunk

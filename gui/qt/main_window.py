@@ -122,7 +122,8 @@ class ElectrumWindow(QMainWindow):
         self.create_status_bar()
         self.need_update = threading.Event()
 
-        self.decimal_point = config.get('decimal_point', 5)
+        self.load_base_units()
+        self.decimal_point = config.get('decimal_point', 8)
         self.num_zeros     = int(config.get('num_zeros',0))
         self.invoices      = {}
 
@@ -202,6 +203,9 @@ class ElectrumWindow(QMainWindow):
         import chainkey
         self.wallet = wallet
         self.update_wallet_format()
+        # set up chain-specifics
+        self.load_block_explorers()
+        self.load_base_units()
         # address used to create a dummy transaction and estimate transaction fee
         self.dummy_address = self.wallet.addresses(False)[0]
         self.invoices = self.wallet.storage.get('invoices', {})
@@ -307,6 +311,11 @@ class ElectrumWindow(QMainWindow):
             self.load_wallet(wallet)
 
 
+    def load_block_explorers(self):
+        self.block_explorers = chainkey.chainparams.get_active_chain().block_explorers
+
+    def load_base_units(self):
+        self.base_units = chainkey.chainparams.get_active_chain().base_units
 
     def init_menubar(self):
         menubar = QMenuBar()
@@ -454,13 +463,16 @@ class ElectrumWindow(QMainWindow):
 
 
     def base_unit(self):
-        assert self.decimal_point in [2, 5, 8]
-        if self.decimal_point == 2:
-            return 'bits'
-        if self.decimal_point == 5:
-            return 'mBTC'
-        if self.decimal_point == 8:
-            return 'BTC'
+        assert self.decimal_point in self.base_units.values()
+        for k, v in self.base_units.iteritems():
+            if v == self.decimal_point:
+                return k
+#        if self.decimal_point == 2:
+#            return 'bits'
+#        if self.decimal_point == 5:
+#            return 'mBTC'
+#        if self.decimal_point == 8:
+#            return 'BTC'
         raise Exception('Unknown base unit')
 
     def update_status(self):
@@ -531,15 +543,16 @@ class ElectrumWindow(QMainWindow):
     def create_history_menu(self, position):
         self.history_list.selectedIndexes()
         item = self.history_list.currentItem()
-        be = self.config.get('block_explorer', 'Blockchain.info')
-        if be == 'Blockchain.info':
-            block_explorer = 'https://blockchain.info/tx/'
-        elif be == 'Blockr.io':
-            block_explorer = 'https://blockr.io/tx/info/'
-        elif be == 'Insight.is':
-            block_explorer = 'http://live.insight.is/tx/'
-        elif be == "Blocktrail.com":
-            block_explorer = 'https://www.blocktrail.com/tx/'
+        be = self.config.get('block_explorer', self.block_explorers.keys()[0])
+        block_explorer = self.block_explorers[be]
+#        if be == 'Blockchain.info':
+#            block_explorer = 'https://blockchain.info/tx/'
+#        elif be == 'Blockr.io':
+#            block_explorer = 'https://blockr.io/tx/info/'
+#        elif be == 'Insight.is':
+#            block_explorer = 'http://live.insight.is/tx/'
+#        elif be == "Blocktrail.com":
+#            block_explorer = 'https://www.blocktrail.com/tx/'
 
         if not item: return
         tx_hash = str(item.data(0, Qt.UserRole).toString())
@@ -2615,7 +2628,7 @@ class ElectrumWindow(QMainWindow):
         fee_e.editingFinished.connect(on_fee)
         widgets.append((fee_label, fee_e, fee_help))
 
-        units = ['BTC', 'mBTC', 'bits']
+        units = self.base_units.keys()
         unit_label = QLabel(_('Base unit') + ':')
         unit_combo = QComboBox()
         unit_combo.addItems(units)
@@ -2628,14 +2641,15 @@ class ElectrumWindow(QMainWindow):
             unit_result = units[unit_combo.currentIndex()]
             if self.base_unit() == unit_result:
                 return
-            if unit_result == 'BTC':
-                self.decimal_point = 8
-            elif unit_result == 'mBTC':
-                self.decimal_point = 5
-            elif unit_result == 'bits':
-                self.decimal_point = 2
-            else:
-                raise Exception('Unknown base unit')
+            self.decimal_point = self.base_units[unit_result]
+#            if unit_result == 'BTC':
+#                self.decimal_point = 8
+#            elif unit_result == 'mBTC':
+#                self.decimal_point = 5
+#            elif unit_result == 'bits':
+#                self.decimal_point = 2
+#            else:
+#                raise Exception('Unknown base unit')
             self.config.set_key('decimal_point', self.decimal_point, True)
             self.update_history_tab()
             self.update_receive_tab()
@@ -2646,11 +2660,12 @@ class ElectrumWindow(QMainWindow):
         unit_combo.currentIndexChanged.connect(on_unit)
         widgets.append((unit_label, unit_combo, unit_help))
 
-        block_explorers = ['Blockchain.info', 'Blockr.io', 'Insight.is', "Blocktrail.com"]
+        block_explorers = self.block_explorers.keys()
+#        block_explorers = ['Blockchain.info', 'Blockr.io', 'Insight.is', "Blocktrail.com"]
         block_ex_label = QLabel(_('Online Block Explorer') + ':')
         block_ex_combo = QComboBox()
         block_ex_combo.addItems(block_explorers)
-        block_ex_combo.setCurrentIndex(block_explorers.index(self.config.get('block_explorer', 'Blockchain.info')))
+        block_ex_combo.setCurrentIndex(block_explorers.index(self.config.get('block_explorer', block_explorers[0])))
         block_ex_help = HelpButton(_('Choose which online block explorer to use for functions that open a web browser'))
         def on_be(x):
             be_result = block_explorers[block_ex_combo.currentIndex()]
