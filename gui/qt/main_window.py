@@ -41,6 +41,7 @@ from chainkey import mnemonic
 from chainkey import util, bitcoin, commands, Interface, Wallet
 from chainkey import SimpleConfig, Wallet, WalletStorage
 from chainkey import Imported_Wallet
+import chainkey.chainparams
 
 from amountedit import AmountEdit, BTCAmountEdit, MyLineEdit
 from network_dialog import NetworkDialog
@@ -319,6 +320,7 @@ class ElectrumWindow(QMainWindow):
         wallet_menu = menubar.addMenu(_("&Wallet"))
         wallet_menu.addAction(_("&New contact"), self.new_contact_dialog)
         self.new_account_menu = wallet_menu.addAction(_("&New account"), self.new_account_dialog)
+        wallet_menu.addAction(_("Change currency"), self.do_change_currency)
 
         wallet_menu.addSeparator()
 
@@ -1746,6 +1748,26 @@ class ElectrumWindow(QMainWindow):
         d.run()
         self.update_lock_icon()
 
+    def change_currency_dialog(self):
+        d = QDialog(self)
+        d.setWindowTitle(_("Change Currency"))
+        main_layout = QVBoxLayout()
+
+        chains_list = sorted(chainkey.chainparams._known_chain_codes)
+        combobox = QComboBox()
+        for c in chains_list:
+            combobox.addItem(c)
+        combobox.setCurrentIndex(0)
+
+        main_layout.addWidget(combobox)
+        main_layout.addLayout(ok_cancel_buttons(d))
+        d.setLayout(main_layout)
+
+        if not d.exec_(): return
+        return str(combobox.currentText())
+
+    def do_change_currency(self):
+        chaincode = self.change_currency_dialog()
 
     def new_contact_dialog(self):
 
