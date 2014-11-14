@@ -770,10 +770,6 @@ class Transaction:
 
 
     def add_pubkey_addresses(self, txlist):
-        try:
-            addr_type = self.chain.p2pkh_version
-        except:
-            addr_type = 0
         for i in self.inputs:
             if i.get("address") == "(pubkey)":
                 prev_tx = txlist.get(i.get('prevout_hash'))
@@ -785,16 +781,12 @@ class Transaction:
 
     def get_outputs(self):
         """convert pubkeys to addresses"""
-        try:
-            addr_type = self.chain.p2pkh_version
-        except:
-            addr_type = 0
         o = []
         for type, x, v in self.outputs:
             if type == 'address':
                 addr = x
             elif type == 'pubkey':
-                addr = public_key_to_bc_address(x.decode('hex'), addr_type)
+                addr = public_key_to_bc_address(x.decode('hex'), self.chain.p2pkh_version)
             elif type == 'op_return':
                 try:
                     addr = 'OP_RETURN: "' + x.decode('utf8') + '"'
