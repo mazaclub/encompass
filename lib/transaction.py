@@ -322,7 +322,8 @@ def x_to_xpub(x_pubkey):
 
 
 
-def parse_xpub(x_pubkey, addr_type=0):
+def parse_xpub(x_pubkey):
+    active_chain = chainparams.get_active_chain()
     if x_pubkey[0:2] in ['02','03','04']:
         pubkey = x_pubkey
     elif x_pubkey[0:2] == 'ff':
@@ -337,15 +338,15 @@ def parse_xpub(x_pubkey, addr_type=0):
         addrtype = ord(x_pubkey[2:4].decode('hex'))
         hash160 = x_pubkey[4:].decode('hex')
         pubkey = None
-        address = hash_160_to_bc_address(hash160, addrtype)
+        address = hash_160_to_bc_address(hash160, active_chain.p2pkh_version)
     else:
         raise BaseException("Cannnot parse pubkey")
     if pubkey:
-        address = public_key_to_bc_address(pubkey.decode('hex'), addr_type)
+        address = public_key_to_bc_address(pubkey.decode('hex'), active_chain.p2pkh_version)
     return pubkey, address
 
 
-def parse_scriptSig(d, bytes, addr_type = 0):
+def parse_scriptSig(d, bytes):
     try:
         decoded = [ x for x in script_GetOp(bytes) ]
     except Exception:
@@ -373,7 +374,7 @@ def parse_scriptSig(d, bytes, addr_type = 0):
         x_pubkey = decoded[1][1].encode('hex')
         try:
             signatures = parse_sig([sig])
-            pubkey, address = parse_xpub(x_pubkey, addr_type)
+            pubkey, address = parse_xpub(x_pubkey)
         except:
             import traceback
             traceback.print_exc(file=sys.stdout)
@@ -420,8 +421,9 @@ def parse_scriptSig(d, bytes, addr_type = 0):
 
 
 
-def get_address_from_output_script(bytes, addr_type=0):
+def get_address_from_output_script(bytes):
     decoded = [ x for x in script_GetOp(bytes) ]
+    active_chain = chainparams.get_active_chain()
 
     # The Genesis Block, self-payments, and pay-by-IP-address payments look like:
     # 65 BYTES:... CHECKSIG
@@ -433,12 +435,12 @@ def get_address_from_output_script(bytes, addr_type=0):
     # DUP HASH160 20 BYTES:... EQUALVERIFY CHECKSIG
     match = [ opcodes.OP_DUP, opcodes.OP_HASH160, opcodes.OP_PUSHDATA4, opcodes.OP_EQUALVERIFY, opcodes.OP_CHECKSIG ]
     if match_decoded(decoded, match):
-        return 'address', hash_160_to_bc_address(decoded[2][1], addr_type)
+        return 'address', hash_160_to_bc_address(decoded[2][1], active_chain.p2pkh_version)
 
     # p2sh
     match = [ opcodes.OP_HASH160, opcodes.OP_PUSHDATA4, opcodes.OP_EQUAL ]
     if match_decoded(decoded, match):
-        return 'address', hash_160_to_bc_address(decoded[1][1],5)
+        return 'address', hash_160_to_bc_address(decoded[1][1], active_chain.p2sh_version)
 
     # OP_RETURN
     match = [ opcodes.OP_RETURN, opcodes.OP_PUSHDATA4 ]
@@ -451,7 +453,7 @@ def get_address_from_output_script(bytes, addr_type=0):
 
 
 
-def parse_input(vds, addr_type = 0):
+def parse_input(vds):
     d = {}
     prevout_hash = hash_encode(vds.read_bytes(32))
     prevout_n = vds.read_uint32()
@@ -468,30 +470,30 @@ def parse_input(vds, addr_type = 0):
         d['signatures'] = {}
         d['address'] = None
         if scriptSig:
-            parse_scriptSig(d, scriptSig, addr_type)
+            parse_scriptSig(d, scriptSig)
     return d
 
 
-def parse_output(vds, i, addr_type=0):
+def parse_output(vds, i):
     d = {}
     d['value'] = vds.read_int64()
     scriptPubKey = vds.read_bytes(vds.read_compact_size())
-    d['type'], d['address'] = get_address_from_output_script(scriptPubKey, addr_type)
+    d['type'], d['address'] = get_address_from_output_script(scriptPubKey)
     d['scriptPubKey'] = scriptPubKey.encode('hex')
     d['prevout_n'] = i
     return d
 
 
-def deserialize(raw, addr_type=0):
+def deserialize(raw):
     vds = BCDataStream()
     vds.write(raw.decode('hex'))
     d = {}
     start = vds.read_cursor
     d['version'] = vds.read_int32()
     n_vin = vds.read_compact_size()
-    d['inputs'] = list(parse_input(vds, addr_type) for i in xrange(n_vin))
+    d['inputs'] = list(parse_input(vds) for i in xrange(n_vin))
     n_vout = vds.read_compact_size()
-    d['outputs'] = list(parse_output(vds,i, addr_type) for i in xrange(n_vout))
+    d['outputs'] = list(parse_output(vds,i) for i in xrange(n_vout))
     d['lockTime'] = vds.read_uint32()
     return d
 
@@ -510,21 +512,17 @@ class Transaction:
         self.outputs = outputs
         self.locktime = locktime
         self.raw = None
-        self.chain = None
+        self.chain = chainparams.get_active_chain()
 
     @classmethod
-    def deserialize(klass, raw, active_chain=None):
+    def deserialize(klass, raw):
         self = klass([],[])
-        self.chain = active_chain
+        self.chain = chainparams.get_active_chain()
         self.update(raw)
         return self
 
     def update(self, raw):
-        try:
-            version_byte = self.chain.p2pkh_version
-        except:
-            version_byte = 0
-        d = deserialize(raw, version_byte)
+        d = deserialize(raw)
         self.raw = raw
         self.inputs = d['inputs']
         self.outputs = map(lambda x: (x['type'], x['address'], x['value']), d['outputs'])
@@ -588,8 +586,8 @@ class Transaction:
 
 
     @classmethod
-    def pay_script(self, type, addr, active_chain = None):
-        self.chain = active_chain
+    def pay_script(self, type, addr):
+        self.chain = chainparams.get_active_chain()
         if type == 'op_return':
             h = addr.encode('hex')
             return '6a' + push_script(h)
@@ -666,7 +664,7 @@ class Transaction:
                     script += push_script(redeem_script)
 
             elif for_sig==i:
-                script = txin['redeemScript'] if p2sh else self.pay_script('address', address, self.chain)
+                script = txin['redeemScript'] if p2sh else self.pay_script('address', address)
             else:
                 script = ''
 
@@ -678,7 +676,7 @@ class Transaction:
         for output in outputs:
             type, addr, amount = output
             s += int_to_hex( amount, 8)                              # amount
-            script = self.pay_script(type, addr, self.chain)
+            script = self.pay_script(type, addr)
             s += var_int( len(script)/2 )                           #  script length
             s += script                                             #  script
         s += int_to_hex(0,4)                                        #  lock time

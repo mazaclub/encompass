@@ -11,6 +11,8 @@ import chains
 #   module_name: Name of the module containing specifics on the cryptocur
 #   class_name: Name of the class implementing the cryptocur
 
+active_chain = None
+
 ChainParams = namedtuple('ChainParams', ('chain_index', 'code', 'module_name', 'class_name'))
 
 _known_chains = (
@@ -24,6 +26,14 @@ _known_chains = (
 _known_chain_dict = dict((i.code, i) for i in _known_chains)
 
 _known_chain_codes = [i.code for i in _known_chains]
+
+def get_active_chain():
+    global active_chain
+    return active_chain
+
+def set_active_chain(chaincode):
+    global active_chain
+    active_chain = get_chain_instance(chaincode)
 
 def is_known_chain(code):
     code = code.upper()

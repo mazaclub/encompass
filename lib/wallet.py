@@ -239,11 +239,10 @@ class Abstract_Wallet(object):
         tx_list = self.storage.get('transactions',{})
         for k, raw in tx_list.items():
             try:
-                tx = Transaction.deserialize(raw, self.active_chain)
+                tx = Transaction.deserialize(raw)
             except Exception:
                 print_msg("Warning: Cannot deserialize transactions. skipping")
                 continue
-            tx.chain = self.active_chain
             self.add_pubkey_addresses(tx)
             self.transactions[k] = tx
         for h,tx in self.transactions.items():
@@ -459,7 +458,6 @@ class Abstract_Wallet(object):
 
     def update_tx_outputs(self, tx_hash):
         tx = self.transactions.get(tx_hash)
-        tx.chain = self.active_chain
 
         for i, (addr, value) in enumerate(tx.get_outputs()):
             key = tx_hash+ ':%d'%i
@@ -481,7 +479,6 @@ class Abstract_Wallet(object):
             tx = self.transactions.get(tx_hash)
             if not tx: continue
 
-            tx.chain = self.active_chain
             for i, (addr, value) in enumerate(tx.get_outputs()):
                 if addr == address:
                     key = tx_hash + ':%d'%i
@@ -553,7 +550,6 @@ class Abstract_Wallet(object):
             for tx_hash, tx_height in h:
                 tx = self.transactions.get(tx_hash)
                 if tx is None: raise Exception("Wallet not synchronized")
-                tx.chain = self.active_chain
                 is_coinbase = tx.inputs[0].get('prevout_hash') == '0'*64
                 for i, (address, value) in enumerate(tx.get_outputs()):
                     output = {'address':address, 'value':value, 'prevout_n':i}
@@ -595,7 +591,6 @@ class Abstract_Wallet(object):
 
     def receive_tx_callback(self, tx_hash, tx, tx_height):
 
-        tx.chain = self.active_chain
         with self.transaction_lock:
             self.add_pubkey_addresses(tx)
             if not self.check_new_tx(tx_hash, tx):
@@ -717,7 +712,6 @@ class Abstract_Wallet(object):
         return tx.get_fee()
 
     def estimated_fee(self, tx):
-        tx.chain = self.active_chain
         estimated_size = len(tx.serialize(-1))/2
         fee = int(self.fee_per_kb*estimated_size/1000.)
         if fee < MIN_RELAY_TX_FEE: # and tx.requires_fee(self.verifier):
@@ -745,7 +739,6 @@ class Abstract_Wallet(object):
         total = fee = 0
         inputs = []
         tx = Transaction(inputs, outputs)
-        tx.chain = self.active_chain
         for item in coins:
             if item.get('coinbase') and item.get('height') + COINBASE_MATURITY > self.network.get_local_height():
                 continue
@@ -824,7 +817,6 @@ class Abstract_Wallet(object):
     def sign_transaction(self, tx, password):
         if self.is_watching_only():
             return
-        tx.chain = self.active_chain
         # check that the password is correct. This will raise if it's not.
         self.check_password(password)
         keypairs = {}
@@ -924,7 +916,6 @@ class Abstract_Wallet(object):
             for tx_hash, height in hist:
                 tx = self.transactions.get(tx_hash)
                 if not tx: continue
-                tx.chain = self.active_chain
                 if not tx.has_address(addr):
                     return False
 

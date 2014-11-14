@@ -101,6 +101,7 @@ class SimpleConfig(object):
             return False
         with self.lock:
             self.user_config['active_chain_code'] = value
+            chainparams.set_active_chain(value)
             # Make an empty dict if nothing is there
             if self.user_config.get(value, None) is None:
                 self.user_config[value] = {}
@@ -198,5 +199,5 @@ def read_user_config(path):
 
         if not type(result) is dict:
             return {}
-
+    chainparams.set_active_chain(result['active_chain_code'])
     return result
