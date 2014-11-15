@@ -21,11 +21,11 @@ from bitcoin import *
 from i18n import _
 from transaction import Transaction, is_extended_pubkey
 from util import print_msg
-
+import chainparams
 
 class Account(object):
     def __init__(self, v):
-        self.p2pkh_version       = v.get('p2pkh', 0)
+        self.active_chain = chainparams.get_active_chain()
         self.receiving_pubkeys   = v.get('receiving', [])
         self.change_pubkeys      = v.get('change', [])
         # addresses will not be stored on disk
@@ -65,7 +65,7 @@ class Account(object):
         return address
 
     def pubkeys_to_address(self, pubkey):
-        return public_key_to_bc_address(pubkey.decode('hex'), self.p2pkh_version)
+        return public_key_to_bc_address(pubkey.decode('hex'), self.active_chain.p2pkh_version)
 
     def has_change(self):
         return True
@@ -204,7 +204,7 @@ class OldAccount(Account):
 
     def get_address(self, for_change, n):
         pubkey = self.get_pubkey(for_change, n)
-        address = public_key_to_bc_address( pubkey.decode('hex') )
+        address = public_key_to_bc_address( pubkey.decode('hex'), self.active_chain.p2pkh_version )
         return address
 
     @classmethod
