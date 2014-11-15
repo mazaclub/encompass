@@ -126,7 +126,10 @@ class WalletStorage(object):
             return v
 
     def get(self, key, default=None):
-        active_chain_code = self.config.get_active_chain_code()
+        try:
+            active_chain_code = self.config.get_active_chain_code()
+        except:
+            active_chain_code = chainparams.get_active_chain().code
         with self.lock:
             v = self.data[active_chain_code].get(key)
             if v is None:
@@ -157,7 +160,11 @@ class WalletStorage(object):
             json.dumps(value)
         except:
             print_error("json error: cannot save", key)
-        active_chain_code = self.config.get_active_chain_code()
+
+        try:
+            active_chain_code = self.config.get_active_chain_code()
+        except:
+            active_chain_code = chainparams.get_active_chain().code
         with self.lock:
             if value is not None:
                 self.data[active_chain_code][key] = copy.deepcopy(value)
@@ -186,7 +193,10 @@ class Abstract_Wallet(object):
         self.electrum_version = ELECTRUM_VERSION
         self.gap_limit_for_change = 3 # constant
         # saved fields
-        self.active_chain_code     = storage.config.get_active_chain_code()
+        try:
+            self.active_chain_code     = storage.config.get_active_chain_code()
+        except:
+            self.active_chain_code = chainparams.get_active_chain().code
         self.active_chain          = chainparams.get_chain_instance(self.active_chain_code)
         self.seed_version          = storage.get_above_chain('seed_version', NEW_SEED_VERSION)
         self.use_change            = storage.get('use_change',True)
@@ -1502,7 +1512,11 @@ class NewWallet(BIP32_HD_Wallet, Mnemonic):
     wallet_type = 'standard'
 
     def __init__(self, storage):
-        chain_code = storage.config.get_active_chain_code()
+        try:
+            chain_code = storage.config.get_active_chain_code()
+        except:
+            chain_code = chainparams.get_active_chain().code
+
         chain_index = chainparams.get_chain_index(chain_code)
         self.root_derivation = "m/44'/{}'".format(chain_index)
         BIP32_HD_Wallet.__init__(self, storage)

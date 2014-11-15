@@ -29,7 +29,8 @@ class Blockchain(threading.Thread):
         self.daemon = True
         self.config = config
 
-        self.set_active_chain()
+        self.active_chain = chainparams.get_active_chain()
+        self.chunk_size = self.active_chain.chunk_size
 
         self.network = network
         self.lock = threading.Lock()
@@ -40,10 +41,6 @@ class Blockchain(threading.Thread):
         self.set_local_height()
         self.queue = Queue.Queue()
 
-    def set_active_chain(self):
-        self.active_chain_code = self.config.get_active_chain_code()
-        self.active_chain = chainparams.get_chain_instance(self.active_chain_code)
-        self.chunk_size = self.active_chain.chunk_size
 
     def height(self):
         return self.local_height
@@ -198,7 +195,7 @@ class Blockchain(threading.Thread):
 #        return rev_hex(Hash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def path(self):
-        headers_file_name = '_'.join(['blockchain_headers', self.active_chain_code.lower()])
+        headers_file_name = '_'.join(['blockchain_headers', self.active_chain.code.lower()])
         return os.path.join( self.config.path, headers_file_name)
 
     def init_headers_file(self):

@@ -199,5 +199,5 @@ def read_user_config(path):
 
         if not type(result) is dict:
             return {}
-    chainparams.set_active_chain(result['active_chain_code'])
+    chainparams.set_active_chain(result.get('active_chain_code', 'BTC'))
     return result
