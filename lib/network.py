@@ -27,11 +27,14 @@ DEFAULT_SERVERS = {
 DISCONNECTED_RETRY_INTERVAL = 60
 
 
-def parse_servers(result, defaultports = None):
+def parse_servers(result):
     """ parse servers list into dict format"""
     from version import PROTOCOL_VERSION
     servers = {}
-    if defaultports is None: defaultports = DEFAULT_PORTS
+    try:
+        defaultports = chainparams.get_active_chain().DEFAULT_PORTS
+    except:
+        defaultports = DEFAULT_PORTS
     for item in result:
         host = item[1]
         out = {}
@@ -69,8 +72,11 @@ def filter_protocol(servers, p):
     return l
 
 
-def pick_random_server(p='s', servers=None):
-    if servers is None: servers = DEFAULT_SERVERS
+def pick_random_server(p='s'):
+    try:
+        servers = chainparams.get_active_chain().DEFAULT_SERVERS
+    except:
+        servers = DEFAULT_SERVERS
     return random.choice( filter_protocol(servers,p) )
 
 from simple_config import SimpleConfig
@@ -86,7 +92,8 @@ class Network(threading.Thread):
         self.daemon = True
         self.config = SimpleConfig(config) if type(config) == type({}) else config
 
-        self.set_active_chain()
+        self.active_chain = chainparams.get_active_chain()
+        self.default_servers = self.active_chain.DEFAULT_SERVERS
 
         self.lock = threading.Lock()
         self.num_server = 8 if not self.config.get('oneserver') else 0
@@ -99,7 +106,7 @@ class Network(threading.Thread):
         # Server for addresses and transactions
         self.default_server = self.config.get('server')
         if not self.default_server:
-            self.default_server = pick_random_server(self.protocol, self.default_servers)
+            self.default_server = pick_random_server(self.protocol)
 
         self.irc_servers = {} # returned by interface (list from irc)
 
@@ -125,12 +132,6 @@ class Network(threading.Thread):
         self.connection_status = 'connecting'
         self.requests_queue = Queue.Queue()
 
-
-    def set_active_chain(self):
-        self.active_chain_code = self.config.get_active_chain_code()
-        self.active_chain = chainparams.get_chain_instance(self.active_chain_code)
-        self.default_servers = self.active_chain.DEFAULT_SERVERS
-        self.default_ports = self.active_chain.DEFAULT_PORTS
 
     def get_server_height(self):
         return self.heights.get(self.default_server,0)
@@ -469,7 +470,7 @@ class Network(threading.Thread):
 
     def on_peers(self, i, r):
         if not r: return
-        self.irc_servers = parse_servers(r.get('result'), self.default_ports)
+        self.irc_servers = parse_servers(r.get('result'))
         self.notify('servers')
 
     def on_banner(self, i, r):
