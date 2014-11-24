@@ -164,6 +164,7 @@ class ElectrumWindow(QMainWindow):
         self.connect(self, QtCore.SIGNAL('transaction_signal'), lambda: self.notify_transactions() )
         self.connect(self, QtCore.SIGNAL('payment_request_ok'), self.payment_request_ok)
         self.connect(self, QtCore.SIGNAL('payment_request_error'), self.payment_request_error)
+        self.connect(self, QtCore.SIGNAL('change_currency'), self.change_currency)
         self.labelsChanged.connect(self.update_tabs)
 
         self.history_list.setFocus(True)
@@ -329,7 +330,7 @@ class ElectrumWindow(QMainWindow):
         wallet_menu = menubar.addMenu(_("&Wallet"))
         wallet_menu.addAction(_("&New contact"), self.new_contact_dialog)
         self.new_account_menu = wallet_menu.addAction(_("&New account"), self.new_account_dialog)
-        wallet_menu.addAction(_("Change currency"), self.do_change_currency)
+        wallet_menu.addAction(_("Change currency"), self.change_currency_dialog)
 
         wallet_menu.addSeparator()
 
@@ -1777,10 +1778,32 @@ class ElectrumWindow(QMainWindow):
         d.setLayout(main_layout)
 
         if not d.exec_(): return
-        return str(combobox.currentText())
+        chaincode = str(combobox.currentText())
+        self.emit(QtCore.SIGNAL('change_currency'), chaincode)
 
-    def do_change_currency(self):
-        chaincode = self.change_currency_dialog()
+    def change_currency(self, chaincode):
+        import installwizard
+        print("--\nChange currency to {}...".format(chaincode))
+        self.close_wallet()
+        time.sleep(0.3)
+        self.config.set_active_chain_code(chaincode)
+        self.network.switch_to_active_chain()
+        time.sleep(1)
+        print("Network switched to active chain")
+        storage = WalletStorage(self.config)
+#        wallet = Wallet(storage)
+#        wallet.start_threads(self.network)
+#        print('Wallet threads started')
+        
+#        self.load_wallet(wallet)
+        wizard = installwizard.InstallWizard(self.config, self.network, storage)
+        wallet = wizard.run('asdf')
+##        if wallet is None:
+##            print("Change currency: Wallet is NONE")
+##            wallet = Wallet(storage)
+##            wallet.start_threads(self.network)
+
+        self.load_wallet(wallet)
 
     def new_contact_dialog(self):
 

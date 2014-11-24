@@ -70,6 +70,39 @@ class NetworkProxy(threading.Thread):
         self.server_height = 0
         self.interfaces = []
 
+    def switch_to_active_chain(self):
+#        print("\nNetworkProxy switch to active chain, waiting for lock")
+        with self.lock:
+#            print(" Got lock")
+            self.message_id = 0
+            self.unanswered_requests = {}
+            self.subscriptions = {}
+            self.pending_transactions_for_notifications = []
+#            print(" Stopping current network")
+            self.network.stop()
+            time.sleep(0.3)
+
+            self.network = Network(self.config)
+#            print(" Set new network")
+            self.pipe = util.QueuePipe(send_queue=self.network.requests_queue)
+            self.network.start(self.pipe.get_queue)
+#            print(" Started new network")
+
+            self.status = 'connecting'
+            self.servers = {}
+            self.banner = ''
+            self.blockchain_height = 0
+            self.server_height = 0
+            self.interfaces = []
+
+            for key in ['status','banner','updated','servers','interfaces']:
+                value = self.network.get_status_value(key)
+                self.pipe.get_queue.put({'method':'network.status', 'params':[key, value]})
+
+
+        print("Switched active chain")
+
+
     def is_running(self):
         return self.running
 
