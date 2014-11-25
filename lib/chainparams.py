@@ -21,6 +21,9 @@ _known_chains = (
 
     # Mazacoin
     ChainParams(1, 'MZC', 'mazacoin', 'Mazacoin'),
+
+    # Litecoin
+    ChainParams(2, 'LTC', 'litecoin', 'Litecoin'),
 )
 
 _known_chain_dict = dict((i.code, i) for i in _known_chains)
@@ -77,4 +80,7 @@ def get_chain_instance(code):
     elif module_name == 'mazacoin':
         import chains.mazacoin
         class_instance = chains.mazacoin.Mazacoin()
+    elif module_name == 'litecoin':
+        import chains.litecoin
+        class_instance = chains.litecoin.Litecoin()
     return class_instance
