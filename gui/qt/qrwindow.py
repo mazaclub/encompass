@@ -43,7 +43,7 @@ class QR_Window(QWidget):
     def __init__(self, win):
         QWidget.__init__(self)
         self.win = win
-        self.setWindowTitle('Electrum - '+_('Invoice'))
+        self.setWindowTitle('Encompass - '+_('Invoice'))
         self.setMinimumSize(800, 250)
         self.address = ''
         self.label = ''
