@@ -1783,21 +1783,28 @@ class ElectrumWindow(QMainWindow):
 
     def change_currency(self, chaincode):
         import installwizard
-        print("--\nChange currency to {}...".format(chaincode))
+#        print("--\nChange currency to {}...".format(chaincode))
         self.close_wallet()
         time.sleep(0.3)
         self.config.set_active_chain_code(chaincode)
         self.network.switch_to_active_chain()
         time.sleep(1)
-        print("Network switched to active chain")
+        print_error("Network switched to active chain: {}".format(chaincode))
         storage = WalletStorage(self.config)
+        wallet_filepath = self.wallet.storage.path
 #        wallet = Wallet(storage)
 #        wallet.start_threads(self.network)
 #        print('Wallet threads started')
         
 #        self.load_wallet(wallet)
-        wizard = installwizard.InstallWizard(self.config, self.network, storage)
-        wallet = wizard.run('asdf')
+        storage.config.set_key('wallet_path', wallet_filepath)
+        wallet = Wallet(storage)
+        needed_action = wallet.get_action()
+        if needed_action is not None:
+            wizard = installwizard.InstallWizard(self.config, self.network, storage)
+            wallet = wizard.run(needed_action)
+        else:
+            wallet.start_threads(self.network)
 ##        if wallet is None:
 ##            print("Change currency: Wallet is NONE")
 ##            wallet = Wallet(storage)
