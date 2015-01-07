@@ -26,8 +26,8 @@ data_files = []
 if (len(sys.argv) > 1 and (sys.argv[1] == "sdist")) or (platform.system() != 'Windows' and platform.system() != 'Darwin'):
     print "Including all files"
     data_files += [
-        (os.path.join(usr_share, 'applications/'), ['chainkey.desktop']),
-        (os.path.join(usr_share, 'app-install', 'icons/'), ['icons/chainkey.png'])
+        (os.path.join(usr_share, 'applications/'), ['encompass.desktop']),
+        (os.path.join(usr_share, 'app-install', 'icons/'), ['icons/encompass.png'])
     ]
     if not os.path.exists('locale'):
         os.mkdir('locale')
@@ -35,7 +35,7 @@ if (len(sys.argv) > 1 and (sys.argv[1] == "sdist")) or (platform.system() != 'Wi
         if os.path.exists('locale/%s/LC_MESSAGES/electrum.mo' % lang):
             data_files.append((os.path.join(usr_share, 'locale/%s/LC_MESSAGES' % lang), ['locale/%s/LC_MESSAGES/electrum.mo' % lang]))
 
-appdata_dir = os.path.join(usr_share, "chainkey")
+appdata_dir = os.path.join(usr_share, "encompass")
 
 data_files += [
     (appdata_dir, ["data/README"]),
@@ -58,7 +58,7 @@ for lang in os.listdir('data/wordlist'):
 
 
 setup(
-    name="Chainkey",
+    name="Encompass",
     version=version.ELECTRUM_VERSION,
     install_requires=[
         'slowaes',
@@ -76,7 +76,7 @@ setup(
         'chainkey_gui': 'gui',
         'chainkey_plugins': 'plugins',
     },
-    scripts=['chainkey'],
+    scripts=['encompass'],
     data_files=data_files,
     py_modules=[
         'chainkey.account',

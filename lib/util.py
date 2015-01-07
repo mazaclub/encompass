@@ -43,13 +43,13 @@ def print_json(obj):
 
 def user_dir():
     if "HOME" in os.environ:
-        return os.path.join(os.environ["HOME"], ".chainkey")
+        return os.path.join(os.environ["HOME"], ".encompass")
     elif "APPDATA" in os.environ:
-        return os.path.join(os.environ["APPDATA"], "Chainkey")
+        return os.path.join(os.environ["APPDATA"], "Encompass")
     elif "LOCALAPPDATA" in os.environ:
-        return os.path.join(os.environ["LOCALAPPDATA"], "Chainkey")
+        return os.path.join(os.environ["LOCALAPPDATA"], "Encompass")
     elif 'ANDROID_DATA' in os.environ:
-        return "/sdcard/chainkey/"
+        return "/sdcard/encompass/"
     else:
         #raise Exception("No home directory found in environment variables.")
         return
@@ -66,17 +66,17 @@ def usr_share_dir():
     return os.path.join(sys.prefix, "share")
 
 def appdata_dir():
-    """Find the path to the application data directory; add an electrum folder and return path."""
+    """Find the path to the application data directory; add an encompass folder and return path."""
     if platform.system() == "Windows":
-        return os.path.join(os.environ["APPDATA"], "Chainkey")
+        return os.path.join(os.environ["APPDATA"], "Encompass")
     elif platform.system() == "Linux":
-        return os.path.join(usr_share_dir(), "chainkey")
+        return os.path.join(usr_share_dir(), "encompass")
     elif (platform.system() == "Darwin" or
           platform.system() == "DragonFly" or
           platform.system() == "OpenBSD" or
           platform.system() == "FreeBSD" or
 	  platform.system() == "NetBSD"):
-        return "/Library/Application Support/Chainkey"
+        return "/Library/Application Support/Encompass"
     else:
         raise Exception("Unknown system")
 
