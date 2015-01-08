@@ -19,11 +19,11 @@ _known_chains = (
     # Bitcoin
     ChainParams(0, 'BTC', 'bitcoin', 'Bitcoin'),
 
-    # Mazacoin
-    ChainParams(1, 'MZC', 'mazacoin', 'Mazacoin'),
-
     # Litecoin
     ChainParams(2, 'LTC', 'litecoin', 'Litecoin'),
+
+    # Mazacoin
+    ChainParams(13, 'MZC', 'mazacoin', 'Mazacoin'),
 )
 
 _known_chain_dict = dict((i.code, i) for i in _known_chains)
