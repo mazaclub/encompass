@@ -4,6 +4,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from decimal import Decimal
+import chainkey.chainparams
 
 class MyLineEdit(QLineEdit):
     frozen = pyqtSignal()
@@ -70,14 +71,12 @@ class BTCAmountEdit(AmountEdit):
         self.decimal_point = decimal_point
 
     def _base_unit(self):
+        base_units = chainkey.chainparams.get_active_chain().base_units
         p = self.decimal_point()
-        assert p in [2, 5, 8]
-        if p == 8:
-            return 'BTC'
-        if p == 5:
-            return 'mBTC'
-        if p == 2:
-            return 'bits'
+        assert p in base_units.values()
+        for k,v in base_units.iteritems():
+            if v == p:
+                return k
         raise Exception('Unknown base unit')
 
     def get_amount(self):
