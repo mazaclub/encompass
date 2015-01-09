@@ -2,13 +2,13 @@
 # sudo desktop-file-install electrum.desktop
 
 [Desktop Entry]
-Comment=Lightweight Bitcoin Client
-Exec=electrum %u
-GenericName[en_US]=Electrum
-GenericName=Electrum
-Icon=/usr/share/app-install/icons/electrum.png
-Name[en_US]=Electrum Bitcoin Wallet
-Name=Electrum Bitcoin Wallet
+Comment=Lightweight Multi-Coin Client
+Exec=encompass %u
+GenericName[en_US]=Encompass
+GenericName=Encompass
+Icon=/usr/share/app-install/icons/encompass.png
+Name[en_US]=Encompass Multi-Coin Wallet
+Name=Encompass Multi-Coin Wallet
 Categories=Network;
 StartupNotify=false
 Terminal=false

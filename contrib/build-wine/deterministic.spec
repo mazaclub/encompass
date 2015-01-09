@@ -1,7 +1,7 @@
 # -*- mode: python -*-
 
 # We don't put these files in to actually include them in the script but to make the Analysis method scan them for imports
-a = Analysis(['electrum', 'gui/qt/main_window.py', 'gui/qt/lite_window.py', 'gui/text.py',
+a = Analysis(['encompass', 'gui/qt/main_window.py', 'gui/qt/lite_window.py', 'gui/text.py',
               'lib/util.py', 'lib/wallet.py', 'lib/simple_config.py',
               'lib/bitcoin.py'
               ],
@@ -45,13 +45,13 @@ exe = EXE(pyz,
           a.scripts,
           a.binaries,
           a.datas,
-          name=os.path.join('build\\pyi.win32\\electrum', 'electrum.exe'),
+          name=os.path.join('build\\pyi.win32\\encompass', 'encompass.exe'),
           debug=False,
           strip=None,
           upx=False,
-          icon='icons/electrum.ico',
+          icon='icons/encompass.ico',
           console=False)
-          # The console True makes an annoying black box pop up, but it does make Electrum output command line commands, with this turned off no output will be given but commands can still be used
+          # The console True makes an annoying black box pop up, but it does make Encompass output command line commands, with this turned off no output will be given but commands can still be used
 
 coll = COLLECT(exe,
                a.binaries,
@@ -60,6 +60,6 @@ coll = COLLECT(exe,
                strip=None,
                upx=True,
                debug=False,
-               icon='icons/electrum.ico',
+               icon='icons/encompass.ico',
                console=False,
-               name=os.path.join('dist', 'electrum'))
+               name=os.path.join('dist', 'encompass'))

@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # You probably need to update only this link
-ELECTRUM_GIT_URL=git://github.com/spesmilo/electrum.git
+ELECTRUM_GIT_URL=git://github.com/mazaclub/encompass.git
 BRANCH=master
-NAME_ROOT=electrum
+NAME_ROOT=encompass
 
 # These settings probably don't need any change
-export WINEPREFIX=/opt/wine-electrum
+export WINEPREFIX=/opt/wine-encompass
 PYHOME=c:/python26
 PYTHON="wine $PYHOME/python.exe -OO -B"
 
@@ -16,11 +16,11 @@ set -e
 
 cd tmp
 
-if [ -d "electrum-git" ]; then
+if [ -d "encompass-git" ]; then
     # GIT repository found, update it
     echo "Pull"
 
-    cd electrum-git
+    cd encompass-git
     git pull
     cd ..
 
@@ -28,31 +28,31 @@ else
     # GIT repository not found, clone it
     echo "Clone"
 
-    git clone -b $BRANCH $ELECTRUM_GIT_URL electrum-git
+    git clone -b $BRANCH $ELECTRUM_GIT_URL encompass-git
 fi
 
-cd electrum-git
+cd encompass-git
 COMMIT_HASH=`git rev-parse HEAD | awk '{ print substr($1, 0, 11) }'`
 echo "Last commit: $COMMIT_HASH"
 cd ..
 
 
-rm -rf $WINEPREFIX/drive_c/electrum
-cp -r electrum-git $WINEPREFIX/drive_c/electrum
-cp electrum-git/LICENCE .
+rm -rf $WINEPREFIX/drive_c/encompass
+cp -r encompass-git $WINEPREFIX/drive_c/encompass
+cp encompass-git/LICENCE .
 
 # Build Qt resources
-wine $WINEPREFIX/drive_c/Python26/Lib/site-packages/PyQt4/pyrcc4.exe C:/electrum/icons.qrc -o C:/electrum/lib/icons_rc.py
+wine $WINEPREFIX/drive_c/Python26/Lib/site-packages/PyQt4/pyrcc4.exe C:/encompass/icons.qrc -o C:/encompass/lib/icons_rc.py
 
-# Copy ZBar libraries to electrum
-#cp "$WINEPREFIX/drive_c/Program Files (x86)/ZBar/bin/"*.dll "$WINEPREFIX/drive_c/electrum/"
+# Copy ZBar libraries to encompass
+#cp "$WINEPREFIX/drive_c/Program Files (x86)/ZBar/bin/"*.dll "$WINEPREFIX/drive_c/encompass/"
 
 cd ..
 
 rm -rf dist/
 
 # For building standalone compressed EXE, run:
-$PYTHON "C:/pyinstaller/pyinstaller.py" --noconfirm --ascii -w --onefile "C:/electrum/electrum"
+$PYTHON "C:/pyinstaller/pyinstaller.py" --noconfirm --ascii -w --onefile "C:/encompass/encompass"
 
 # For building uncompressed directory of dependencies, run:
 $PYTHON "C:/pyinstaller/pyinstaller.py" --noconfirm --ascii -w deterministic.spec

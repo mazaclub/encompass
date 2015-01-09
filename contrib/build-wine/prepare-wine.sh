@@ -9,7 +9,7 @@ NSIS_URL=http://prdownloads.sourceforge.net/nsis/nsis-2.46-setup.exe?download
 #ZBAR_URL=http://sourceforge.net/projects/zbar/files/zbar/0.10/zbar-0.10-setup.exe/download
 
 # These settings probably don't need change
-export WINEPREFIX=/opt/wine-electrum
+export WINEPREFIX=/opt/wine-encompass
 PYHOME=c:/python26
 PYTHON="wine $PYHOME/python.exe -OO -B"
 
@@ -41,7 +41,7 @@ wine pywin32.exe
 wget -O PyQt.exe "$PYQT4_URL"
 wine PyQt.exe
 
-#cp -r /electrum-wine/pyinstaller $WINEPREFIX/drive_c/
+#cp -r /encompass-wine/pyinstaller $WINEPREFIX/drive_c/
 # Install pyinstaller
 wget -O pyinstaller.zip "$PYINSTALLER_URL"
 unzip pyinstaller.zip
