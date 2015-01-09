@@ -382,7 +382,7 @@ class ElectrumWindow(QMainWindow):
 
     def show_about(self):
         QMessageBox.about(self, "Encompass",
-            _("Version")+" %s" % (self.wallet.electrum_version) + "\n\n" + _("Encompass's focus is speed, with low resource usage and simplifying multiple-currency wallets. You do not need to perform regular backups, because your wallet can be recovered from a secret phrase that you can memorize or write on paper. Startup times are instant because it operates in conjunction with high-performance servers that handle the most complicated parts of cryptocurrency systems."))
+            _("Version")+" %s" % (self.wallet.electrum_version) + "\n\n" + _("Encompass consolidates support for various currencies into one wallet. You do not need to perform regular backups, because your wallet can be recovered from a secret phrase that you can memorize or write on paper. Startup times are instant because it operates in conjunction with high-performance servers that handle the most complicated parts of cryptocurrency systems.\nEncompass is compliant with BIP-0044, a standard for multi-currency wallet structure.\n\nBuilt from Electrum by mazaclub (Tyler Willis, Rob Nelson, et al.)"))
 
     def show_report_bug(self):
         QMessageBox.information(self, "Encompass - " + _("Reporting Bugs"),
@@ -1790,14 +1790,9 @@ class ElectrumWindow(QMainWindow):
         self.network.switch_to_active_chain()
         time.sleep(1)
         print_error("Network switched to active chain: {}".format(chaincode))
-        storage = WalletStorage(self.config)
+
         wallet_filepath = self.wallet.storage.path
-#        wallet = Wallet(storage)
-#        wallet.start_threads(self.network)
-#        print('Wallet threads started')
-        
-#        self.load_wallet(wallet)
-        storage.config.set_key('wallet_path', wallet_filepath)
+        storage = WalletStorage({'wallet_path': wallet_filepath})
         wallet = Wallet(storage)
         needed_action = wallet.get_action()
         if needed_action is not None:
@@ -1805,10 +1800,6 @@ class ElectrumWindow(QMainWindow):
             wallet = wizard.run(needed_action)
         else:
             wallet.start_threads(self.network)
-##        if wallet is None:
-##            print("Change currency: Wallet is NONE")
-##            wallet = Wallet(storage)
-##            wallet.start_threads(self.network)
 
         self.load_wallet(wallet)
 
