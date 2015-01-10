@@ -321,6 +321,31 @@ class InstallWizard(QDialog):
         self.set_layout( make_password_dialog(self, None, msg) )
         return run_password_dialog(self, None, self)[2]
 
+    def add_chain_dialog(self):
+        d = QDialog(self)
+        d.setModal(1)
+        d.setWindowTitle(_("Add Currency To Wallet"))
+
+        pw = QLineEdit()
+        pw.setEchoMode(2)
+
+        vbox = QVBoxLayout()
+        msg = _('Please enter your password to start using this currency')
+        vbox.addWidget(QLabel(msg))
+
+        grid = QGridLayout()
+        grid.setSpacing(8)
+        grid.addWidget(QLabel(_('Password')), 1, 0)
+        grid.addWidget(pw, 1, 1)
+        vbox.addLayout(grid)
+
+        vbox.addLayout(ok_cancel_buttons(d))
+        d.setLayout(vbox)
+
+        run_hook('password_dialog', pw, grid, 1)
+        if not d.exec_(): return
+        return unicode(pw.text())
+
 
 
 
@@ -372,8 +397,18 @@ class InstallWizard(QDialog):
                 wallet.create_master_keys(password)
 
             elif action == 'add_chain':
-                password = self.password_dialog()
-                wallet.create_master_keys(password)
+                if wallet.use_encryption == True:
+                    password = self.add_chain_dialog()
+                    # workaround pw_decode returning seed if no password is given
+                    if password is None:
+                        password = 'NonePass'
+                else:
+                    password = None
+                try:
+                    wallet.create_master_keys(password)
+                except Exception:
+                    QMessageBox.warning(self, _('Error'), ('Password is incorrect'), _('OK'))
+                    return
 
             elif action == 'add_cosigner':
                 xpub1 = wallet.master_public_keys.get("x1/")

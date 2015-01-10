@@ -1783,7 +1783,7 @@ class ElectrumWindow(QMainWindow):
 
     def change_currency(self, chaincode):
         import installwizard
-#        print("--\nChange currency to {}...".format(chaincode))
+        current_chain_code = chainkey.chainparams.get_active_chain().code
         self.close_wallet()
         time.sleep(0.3)
         self.config.set_active_chain_code(chaincode)
@@ -1798,6 +1798,14 @@ class ElectrumWindow(QMainWindow):
         if needed_action is not None:
             wizard = installwizard.InstallWizard(self.config, self.network, storage)
             wallet = wizard.run(needed_action)
+            # Unable to add chain (TODO: Make handling this less messy)
+            if wallet is None:
+                print_error("Adding new currency failed due to incorrect password.")
+                self.config.set_active_chain_code(current_chain_code)
+                self.network.switch_to_active_chain()
+                time.sleep(1)
+                wallet = self.wallet
+                wallet.start_threads(self.network)
         else:
             wallet.start_threads(self.network)
 
