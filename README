@@ -1,26 +1,29 @@
-Electrum - lightweight Bitcoin client
+Encompass - lightweight multi-coin client
+
+Encompass consolidates support for various currencies into one wallet. It is a BIP-0044-compliant multi-currency wallet based on Electrum. This Encompass client uses Electrum servers of supported currencies to retrieve necessary data, so no "Encompass server" is necessary.
 
 Licence: GNU GPL v3
-Author: Thomas Voegtlin
+Author: Tyler Willis
+Contributors: Thomas Voegtlin (Electrum author), mazaclub
 Language: Python
-Homepage: https://electrum.org/
+Homepage: None Yet
 
 
 1. GETTING STARTED
 ------------------
 
-To run Electrum from this directory, just do:
+To run Encompass from this directory, just do:
 
-  ./electrum
+  ./encompass
 
-If you install Electrum on your system, you can run it from any
+If you install Encompass on your system, you can run it from any
 directory:
 
   sudo python setup.py install
-  electrum
+  encompass
 
 
-To start Electrum from your web browser, see
+To start Encompass from your web browser, see
 http://electrum.org/bitcoin_URIs.html
 
 
@@ -40,6 +43,6 @@ On Mac OS X:
   # On brew installs
   ARCHFLAGS="-arch i386 -arch x86_64" sudo python setup-release.py py2app --includes sip
 
-  sudo hdiutil create -fs HFS+ -volname "Electrum" -srcfolder dist/Electrum.app dist/electrum-VERSION-macosx.dmg
+  sudo hdiutil create -fs HFS+ -volname "Encompass" -srcfolder dist/Encompass.app dist/encompass-VERSION-macosx.dmg
 
 

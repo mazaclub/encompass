@@ -100,8 +100,6 @@ class NetworkProxy(threading.Thread):
                 self.pipe.get_queue.put({'method':'network.status', 'params':[key, value]})
 
 
-        print("Switched active chain")
-
 
     def is_running(self):
         return self.running

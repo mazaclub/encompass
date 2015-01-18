@@ -382,7 +382,7 @@ class ElectrumWindow(QMainWindow):
 
     def show_about(self):
         QMessageBox.about(self, "Encompass",
-            _("Version")+" %s" % (self.wallet.electrum_version) + "\n\n" + _("Encompass consolidates support for various currencies into one wallet. You do not need to perform regular backups, because your wallet can be recovered from a secret phrase that you can memorize or write on paper. Startup times are instant because it operates in conjunction with high-performance servers that handle the most complicated parts of cryptocurrency systems.\nEncompass is compliant with BIP-0044, a standard for multi-currency wallet structure.\n\nBuilt from Electrum by mazaclub (Tyler Willis, Rob Nelson, et al.)"))
+            _("Version")+" %s" % (self.wallet.electrum_version) + "\n\n" + _("Encompass consolidates support for various currencies into one wallet. You do not need to perform regular backups, because your wallet can be recovered from a secret phrase that you can memorize or write on paper. Startup times are instant because it operates in conjunction with high-performance servers that handle the most complicated parts of cryptocurrency systems.\nEncompass is compliant with BIP-0044, a standard for multi-currency wallet structure."))
 
     def show_report_bug(self):
         QMessageBox.information(self, "Encompass - " + _("Reporting Bugs"),

@@ -13,14 +13,14 @@ version = imp.load_source('version', 'lib/version.py')
 util = imp.load_source('util', 'lib/util.py')
 
 if sys.version_info[:3] < (2, 6, 0):
-    sys.exit("Error: Electrum requires Python version >= 2.6.0...")
+    sys.exit("Error: Encompass requires Python version >= 2.6.0...")
 
 usr_share = util.usr_share_dir()
 if not os.access(usr_share, os.W_OK):
     try:
         os.mkdir(usr_share)
     except:
-        sys.exit("Error: cannot write to %s.\nIf you do not have root permissions, you may install Electrum in a virtualenv.\nAlso, please note that you can run Electrum without installing it on your system."%usr_share)
+        sys.exit("Error: cannot write to %s.\nIf you do not have root permissions, you may install Encompass in a virtualenv.\nAlso, please note that you can run Encompass without installing it on your system."%usr_share)
 
 data_files = []
 if (len(sys.argv) > 1 and (sys.argv[1] == "sdist")) or (platform.system() != 'Windows' and platform.system() != 'Darwin'):
@@ -141,10 +141,10 @@ setup(
         'chainkey_plugins.plot',
 
     ],
-    description="Lightweight Bitcoin Wallet",
-    author="Thomas Voegtlin",
-    author_email="thomasv1@gmx.de",
+    description="Lightweight Multi-Coin Wallet",
+    author="Tyler Willis",
+    author_email="kefkius@mail.com",
     license="GNU GPLv3",
-    url="https://electrum.org",
-    long_description="""Lightweight Bitcoin Wallet"""
+    url="NoneYet",
+    long_description="""Lightweight Multi-Coin Wallet for Electrum-supported coins."""
 )
