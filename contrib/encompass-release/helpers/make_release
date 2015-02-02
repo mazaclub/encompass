@@ -1,0 +1,22 @@
+#!/bin/bash -x
+VERSION="$1"
+echo "Making packages"
+mkdir -pv /root/repo
+git clone ssh://guruvan-gitlab/app-devs/encompass /root/repo
+cd /root/repo
+git checkout v$VERSION
+cp -v  /root/make_packages /root/repo/make_packages
+cd /root/repo
+mkdir ./packages
+./make_packages
+## rm just isn't that expensive to run without fancy bash expansions
+
+rm -rf /opt/wine-electrum/drive_c/encompass/Encompass-$VERSION.*
+rm -rf /opt/wine-electrum/drive_c/encompass/Encompass-$VERSION/
+rm -rf /opt/wine-electrum/drive_c/encompass/encompass-$VERSION/
+
+cp -v /root/repo/dist/Encompass-$VERSION.zip /opt/wine-electrum/drive_c/encompass
+cd /opt/wine-electrum/drive_c/encompass
+unzip Encompass-$VERSION.zip
+
+/usr/bin/build-binary $VERSION

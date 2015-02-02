@@ -3,7 +3,7 @@
 # We don't put these files in to actually include them in the script but to make the Analysis method scan them for imports
 a = Analysis(['encompass', 'gui/qt/main_window.py', 'gui/qt/lite_window.py', 'gui/text.py',
               'lib/util.py', 'lib/wallet.py', 'lib/simple_config.py',
-              'lib/bitcoin.py'
+              'lib/bitcoin.py', 'lib/interface.py'
               ],
              hiddenimports=["lib","gui"],
              pathex=['lib:gui:plugins'],
@@ -40,6 +40,16 @@ a.datas += extra_datas('gui')
 a.datas += extra_datas('lib')
 a.datas += extra_datas('plugins')
 
+# Dependencies
+a.datas += extra_datas('packages')
+a.datas += extra_datas('aes')
+a.datas += extra_datas('ecdsa')
+a.datas += extra_datas('pyasn1')
+a.datas += extra_datas('pyasn1_modules')
+a.datas += extra_datas('qrcode')
+a.datas += extra_datas('requests')
+a.datas += extra_datas('tlslite')
+
 pyz = PYZ(a.pure)
 exe = EXE(pyz,
           a.scripts,
@@ -51,7 +61,7 @@ exe = EXE(pyz,
           upx=False,
           icon='icons/encompass.ico',
           console=False)
-          # The console True makes an annoying black box pop up, but it does make Encompass output command line commands, with this turned off no output will be given but commands can still be used
+          # The console True makes an annoying black box pop up, but it does make encompass output command line commands, with this turned off no output will be given but commands can still be used
 
 coll = COLLECT(exe,
                a.binaries,

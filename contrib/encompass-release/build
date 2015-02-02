@@ -1,0 +1,83 @@
+#!/bin/bash -l
+function buildBinary(){
+  $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ mazaclub/encompass-winbuild /root/make_release $VERSION
+  if [[ $? = 0 ]]; then
+    echo "Build successful."
+  else
+    echo "Seems like the build failed. Exiting."
+    exit
+  fi
+  cp $TARGETFOLDER/dist/encompass.exe $(pwd)/releases/Enconpass-$VERSION.exe
+  cp $(pwd)/source/encompass-setup.exe $(pwd)/releases/Encompass-$VERSION-setup.exe
+  cp $(pwd)/repo/dist/* $(pwd)/releases/
+  cd releases
+  for release in * 
+  do
+    sha1sum ${release} > ${release}.sha1
+    md5sum ${release} > ${release}.md5
+    gpg --sign --armor --detach  ${release}
+    gpg --sign --armor --detach  ${release}.md5
+    gpg --sign --armor --detach  ${release}.sha1
+  done
+  echo "You can find your Encompass $VERSION binaries in the releases folder."
+
+}
+
+function buildImage(){
+  echo "Building image"
+  $DOCKERBIN build -t mazaclub/encompass-winbuild .
+}
+
+function prepareFile(){
+  echo "Preparing file for Encompass version $VERSION"
+  if [ -e "$TARGETPATH" ]; then
+    echo "Version tar already downloaded."
+  else
+   wget https://github.com/mazaclub/encompass/archive/v${VERSION}.zip -O $TARGETPATH
+  fi
+
+  if [ -d "$TARGETFOLDER" ]; then
+    echo "Version is already extracted"
+  else
+     unzip -d $(pwd)/source ${TARGETPATH} 
+   # tar -xvf $TARGETPATH -C $(pwd)/source
+  fi
+}
+
+if [[ $# -gt 0 ]]; then
+  VERSION=$1
+  FILENAME=Encompass-$VERSION.zip
+  TARGETPATH=$(pwd)/source/$FILENAME
+  TARGETFOLDER=$(pwd)/source/Encompass-$VERSION
+  echo "Building Encompass $VERSION from $FILENAME"
+else
+  echo "Usage: ./build <version>."
+  echo "For example: ./build 1.9.8"
+  exit
+fi
+
+which docker
+if [[ $? = 0 ]]; then
+  DOCKERBIN=$(which docker)
+fi
+
+which docker.io
+if [[ $? = 0 ]]; then
+  DOCKERBIN=$(which docker.io)
+fi
+
+if [[ -z "$DOCKERBIN" ]]; then
+        echo "Could not find docker binary, exiting"
+        exit
+else
+        echo "Using docker at $DOCKERBIN"
+fi
+
+# Build docker image
+buildImage
+
+# Prepare host file system
+#prepareFile
+
+# Build files
+buildBinary
