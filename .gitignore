@@ -5,3 +5,6 @@ source/Tate-*
 .present
 repo
 repo/*
+*.pyc
+*.swp
+gui/qt/icons_rc.py

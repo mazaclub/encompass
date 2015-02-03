@@ -354,7 +354,8 @@ class ElectrumWindow(QMainWindow):
         # Settings / Preferences are all reserved keywords in OSX using this as work around
         tools_menu.addAction(_("Encompass preferences") if sys.platform == 'darwin' else _("Preferences"), self.settings_dialog)
         tools_menu.addAction(_("&Network"), self.run_network_dialog)
-        tools_menu.addAction(_("&Plugins"), self.plugins_dialog)
+        # TODO replace when working plugins are confirmed
+        #tools_menu.addAction(_("&Plugins"), self.plugins_dialog)
         tools_menu.addSeparator()
         tools_menu.addAction(_("&Sign/verify message"), self.sign_verify_message)
         tools_menu.addAction(_("&Encrypt/decrypt message"), self.encrypt_message)
