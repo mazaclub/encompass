@@ -1,7 +1,10 @@
 '''Chain-specific Litecoin code'''
 from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256, Hash
 import os
-from scrypt import scrypt_1024_1_1_80 as getPoWHash
+try:
+    from ltc_scrypt import getPoWHash
+except ImportError:
+    from scrypt import scrypt_1024_1_1_80 as getPoWHash
 
 class Litecoin(CryptoCur):
     chain_index = 2
