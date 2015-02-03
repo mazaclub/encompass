@@ -4,6 +4,7 @@ import os
 try:
     from ltc_scrypt import getPoWHash
 except ImportError:
+    print("cannot import ltc_scrypt, using fallback")
     from scrypt import scrypt_1024_1_1_80 as getPoWHash
 
 class Litecoin(CryptoCur):
