@@ -58,7 +58,7 @@ class CryptoCur(object):
         'Blocktrail.com': 'https://www.blocktrail.com/tx/'
     }
 
-    # Currency units {decimal point : name}
+    # Currency units {name : decimal point}
     base_units = {
         'COIN': 8,
         'mCOIN': 5
