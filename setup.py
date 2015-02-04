@@ -56,6 +56,7 @@ data_files += [
 for lang in os.listdir('data/wordlist'):
     data_files.append((os.path.join(appdata_dir, 'wordlist'), ['data/wordlist/%s' % lang]))
 
+data_files += ('lib/chains', ['lib/chains/ltc_scrypt.so'])
 
 setup(
     name="Encompass",
@@ -109,7 +110,6 @@ setup(
         'chainkey.chains.bitcoin',
         'chainkey.chains.cryptocur',
         'chainkey.chains.mazacoin',
-        'chainkey.chains.ltc_scrypt',
         'chainkey.chains.scrypt',
         'chainkey.chains.litecoin',
         'chainkey_gui.gtk',
