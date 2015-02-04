@@ -70,7 +70,8 @@ setup(
         'pyasn1-modules',
         'qrcode',
         'SocksiPy-branch',
-        'tlslite'
+        'tlslite',
+        'ltc_scrypt'
     ],
     package_dir={
         'chainkey': 'lib',
