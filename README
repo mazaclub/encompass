@@ -4,7 +4,7 @@ Encompass consolidates support for various currencies into one wallet. It is a B
 
 Licence: GNU GPL v3
 Author: Tyler Willis
-Contributors: Thomas Voegtlin (Electrum author), mazaclub
+Contributors: Thomas Voegtlin (Electrum author), mazaclub, pooler, and many more
 Language: Python
 Homepage: None Yet
 
@@ -31,10 +31,19 @@ http://electrum.org/bitcoin_URIs.html
 2. HOW OFFICIAL PACKAGES ARE CREATED
 ------------------------------------
 
-python mki18n.py
-pyrcc4 icons.qrc -o gui/qt/icons_rc.py
-python setup.py sdist --format=zip,gztar
+contrib/encompass-release
+ 
+The 'build' script will perform all the necessary tasks to 
+create a release from release-tagged github sources
 
+If all runs correctly, you'll find a release set in the 
+contrib/encompass-release/releases directory, complete with 
+md5/sha1 sums, and gpg signatures for all files. 
+
+Additional documentation is provided in the README in that dir.
+
+
+### TODO:
 On Mac OS X:
 
   # On port based installs
