@@ -67,6 +67,7 @@ RUN xvfb-run -a --server-num=4 wineboot && sleep 5 \
 COPY ./helpers/make_packages /root/make_packages
 COPY ./helpers/make_release /root/make_release
 COPY ./helpers/build-binary /usr/bin/build-binary
+COPY ./helpers/ltc_scrypt.pyd /root
 
 # Clean up stale wine processes
 RUN rm -rf /tmp/.wine-*

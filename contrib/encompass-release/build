@@ -10,15 +10,17 @@ function buildBinary(){
   cp $TARGETFOLDER/dist/encompass.exe $(pwd)/releases/Enconpass-$VERSION.exe
   cp $(pwd)/source/encompass-setup.exe $(pwd)/releases/Encompass-$VERSION-setup.exe
   cp $(pwd)/repo/dist/* $(pwd)/releases/
-  cd releases
-  for release in * 
-  do
-    sha1sum ${release} > ${release}.sha1
-    md5sum ${release} > ${release}.md5
-    gpg --sign --armor --detach  ${release}
-    gpg --sign --armor --detach  ${release}.md5
-    gpg --sign --armor --detach  ${release}.sha1
-  done
+  if [ "${TYPE}" = "SIGNED" ] ; then
+    cd releases
+    for release in * 
+    do
+      sha1sum ${release} > ${release}.sha1
+      md5sum ${release} > ${release}.md5
+      gpg --sign --armor --detach  ${release}
+      gpg --sign --armor --detach  ${release}.md5
+      gpg --sign --armor --detach  ${release}.sha1
+    done
+  fi
   echo "You can find your Encompass $VERSION binaries in the releases folder."
 
 }
@@ -26,6 +28,17 @@ function buildBinary(){
 function buildImage(){
   echo "Building image"
   $DOCKERBIN build -t mazaclub/encompass-winbuild .
+}
+function buildLtcScrypt() {
+## this will be integrated into the main build in a later release
+   wget https://pypi.python.org/packages/source/l/ltc_scrypt/ltc_scrypt-1.0.tar.gz
+   tar -xpzvf ltc_scrypt-1.0.tar.gz 
+   docker run -t -i \
+    -e WINEPREFIX="/wine/wine-py2.7.8-32" \
+    -v $(pwd)/ltc_scrypt-1.0:/code \
+    -v $(pwd)/helpers:/helpers \
+    ogrisel/python-winbuilder wineconsole --backend=curses  Z:\\helpers\\ltc_scrypt-build.bat
+   cp ltc_scrypt-1.0/build/lib.win32-2.7/ltc_scrypt.pyd helpers/ltc_scrypt.pyd
 }
 
 function prepareFile(){
@@ -46,6 +59,7 @@ function prepareFile(){
 
 if [[ $# -gt 0 ]]; then
   VERSION=$1
+  TYPE=$2
   FILENAME=Encompass-$VERSION.zip
   TARGETPATH=$(pwd)/source/$FILENAME
   TARGETFOLDER=$(pwd)/source/Encompass-$VERSION
@@ -73,6 +87,7 @@ else
         echo "Using docker at $DOCKERBIN"
 fi
 
+buildLtcScrypt
 # Build docker image
 buildImage
 

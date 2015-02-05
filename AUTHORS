@@ -1,4 +1,5 @@
-ThomasV - Creator and maintainer.
+ThomasV - Original Electrum Creator and maintainer.
+Kefkius - Encompass Creator - Multi-coin support using one wallet seed
 Animazing / Tachikoma - Styled the new GUI. Mac version.
 Azelphur - GUI stuff.
 Coblee - Alternate coin support and py2app support.
@@ -9,4 +10,4 @@ Genjix - Porting pro-mode functionality to lite-gui and worked on server
 Slush - Work on the server. Designed the original Stratum spec.
 Julian Toash (Tuxavant) - Various fixes to the client.
 rdymac - Website and translations.
-Kefkius - Multi-coin support using one wallet seed
+guruvan - build/release system improvements

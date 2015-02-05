@@ -56,8 +56,16 @@ There's a lot to apt-get in the Dockerfile, this will take a while to build
 the docker image. Once the docker image is built on your machine, the tate build 
 runs quickly. 
 
-This image is also available as an automated build on dockerhub
+# LTC_SCRYPT Windows Module
+This module is build with an additional dockerimage with support for 
+compiling external modules for Windows
 
+https://github.com/ogrisel/python-winbuilder used from 
+dockerhub in this release, and will be integrated into the
+package/build system in a later release. 
+
+
+This image is also available as an automated build on dockerhub
 <code>git clone https://github.com/mazaclub/tate-winbuild && cd tate-winbuild
 docker pull mazaclub/tate-winbuild
 ./build 0.2
