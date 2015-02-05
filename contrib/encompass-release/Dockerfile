@@ -64,10 +64,10 @@ RUN xvfb-run -a --server-num=4 wineboot && sleep 5 \
      && rm -rf /tmp/.wine-* && xvfb-run -a wine nsis.exe /S
 
 
+COPY ./helpers/ltc_scrypt.pyd /root/ltc_scrypt.pyd
 COPY ./helpers/make_packages /root/make_packages
 COPY ./helpers/make_release /root/make_release
 COPY ./helpers/build-binary /usr/bin/build-binary
-COPY ./helpers/ltc_scrypt.pyd /root
 
 # Clean up stale wine processes
 RUN rm -rf /tmp/.wine-*

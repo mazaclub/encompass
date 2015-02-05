@@ -18,6 +18,6 @@ rm -rf /opt/wine-electrum/drive_c/encompass/encompass-$VERSION/
 cp -v /root/repo/dist/Encompass-$VERSION.zip /opt/wine-electrum/drive_c/encompass
 cd /opt/wine-electrum/drive_c/encompass
 unzip Encompass-$VERSION.zip
-cp -a /root/ltc_scrypt.pyd /opt/wine-electrum/drive_c/encompass/lib/chains
+cp -a /root/ltc_scrypt.pyd /opt/wine-electrum/drive_c/encompass/Encompass-$VERSION/lib/chains
 
 /usr/bin/build-binary $VERSION
