@@ -851,20 +851,24 @@ class ElectrumWindow(QMainWindow):
     def update_receive_qr(self):
         import urlparse, urllib
         addr = str(self.receive_address_e.text())
-        amount = self.receive_amount_e.get_amount()
-        message = unicode(self.receive_message_e.text()).encode('utf8')
-        self.save_request_button.setEnabled((amount is not None) or (message != ""))
-        if addr:
-            query = []
-            if amount:
-                query.append('amount=%s'%format_satoshis(amount))
-            if message:
-                query.append('message=%s'%urllib.quote(message))
-            p = urlparse.ParseResult(scheme='bitcoin', netloc='', path=addr, params='', query='&'.join(query), fragment='')
-            url = urlparse.urlunparse(p)
-        else:
-            url = ""
-        self.receive_qr.setData(url)
+        # Just use the address
+        amount = None
+        message = None
+        url = None
+        #amount = self.receive_amount_e.get_amount()
+        #message = unicode(self.receive_message_e.text()).encode('utf8')
+        #self.save_request_button.setEnabled((amount is not None) or (message != ""))
+        #if addr:
+        #    query = []
+        #    if amount:
+        #        query.append('amount=%s'%format_satoshis(amount))
+        #    if message:
+        #        query.append('message=%s'%urllib.quote(message))
+        #    p = urlparse.ParseResult(scheme='bitcoin', netloc='', path=addr, params='', query='&'.join(query), fragment='')
+        #    url = urlparse.urlunparse(p)
+        #else:
+        #    url = ""
+        self.receive_qr.setData(addr)
         if self.qr_window:
             self.qr_window.set_content(addr, amount, message, url)
 
