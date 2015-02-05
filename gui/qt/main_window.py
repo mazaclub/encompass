@@ -1240,7 +1240,7 @@ class ElectrumWindow(QMainWindow):
         try:
             address, amount, label, message, request_url = util.parse_URI(URI)
         except Exception as e:
-            QMessageBox.warning(self, _('Error'), _('Invalid bitcoin URI:') + '\n' + str(e), _('OK'))
+            QMessageBox.warning(self, _('Error'), _('URIs are disabled:') + '\n' + str(e), _('OK'))
             return
 
         self.tabs.setCurrentIndex(1)
@@ -1527,7 +1527,7 @@ class ElectrumWindow(QMainWindow):
             payto_addr = item.data(0,33).toString()
             menu.addAction(_("Copy to Clipboard"), lambda: self.app.clipboard().setText(addr))
             menu.addAction(_("Pay to"), lambda: self.payto(payto_addr))
-            menu.addAction(_("QR code"), lambda: self.show_qrcode("bitcoin:" + addr, _("Address")))
+            #menu.addAction(_("QR code"), lambda: self.show_qrcode("bitcoin:" + addr, _("Address")))
             if is_editable:
                 menu.addAction(_("Edit label"), lambda: self.edit_label(False))
                 menu.addAction(_("Delete"), lambda: self.delete_contact(addr))
@@ -2216,7 +2216,9 @@ class ElectrumWindow(QMainWindow):
             return
         # if the user scanned a bitcoin URI
         if data.startswith("bitcoin:"):
-            self.pay_from_URI(data)
+            # URIs are disabled
+            #self.pay_from_URI(data)
+            QMessageBox.warning(self, _('Error'), _("URIs are disabled"), _('OK'))
             return
         # else if the user scanned an offline signed tx
         # transactions are binary, but qrcode seems to return utf8...

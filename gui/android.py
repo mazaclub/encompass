@@ -487,9 +487,10 @@ def make_new_contact():
     if r:
         data = r['extras']['SCAN_RESULT']
         if data:
-            if re.match('^bitcoin:', data):
-                address, _, _, _, _ = util.parse_URI(data)
-            elif is_valid(data):
+            # URIs are disabled
+            #if re.match('^bitcoin:', data):
+            #    address, _, _, _, _ = util.parse_URI(data)
+            if is_valid(data):
                 address = data
             else:
                 address = None
@@ -558,10 +559,11 @@ def main_loop():
             elif out == "receive":
                 global receive_addr
                 receive_addr = select_from_addresses()
-                if receive_addr:
-                    amount = modal_input('Amount', 'Amount you want receive. ', '', "numberDecimal")
-                    if amount:
-                        receive_addr = 'bitcoin:%s?amount=%s'%(receive_addr, amount)
+                # URIs are disabled
+                #if receive_addr:
+                #    amount = modal_input('Amount', 'Amount you want receive. ', '', "numberDecimal")
+                #    if amount:
+                #        receive_addr = 'bitcoin:%s?amount=%s'%(receive_addr, amount)
 
                 if not receive_addr:
                     out = None
@@ -618,13 +620,14 @@ def payto_loop():
                 if r:
                     data = r['extras']['SCAN_RESULT']
                     if data:
-                        if re.match('^bitcoin:', data):
-                            payto, amount, label, _, _ = util.parse_URI(data)
-                            droid.fullSetProperty("recipient", "text",payto)
-                            droid.fullSetProperty("amount", "text", amount)
-                            droid.fullSetProperty("label", "text", label)
-                        else:
-                            droid.fullSetProperty("recipient", "text", data)
+                        # URIs are disabled
+                        #if re.match('^bitcoin:', data):
+                        #    payto, amount, label, _, _ = util.parse_URI(data)
+                        #    droid.fullSetProperty("recipient", "text",payto)
+                        #    droid.fullSetProperty("amount", "text", amount)
+                        #    droid.fullSetProperty("label", "text", label)
+                        #else:
+                        droid.fullSetProperty("recipient", "text", data)
 
                     
         elif event["name"] in menu_commands:
