@@ -5,10 +5,9 @@ This folder contains ChainKey modules for use by Encompass. A chainkey module fo
 
 Basically, a chainkey module for a coin contains some code from its corresponding Electrum fork. The specific code needed is documented here, and in the abstract class CryptoCur in the file cryptocur.py.
 
-Writing a chainkey module
--------------------------
+## Writing a chainkey module
 
-## Variables
+### Variables
 
 Chainkey modules require a set of constants for identifying the coin. These include:
 
@@ -35,6 +34,12 @@ In addition to those constants, some more modular information is required, inclu
 
 Also, the number of headers in one chunk is stored in the `chunk_size` variable. This is 2016 in Electrum.
 
-## Functions
+### Functions
 
 All functions for verifying headers are required in a chainkey module. Most importantly, `get_target()`, `verify_chain()`, and `verify_chunk()`, but also any functions they rely on, including `set_headers_path()`, `path()`, `header_to_string()`, `header_from_string()`, `hash_header()`, `save_chunk()`, `save_header()`, and `read_header()`.
+
+## Implementation
+
+To implement a new chain after writing a chainkey module, place the coin's module in lib/chains with the others. Then edit lib/chainparams.py, adding a ChainParams named-tuple for that coin in `_known_chains`.
+
+Note that as of writing, you'll also need to add an `elif` statement in the function `get_chain_instance()` within lib/chainparams.py.
