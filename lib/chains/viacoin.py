@@ -26,11 +26,11 @@ class Viacoin(CryptoCur):
     DUST_THRESHOLD = 0
     MIN_RELAY_TX_FEE = 100000
     RECOMMENDED_FEE = MIN_RELAY_TX_FEE
-    COINBASE_MATURITY = 100
+    COINBASE_MATURITY = 3600
 
     block_explorers = {
         'explorer.viacoin.org': 'http://explorer.viacoin.org/tx/',
-        'viacoinexplorer.com': 'http://viacoinexplorer.com/tx/'
+        'bchain.info': 'https://bchain.info/VIA/tx/'
     }
 
     base_units = {
@@ -45,7 +45,6 @@ class Viacoin(CryptoCur):
 
     DEFAULT_SERVERS = {
         'server.vialectrum.org': DEFAULT_PORTS,
-        'vialectrum.cryptoservices.net': DEFAULT_PORTS,
         'vialectrum.viacoin.net': DEFAULT_PORTS,
     }
 
