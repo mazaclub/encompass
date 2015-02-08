@@ -1,4 +1,10 @@
 '''Chain-specific Viacoin code'''
+
+############################################
+# Code here is taken from Vialectrum       #
+# https://github.com/vialectrum/vialectrum #
+############################################
+
 from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256, Hash
 import os
 try:
