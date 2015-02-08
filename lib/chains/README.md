@@ -38,6 +38,8 @@ Also, the number of headers in one chunk is stored in the `chunk_size` variable.
 
 All functions for verifying headers are required in a chainkey module. Most importantly, `get_target()`, `verify_chain()`, and `verify_chunk()`, but also any functions they rely on, including `set_headers_path()`, `path()`, `header_to_string()`, `header_from_string()`, `hash_header()`, `save_chunk()`, `save_header()`, and `read_header()`.
 
+Note that commonly in Electrum forks, the functions `save_chunk()` and `save_header()` make a call to a function `set_local_height()`. This call must be removed in the chainkey module, as `set_local_height()` is called elsewhere. Also note that any calls to `print_error()` may be removed, as importing that function is not required.
+
 ## Implementation
 
 To implement a new chain after writing a chainkey module, place the coin's module in lib/chains with the others. Then edit lib/chainparams.py, adding a ChainParams named-tuple for that coin in `_known_chains`. When a chain is in `_known_chains`, Encompass will be able to use it as long as its metadata is correct.
