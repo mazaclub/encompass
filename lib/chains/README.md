@@ -40,6 +40,4 @@ All functions for verifying headers are required in a chainkey module. Most impo
 
 ## Implementation
 
-To implement a new chain after writing a chainkey module, place the coin's module in lib/chains with the others. Then edit lib/chainparams.py, adding a ChainParams named-tuple for that coin in `_known_chains`.
-
-Note that as of writing, you'll also need to add an `elif` statement in the function `get_chain_instance()` within lib/chainparams.py.
+To implement a new chain after writing a chainkey module, place the coin's module in lib/chains with the others. Then edit lib/chainparams.py, adding a ChainParams named-tuple for that coin in `_known_chains`. When a chain is in `_known_chains`, Encompass will be able to use it as long as its metadata is correct.

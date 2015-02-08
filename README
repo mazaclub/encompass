@@ -55,3 +55,7 @@ On Mac OS X:
   sudo hdiutil create -fs HFS+ -volname "Encompass" -srcfolder dist/Encompass.app dist/encompass-VERSION-macosx.dmg
 
 
+3. HOW COIN-SPECIFIC MODULES ARE CREATED
+----------------------------------------
+
+See lib/chains/README.md.

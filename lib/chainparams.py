@@ -4,7 +4,7 @@ import chains
 #
 # Supported blockchains are organized in named tuples.
 # A ChainParams tuple contains:
-#   chain_index: The index (account) used in child key derivation
+#   chain_index: The index (BIP-0044) used in child key derivation
 #       This is just for organization, the class of the actual
 #       cryptocur has the chain index as well.
 #   code: Abbreviated form of the cryptocurrency
@@ -70,17 +70,7 @@ def get_chain_instance(code):
     code = code.upper()
     if not is_known_chain(code): return None
     params = get_params(code)
-#    full_module_name = '.'.join(['chains', params.module_name])
     module_name = params.module_name
-
-    # This is not elegant or particularly wise but it's gonna have to work for now
-    if module_name == 'bitcoin':
-        import chains.bitcoin
-        class_instance = chains.bitcoin.Bitcoin()
-    elif module_name == 'mazacoin':
-        import chains.mazacoin
-        class_instance = chains.mazacoin.Mazacoin()
-    elif module_name == 'litecoin':
-        import chains.litecoin
-        class_instance = chains.litecoin.Litecoin()
-    return class_instance
+    classmodule = importlib.import_module(''.join(['chainkey.chains.', module_name]))
+    classInst = getattr(classmodule, params.class_name)
+    return classInst()
