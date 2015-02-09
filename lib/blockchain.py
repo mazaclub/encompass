@@ -305,7 +305,7 @@ class Blockchain(threading.Thread):
                 print_error("reorg")
                 # Call reorg_handler if it exists
                 try:
-                    self.active_chain.reorg_handler()
+                    self.active_chain.reorg_handler(self.local_height)
                     self.set_local_height()
                     return None
                 except AttributeError:

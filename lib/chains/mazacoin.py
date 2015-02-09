@@ -42,11 +42,11 @@ class Mazacoin(CryptoCur):
         return self.headers_path
 
     # Used on chain reorg
-    def reorg_handler(self):
+    def reorg_handler(self, local_height):
         name = self.path()
         if os.path.exists(name):
             f = open(name,'rb+')
-            f.seek((self.local_height/self.chunk_size)*80)
+            f.seek((local_height*80) - (self.COINBASE_MATURITY * 80))
             f.truncate()
             f.close()
 
