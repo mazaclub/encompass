@@ -303,9 +303,15 @@ class Blockchain(threading.Thread):
             prev_hash = self.hash_header(previous_header)
             if prev_hash != header.get('prev_block_hash'):
                 print_error("reorg")
-                self.request_header(interface, height - 1, queue)
-                requested_header = True
-                continue
+                # Call reorg_handler if it exists
+                try:
+                    self.active_chain.reorg_handler()
+                    self.set_local_height()
+                    return None
+                except AttributeError:
+                    self.request_header(interface, height - 1, queue)
+                    requested_header = True
+                    continue
 
             else:
                 # the chain is complete
