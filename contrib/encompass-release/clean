@@ -1,0 +1,8 @@
+rm -rf releases/*
+rm -rf source/*-*
+rm -rf repo
+rm -rf ltc_scrypt*
+rm -rf helpers/*.dylib
+rm -rf helpers/*.so
+rm -rf helpers/*.pyd
+

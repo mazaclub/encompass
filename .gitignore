@@ -9,3 +9,8 @@ repo/*
 *.pyd
 *.swp
 gui/qt/icons_rc.py
+contrib/encompass-release/repo/
+contrib/encompass-release/source/Encompas-*
+contrib/encompass-release/source/encompas-*
+contrib/encompass-release/ltc_scrypt-1.0/
+contrib/encompass-release/ltc_scrypt-1.0*
