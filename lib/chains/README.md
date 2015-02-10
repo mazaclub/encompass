@@ -40,6 +40,8 @@ All functions for verifying headers are required in a chainkey module. Most impo
 
 Note that commonly in Electrum forks, the functions `save_chunk()` and `save_header()` make a call to a function `set_local_height()`. This call must be removed in the chainkey module, as `set_local_height()` is called elsewhere. Also note that any calls to `print_error()` may be removed, as importing that function is not required.
 
+If an electrum fork has a custom method to call when a chain reorg occurs, it should be included in the chainkey module class as `reorg_handler()`.
+
 ## Implementation
 
 To implement a new chain after writing a chainkey module, place the coin's module in lib/chains with the others. Then edit lib/chainparams.py, adding a ChainParams named-tuple for that coin in `_known_chains`. When a chain is in `_known_chains`, Encompass will be able to use it as long as its metadata is correct.
