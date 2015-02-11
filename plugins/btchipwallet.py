@@ -46,7 +46,8 @@ class Plugin(BasePlugin):
         BasePlugin.__init__(self, gui, name)
         self._is_available = self._init()
         self.wallet = None        
-        chainkey.wallet.wallet_types.append(('hardware', 'btchip', _("BTChip wallet"), BTChipWallet))
+        # Disabled until compatibility is ensured
+        #chainkey.wallet.wallet_types.append(('hardware', 'btchip', _("BTChip wallet"), BTChipWallet))
 
 
     def _init(self):

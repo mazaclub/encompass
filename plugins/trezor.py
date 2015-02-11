@@ -49,7 +49,8 @@ class Plugin(BasePlugin):
         self._is_available = self._init()
         self._requires_settings = True
         self.wallet = None
-        chainkey.wallet.wallet_types.append(('hardware', 'trezor', _("Trezor wallet"), TrezorWallet))
+        # Disabled until compatibility is ensured
+        #chainkey.wallet.wallet_types.append(('hardware', 'trezor', _("Trezor wallet"), TrezorWallet))
 
     def _init(self):
         return TREZOR
