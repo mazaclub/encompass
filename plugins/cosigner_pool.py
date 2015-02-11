@@ -105,6 +105,8 @@ class Plugin(BasePlugin):
         return True
 
     def is_available(self):
+        # Disabled until compatibility is ensured
+        return False
         if self.wallet is None:
             return True
         return self.wallet.wallet_type in ['2of2', '2of3']

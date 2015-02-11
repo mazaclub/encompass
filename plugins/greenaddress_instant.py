@@ -44,6 +44,10 @@ class Plugin(BasePlugin):
     def description(self):
         return description
 
+    def is_available(self):
+        # Disabled until compatibility is ensured
+        return False
+
     @hook 
     def init_qt(self, gui):
         self.win = gui.main_window
