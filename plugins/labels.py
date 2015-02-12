@@ -83,6 +83,8 @@ class Plugin(BasePlugin):
         return self.config.get("plugin_label_api_key")
 
     def is_available(self):
+        # Disabled until compatibility is ensured
+        return False
         return True
 
     def requires_settings(self):

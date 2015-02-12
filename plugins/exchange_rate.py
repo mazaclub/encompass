@@ -341,6 +341,10 @@ class Plugin(BasePlugin):
         self.exchanges = [self.config.get('use_exchange', "Blockchain")]
         self.exchanger = None
 
+    def is_available(self):
+        # Disabled until compatibility is ensured
+        return False
+
     @hook
     def init_qt(self, gui):
         self.gui = gui

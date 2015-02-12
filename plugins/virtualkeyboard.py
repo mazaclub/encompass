@@ -11,6 +11,11 @@ class Plugin(BasePlugin):
     def description(self):
         return '%s\n%s' % (_("Add an optional virtual keyboard to the password dialog."), _("Warning: do not use this if it makes you pick a weaker password."))
 
+    def is_available(self):
+        return True
+        # Disabled until compatibility is ensured
+        return False
+
     @hook
     def init_qt(self, gui):
         self.gui = gui

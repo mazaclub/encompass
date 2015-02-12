@@ -30,6 +30,8 @@ class Plugin(BasePlugin):
         return '%s\n%s' % (_("Ability to plot transaction history in graphical mode."), _("Warning: Requires matplotlib library."))
 
     def is_available(self):
+        # Disabled until compatibility is ensured
+        return False
         if flag_matlib:
             return True
         else:

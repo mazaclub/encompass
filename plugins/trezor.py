@@ -49,12 +49,15 @@ class Plugin(BasePlugin):
         self._is_available = self._init()
         self._requires_settings = True
         self.wallet = None
-        electrum.wallet.wallet_types.append(('hardware', 'trezor', _("Trezor wallet"), TrezorWallet))
+        # Disabled until compatibility is ensured
+        #chainkey.wallet.wallet_types.append(('hardware', 'trezor', _("Trezor wallet"), TrezorWallet))
 
     def _init(self):
         return TREZOR
 
     def is_available(self):
+        # Disabled until compatibility is ensured
+        return False
         if self.wallet is None:
             return self._is_available
         if self.wallet.storage.get('wallet_type') == 'trezor':
