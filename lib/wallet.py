@@ -207,7 +207,7 @@ class Abstract_Wallet(object):
         self.addressbook           = storage.get('contacts', [])
 
         self.history               = storage.get('addr_history',{})        # address -> list(txid, height)
-        self.fee_per_kb            = int(storage.get('fee_per_kb', RECOMMENDED_FEE))
+        self.fee_per_kb            = int(storage.get('fee_per_kb', self.active_chain.RECOMMENDED_FEE))
 
         # This attribute is set when wallet.start_threads is called.
         self.synchronizer = None
@@ -723,8 +723,8 @@ class Abstract_Wallet(object):
     def estimated_fee(self, tx):
         estimated_size = len(tx.serialize(-1))/2
         fee = int(self.fee_per_kb*estimated_size/1000.)
-        if fee < MIN_RELAY_TX_FEE: # and tx.requires_fee(self.verifier):
-            fee = MIN_RELAY_TX_FEE
+        if fee < self.active_chain.MIN_RELAY_TX_FEE: # and tx.requires_fee(self.verifier):
+            fee = self.active_chain.MIN_RELAY_TX_FEE
         return fee
 
     def make_unsigned_transaction(self, outputs, fixed_fee=None, change_addr=None, domain=None, coins=None ):
@@ -749,7 +749,7 @@ class Abstract_Wallet(object):
         inputs = []
         tx = Transaction(inputs, outputs)
         for item in coins:
-            if item.get('coinbase') and item.get('height') + COINBASE_MATURITY > self.network.get_local_height():
+            if item.get('coinbase') and item.get('height') + self.active_chain.COINBASE_MATURITY > self.network.get_local_height():
                 continue
             v = item.get('value')
             total += v
@@ -777,7 +777,7 @@ class Abstract_Wallet(object):
             # Insert the change output at a random position in the outputs
             posn = random.randint(0, len(tx.outputs))
             tx.outputs[posn:posn] = [( 'address', change_addr,  change_amount)]
-        elif change_amount > DUST_THRESHOLD:
+        elif change_amount > self.active_chain.DUST_THRESHOLD:
             # Insert the change output at a random position in the outputs
             posn = random.randint(0, len(tx.outputs))
             tx.outputs[posn:posn] = [( 'address', change_addr,  change_amount)]
@@ -787,7 +787,7 @@ class Abstract_Wallet(object):
             tx.outputs.pop(posn)
             # if change is still above dust threshold, re-add change output.
             change_amount = total - ( amount + fee )
-            if change_amount > DUST_THRESHOLD:
+            if change_amount > self.active_chain.DUST_THRESHOLD:
                 tx.outputs[posn:posn] = [( 'address', change_addr,  change_amount)]
                 print_error('change', change_amount)
             else:
