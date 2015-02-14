@@ -17,15 +17,15 @@ Chainkey modules require a set of constants for identifying the coin. These incl
 - `p2pkh_version`: Address version byte, such as 0 for Bitcoin, or 50 for Mazacoin.
 - `p2sh_version`: Pay-To-Script-Hash version byte, such as 5 for Bitcoin, or 9 for Mazacoin.
 - `wif_version`: Wallet Import Format version byte, such as 128 for Bitcoin, or 224 for Mazacoin.
+- `DUST_THRESHOLD`: Amount of satoshis that qualify as 'dust'; 5430 for Bitcoin.
+- `MIN_RELAY_TX_FEE`: Minimum fee for a transaction to be relayed; 1000 for Bitcoin.
+- `RECOMMENDED_FEE`: Recommended transaction fee; 50000 for Bitcoin.
+- `COINBASE_MATURITY`: Number of blocks before mined coins are mature; 100 for Bitcoin.
 
 The following constants are not yet fully implemented, but should be included:
 
 - `ext_pub_version`: Extended public key version bytes; "0488b21e" for Bitcoin.
 - `ext_priv_version`: Extended private key version bytes; "0488ade4" for Bitcoin.
-- `DUST_THRESHOLD`: Amount of satoshis that qualify as 'dust'; 5430 for Bitcoin.
-- `MIN_RELAY_TX_FEE`: Minimum fee for a transaction to be relayed; 1000 for Bitcoin.
-- `RECOMMENDED_FEE`: Recommended transaction fee; 50000 for Bitcoin.
-- `COINBASE_MATURITY`: Number of blocks before mined coins are mature; 100 for Bitcoin.
 
 In addition to those constants, some more modular information is required, including:
 
