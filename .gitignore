@@ -8,6 +8,9 @@ repo/*
 *.pyc
 *.pyd
 *.swp
+*.so
+*.dylib
+*.pyd
 gui/qt/icons_rc.py
 contrib/encompass-release/repo/
 contrib/encompass-release/source/Encompas-*
