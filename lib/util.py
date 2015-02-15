@@ -172,13 +172,15 @@ def parse_URI(uri):
     import urlparse
     import bitcoin
     from decimal import Decimal
+    import chainparams
 
     if ':' not in uri:
         assert bitcoin.is_address(uri)
         return uri, None, None, None, None
 
+    uri_scheme = chainparams.get_active_chain().coin_name.lower()
     u = urlparse.urlparse(uri)
-    assert u.scheme == 'bitcoin'
+    assert u.scheme == uri_scheme
 
     address = u.path
     valid_address = bitcoin.is_address(address)
