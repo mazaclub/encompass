@@ -1,4 +1,4 @@
-'''Chain-specific Bitcoin code'''
+'''Chain-specific Darkcoin code'''
 from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256, HashX11
 import os
 
