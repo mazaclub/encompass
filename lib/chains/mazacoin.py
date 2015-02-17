@@ -33,6 +33,7 @@ class Mazacoin(CryptoCur):
         'tate.maza.club':DEFAULT_PORTS,
         'tate1.maza.club':DEFAULT_PORTS,
         'tate2.maza.club':DEFAULT_PORTS,
+        'tate.cryptoadhd.com':DEFAULT_PORTS,
     }
 
     def set_headers_path(self, path):
