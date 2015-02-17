@@ -48,6 +48,7 @@ from chainkey import SimpleConfig, Network, Wallet, WalletStorage, NetworkProxy,
 from chainkey.util import print_msg, print_stderr, print_json, set_verbosity
 from chainkey.daemon import get_daemon
 from chainkey.plugins import init_plugins
+from chainkey import chainparams
 
 
 
@@ -179,13 +180,14 @@ if __name__ == '__main__':
     if config.get_active_chain_code() is None:
         config.set_active_chain_code('mzc')
 
+    # URI scheme for active chain
+    uri_scheme = ''.join(['^', chainparams.get_active_chain().coin_name.lower(), ':'])
     if len(args) == 0:
         url = None
         cmd = 'gui'
-    # URIs are disabled
-    #elif len(args) == 1 and re.match('^bitcoin:', args[0]):
-    #    url = args[0]
-    #    cmd = 'gui'
+    elif len(args) == 1 and re.match(uri_scheme, args[0]):
+        url = args[0]
+        cmd = 'gui'
     else:
         cmd = args[0]
 
