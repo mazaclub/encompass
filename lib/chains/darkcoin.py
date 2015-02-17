@@ -27,6 +27,7 @@ class Darkcoin(CryptoCur):
     base_units = {
         'DRK': 8,
         'mDRK': 5,
+        'uDRK': 2,
         'duffs': 0
     }
 
