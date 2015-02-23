@@ -113,6 +113,7 @@ setup(
         'chainkey.chains.mazacoin',
         'chainkey.chains.scrypt',
         'chainkey.chains.litecoin',
+        'chainkey.chains.viacoin',
         'chainkey_gui.gtk',
         'chainkey_gui.qt.__init__',
         'chainkey_gui.qt.amountedit',
