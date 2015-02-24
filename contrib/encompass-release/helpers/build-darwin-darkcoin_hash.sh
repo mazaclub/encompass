@@ -1,5 +1,17 @@
-#!/bin/bash -x
-
-cd /code
-python setup.py build -x bdist_egg --plat-name=x86_64-apple-darwin14
-
+mkdir  build/temp.darwin-x64
+mkdir  build/temp.darwin-x64/sha3
+mkdir  build/lib.darwin-x64
+x86_64-apple-darwin14-cc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -I. -I./sha3 -I/usr/x86_64-apple-darwin14/SDK/Mac/usr/include/python2.7 -c darkcoinmodule.c -o build/temp.darwin-x64/darkcoinmodule.o
+x86_64-apple-darwin14-cc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -I. -I./sha3 -I/usr/x86_64-apple-darwin14/SDK/Mac/usr/include/python2.7 -c darkcoin.c -o build/temp.darwin-x64/darkcoin.o
+x86_64-apple-darwin14-cc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -I. -I./sha3 -I/usr/x86_64-apple-darwin14/SDK/Mac/usr/include/python2.7 -c sha3/blake.c -o build/temp.darwin-x64/sha3/blake.o
+x86_64-apple-darwin14-cc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -I. -I./sha3 -I/usr/x86_64-apple-darwin14/SDK/Mac/usr/include/python2.7 -c sha3/bmw.c -o build/temp.darwin-x64/sha3/bmw.o
+x86_64-apple-darwin14-cc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -I. -I./sha3 -I/usr/x86_64-apple-darwin14/SDK/Mac/usr/include/python2.7 -c sha3/groestl.c -o build/temp.darwin-x64/sha3/groestl.o
+x86_64-apple-darwin14-cc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -I. -I./sha3 -I/usr/x86_64-apple-darwin14/SDK/Mac/usr/include/python2.7 -c sha3/jh.c -o build/temp.darwin-x64/sha3/jh.o
+x86_64-apple-darwin14-cc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -I. -I./sha3 -I/usr/x86_64-apple-darwin14/SDK/Mac/usr/include/python2.7 -c sha3/keccak.c -o build/temp.darwin-x64/sha3/keccak.o
+x86_64-apple-darwin14-cc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -I. -I./sha3 -I/usr/x86_64-apple-darwin14/SDK/Mac/usr/include/python2.7 -c sha3/skein.c -o build/temp.darwin-x64/sha3/skein.o
+x86_64-apple-darwin14-cc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -I. -I./sha3 -I/usr/x86_64-apple-darwin14/SDK/Mac/usr/include/python2.7 -c sha3/cubehash.c -o build/temp.darwin-x64/sha3/cubehash.o
+x86_64-apple-darwin14-cc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -I. -I./sha3 -I/usr/x86_64-apple-darwin14/SDK/Mac/usr/include/python2.7 -c sha3/echo.c -o build/temp.darwin-x64/sha3/echo.o
+x86_64-apple-darwin14-cc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -I. -I./sha3 -I/usr/x86_64-apple-darwin14/SDK/Mac/usr/include/python2.7 -c sha3/luffa.c -o build/temp.darwin-x64/sha3/luffa.o
+x86_64-apple-darwin14-cc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -I. -I./sha3 -I/usr/x86_64-apple-darwin14/SDK/Mac/usr/include/python2.7 -c sha3/simd.c -o build/temp.darwin-x64/sha3/simd.o
+x86_64-apple-darwin14-cc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -I. -I./sha3 -I/usr/x86_64-apple-darwin14/SDK/Mac/usr/include/python2.7 -c sha3/shavite.c -o build/temp.darwin-x64/sha3/shavite.o
+x86_64-apple-darwin14-cc -pthread -shared -Wl,-O1 -Wl,-Bsymbolic-functions -Wl,-Bsymbolic-functions -Wl,-z,relro -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -D_FORTIFY_SOURCE=2 -g -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security build/temp.darwin-x64/darkcoinmodule.o build/temp.darwin-x64/darkcoin.o build/temp.darwin-x64/sha3/blake.o build/temp.darwin-x64/sha3/bmw.o build/temp.darwin-x64/sha3/groestl.o build/temp.darwin-x64/sha3/jh.o build/temp.darwin-x64/sha3/keccak.o build/temp.darwin-x64/sha3/skein.o build/temp.darwin-x64/sha3/cubehash.o build/temp.darwin-x64/sha3/echo.o build/temp.darwin-x64/sha3/luffa.o build/temp.darwin-x64/sha3/simd.o build/temp.darwin-x64/sha3/shavite.o -o build/lib.darwin-x64/darkcoin_hash.so
