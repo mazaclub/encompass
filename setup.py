@@ -114,7 +114,7 @@ setup(
         'chainkey.chains.scrypt',
         'chainkey.chains.litecoin',
         'chainkey.chains.viacoin',
-	    'chainkey.chains.darkcoin',        
+        'chainkey.chains.darkcoin',        
         'chainkey_gui.gtk',
         'chainkey_gui.qt.__init__',
         'chainkey_gui.qt.amountedit',
