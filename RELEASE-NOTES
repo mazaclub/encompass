@@ -1,3 +1,15 @@
+# Release 0.4.0
+
+ * Implement Darkcoin Chainkey module
+
+ * Add chain-specfic uri handling, dust, fees, coinbase maturity constants
+
+ * add additional default servers
+
+ * Update Encompass logo icons
+
+ * correct setup.py to correctly compile & include ltc_scrypt 
+
 # Release 0.3.0
 
  * Implement VIAcoin ChainKey module

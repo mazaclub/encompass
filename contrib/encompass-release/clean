@@ -5,4 +5,6 @@ rm -rf ltc_scrypt*
 rm -rf helpers/*.dylib
 rm -rf helpers/*.so
 rm -rf helpers/*.pyd
+rm -rf 1.1.tar.gz*
+rm -rf darkcoin_hash*
 

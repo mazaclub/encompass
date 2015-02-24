@@ -3,6 +3,7 @@ VERSION="$1"
 echo "Making packages"
 mkdir -pv /root/repo
 git clone https://github.com/mazaclub/encompass /root/repo
+
 cd /root/repo
 git checkout v$VERSION
 cp -v  /root/make_packages /root/repo/make_packages
@@ -19,5 +20,6 @@ cp -v /root/repo/dist/Encompass-$VERSION.zip /opt/wine-electrum/drive_c/encompas
 cd /opt/wine-electrum/drive_c/encompass
 unzip Encompass-$VERSION.zip
 cp -a /root/ltc_scrypt.pyd /opt/wine-electrum/drive_c/encompass/Encompass-$VERSION/lib/chains
+cp -a /root/darkcoin_hash.pyd /opt/wine-electrum/drive_c/encompass/Encompass-$VERSION/lib/chains
 
 /usr/bin/build-binary $VERSION

@@ -1,7 +1,9 @@
 '''Chain-specific Darkcoin code'''
-from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256, HashX11
+from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256
 import os
+import darkcoin_hash as darkhash
 
+HashX11 = lambda x: darkhash.getPoWHash(x)
 
 class Darkcoin(CryptoCur):
     chain_index = 5

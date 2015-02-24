@@ -1,7 +1,6 @@
 '''The abstract class for a cryptocurrency.'''
 
 import os, hashlib
-import darkcoin_hash as darkhash
 
 hash_encode = lambda x: x[::-1].encode('hex')
 hash_decode = lambda x: x.decode('hex')[::-1]
@@ -21,7 +20,6 @@ def Hash(x):
     if type(x) is unicode: x=x.encode('utf-8')
     return sha256(sha256(x))
     
-HashX11 = lambda x: darkhash.getPoWHash(x)
 
 
 class CryptoCur(object):
