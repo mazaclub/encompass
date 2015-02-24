@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /code/ltc_scrypt-1.0
+cd /code
 mkdir -pv build/temp.darwin-x64
 mkdir -pv build/lib.darwin-x64
 

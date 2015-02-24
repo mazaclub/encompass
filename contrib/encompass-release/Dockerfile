@@ -5,12 +5,16 @@ VOLUME ["/opt/wine-electrum/drive_c/encompass"]
 
 RUN apt-get update -y \
      && apt-get upgrade -y \
-     && apt-get install -y git python-pip pyqt4-dev-tools zip unzip \
+     && apt-get install -y git python-pip pyqt4-dev-tools zip unzip python-dev \
      && pip install --pre slowaes && pip install ecdsa \
      && pip install pyasn1 && pip install pyasn1_modules \
      && pip install qrcode && pip install requests \
      && pip install tlslite && pip install pbkdf2 \
      && pip install SocksiPy-branch \
+     && pip install ltc_scrypt \
+     && git clone https://github.com/guruvan/darkcoin_hash \
+     && cd darkcoin_hash \
+     && python setup.py install \
      && apt-get install -y software-properties-common && add-apt-repository -y ppa:ubuntu-wine/ppa \
      && dpkg --add-architecture i386 \
      && apt-get update -y \
