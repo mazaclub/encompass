@@ -8,6 +8,7 @@ except ImportError:
     from scrypt import scrypt_1024_1_1_80 as getPoWHash
 
 class Litecoin(CryptoCur):
+    PoW = True
     chain_index = 2
     coin_name = 'Litecoin'
     code = 'LTC'

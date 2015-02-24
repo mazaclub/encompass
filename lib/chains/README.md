@@ -29,6 +29,7 @@ The following constants are not yet fully implemented, but should be included:
 
 In addition to those constants, some more modular information is required, including:
 
+- `PoW`: A boolean value expressing whether or not Proof-of-Work verification is implemented.
 - `block_explorers`: A dictionary of {name : URL} strings for viewing a transaction online.
 - `base_units`: A dictionary of {name : decimal point} units for the coin, such as "mBTC" and "BTC".
 
