@@ -73,6 +73,9 @@ setup(
         'ltc_scrypt',
         'darkcoin_hash'
     ],
+    dependency_links=[
+        "git://github.com/guruvan/darkcoin_hash.git=darkcoin_hash"
+    ],
     package_dir={
         'chainkey': 'lib',
         'chainkey_gui': 'gui',

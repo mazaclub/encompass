@@ -2,7 +2,7 @@
 
 function buildBinary(){
   mkdir $(pwd)/releases
-  $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ mazaclub/encompass-winbuild /root/make_release $VERSION
+  $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ mazaclub/encompass-winbuild /bin/bash
   if [[ $? = 0 ]]; then
     echo "Build successful."
   else
