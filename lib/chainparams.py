@@ -75,12 +75,12 @@ def get_server_trust(code):
     if instance is None: return None
     # Proof of work
     is_pow = instance.PoW
-    # multiple servers
-    multiple_servers = len(instance.DEFAULT_SERVERS) > 1
+    # servers used
+    servers = len(instance.DEFAULT_SERVERS)
     # criterion -> [value, info]
     return {
-        'pow': [is_pow, 'This wallet verifies Proof-of-Work'],
-        'multiple_servers': [multiple_servers, 'This wallet gets data from multiple servers'],
+        'pow': is_pow,
+        'servers': servers,
     }
 
 def get_chain_instance(code):
