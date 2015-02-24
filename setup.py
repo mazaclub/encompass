@@ -56,7 +56,6 @@ data_files += [
 for lang in os.listdir('data/wordlist'):
     data_files.append((os.path.join(appdata_dir, 'wordlist'), ['data/wordlist/%s' % lang]))
 
-data_files += ('lib/chains', ['lib/chains/ltc_scrypt.so'])
 
 setup(
     name="Encompass",
@@ -71,7 +70,8 @@ setup(
         'qrcode',
         'SocksiPy-branch',
         'tlslite',
-        'ltc_scrypt'
+        'ltc_scrypt',
+        'darkcoin_hash'
     ],
     package_dir={
         'chainkey': 'lib',
@@ -151,6 +151,6 @@ setup(
     author="Tyler Willis",
     author_email="kefkius@mail.com",
     license="GNU GPLv3",
-    url="NoneYet",
+    url="https://maza.club/encompass",
     long_description="""Lightweight Multi-Coin Wallet for Electrum-supported coins."""
 )

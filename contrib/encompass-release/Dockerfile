@@ -65,6 +65,7 @@ RUN xvfb-run -a --server-num=4 wineboot && sleep 5 \
 
 
 COPY ./helpers/ltc_scrypt.pyd /root/ltc_scrypt.pyd
+COPY ./helpers/darkcoin_hash.pyd /root/darkcoin_hash.pyd
 COPY ./helpers/make_packages /root/make_packages
 COPY ./helpers/make_release /root/make_release
 COPY ./helpers/build-binary /usr/bin/build-binary
