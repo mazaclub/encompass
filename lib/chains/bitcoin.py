@@ -3,6 +3,7 @@ from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, 
 import os
 
 class Bitcoin(CryptoCur):
+    PoW = True
     chain_index = 0
     coin_name = 'Bitcoin'
     code = 'BTC'

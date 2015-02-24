@@ -69,6 +69,20 @@ def get_code_from_index(index):
             return chain.code
     return None
 
+def get_server_trust(code):
+    '''Retrieve the relative amount of trust in this chain's servers'''
+    instance = get_chain_instance(code)
+    if instance is None: return None
+    # Proof of work
+    is_pow = instance.PoW
+    # multiple servers
+    multiple_servers = len(instance.DEFAULT_SERVERS) > 1
+    # criterion -> [value, info]
+    return {
+        'pow': [is_pow, 'This wallet verifies Proof-of-Work'],
+        'multiple_servers': [multiple_servers, 'This wallet gets data from multiple servers'],
+    }
+
 def get_chain_instance(code):
     code = code.upper()
     if not is_known_chain(code): return None
