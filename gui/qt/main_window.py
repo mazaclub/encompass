@@ -1768,22 +1768,28 @@ class ElectrumWindow(QMainWindow):
         self.update_lock_icon()
 
     def change_currency_dialog(self):
+        import operator
         d = QDialog(self)
-        d.setWindowTitle(_("Change Currency"))
+        d.setWindowTitle(_('Change Currency'))
         main_layout = QVBoxLayout()
+        chains_view = QTreeWidget()
+        chains_view.setColumnCount(2)
+        chains_view.setHeaderLabels([ _('Code'), _('Currency') ])
+        chains_view.setColumnWidth(1, 75)
+        chains_view.setColumnWidth(2, 150)
+        chains_view.setMinimumWidth(325)
+        chains = chainkey.chainparams._known_chains
+        for ch in sorted(chains, key=operator.attrgetter('code')):
+            item = QTreeWidgetItem([ch.code, ch.class_name])
+            chains_view.addTopLevelItem(item)
+        chains_view.setCurrentItem(chains_view.topLevelItem(0))
+        main_layout.addWidget(chains_view)
 
-        chains_list = sorted(chainkey.chainparams._known_chain_codes)
-        combobox = QComboBox()
-        for c in chains_list:
-            combobox.addItem(c)
-        combobox.setCurrentIndex(0)
-
-        main_layout.addWidget(combobox)
         main_layout.addLayout(ok_cancel_buttons(d))
         d.setLayout(main_layout)
 
         if not d.exec_(): return
-        chaincode = str(combobox.currentText())
+        chaincode = str(chains_view.currentItem().text(0))
         self.emit(QtCore.SIGNAL('change_currency'), chaincode)
 
     def change_currency(self, chaincode):
