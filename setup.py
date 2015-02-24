@@ -74,7 +74,7 @@ setup(
         'darkcoin_hash'
     ],
     dependency_links=[
-        "git://github.com/guruvan/darkcoin_hash.git=darkcoin_hash"
+        "git+https://github.com/guruvan/darkcoin_hash#egg=darkcoin_hash"
     ],
     package_dir={
         'chainkey': 'lib',
