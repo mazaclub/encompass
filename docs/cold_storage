@@ -2,20 +2,20 @@ Here is how to sign a transaction with an offline Electrum wallet.
 
 1. With your online (seedless) wallet, create the transaction using 'mktx':
 
-./electrum -w seedless_wallet mktx 1Cpf9zb5Rm5Z5qmmGezn6ERxFWvwuZ6UCx 0.1
+./encompass -w seedless_wallet mktx 1Cpf9zb5Rm5Z5qmmGezn6ERxFWvwuZ6UCx 0.1
 {
     "complete": false, 
     "hex": "01000000015a92850cc5dc7bb7c1a711c1ce0c1658596c085d49c17fce68c641cce0bdd188010000004801ff45fe197f1a7a7779f58690c3100364d7ce596bf47bb52e88e617e22940bf54a8f139194652584b0d357eb95defb8b4911b0a53118b8afecb96aedb1334e772df350901002800ffffffff02b1f0f65d000000001976a9147ea19cc36d846e2ce81762def3cb9299bed0847188ac80969800000000001976a91451e814c0f7637ba9a59bc11628337a2df6559a5088ac00000000"
 }
 
-Electrum returns an unsigned transaction. Note that the serialization
+Encompass returns an unsigned transaction. Note that the serialization
 format contains the master public key needed and key derivation, used
 by the offline wallet to sign the transaction.
 
 
 2. Sign the transaction with your offline wallet, using 'signrawtransaction':
 
-./electrum -w wallet_with_seed signrawtransaction 01000000015a92850cc5dc7bb7c1a711c1ce0c1658596c085d49c17fce68c641cce0bdd188010000004801ff45fe197f1a7a7779f58690c3100364d7ce596bf47bb52e88e617e22940bf54a8f139194652584b0d357eb95defb8b4911b0a53118b8afecb96aedb1334e772df350901002800ffffffff02b1f0f65d000000001976a9147ea19cc36d846e2ce81762def3cb9299bed0847188ac80969800000000001976a91451e814c0f7637ba9a59bc11628337a2df6559a5088ac00000000
+./encompass -w wallet_with_seed signrawtransaction 01000000015a92850cc5dc7bb7c1a711c1ce0c1658596c085d49c17fce68c641cce0bdd188010000004801ff45fe197f1a7a7779f58690c3100364d7ce596bf47bb52e88e617e22940bf54a8f139194652584b0d357eb95defb8b4911b0a53118b8afecb96aedb1334e772df350901002800ffffffff02b1f0f65d000000001976a9147ea19cc36d846e2ce81762def3cb9299bed0847188ac80969800000000001976a91451e814c0f7637ba9a59bc11628337a2df6559a5088ac00000000
 Password:
 {
     "complete": true, 
