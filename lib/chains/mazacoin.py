@@ -3,6 +3,7 @@ from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, 
 import os
 
 class Mazacoin(CryptoCur):
+    PoW = True
     chain_index = 13
     coin_name = 'Mazacoin'
     code = 'MZC'

@@ -14,6 +14,7 @@ except ImportError:
 
 
 class Viacoin(CryptoCur):
+    PoW = False
     chain_index = 14
     coin_name='Viacoin'
     code = 'VIA'

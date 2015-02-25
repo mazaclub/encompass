@@ -26,6 +26,9 @@ class CryptoCur(object):
     '''Abstract class containing cryptocurrency-specific code'''
     ### Chain parameters ###
 
+    # Whether this chain verifies Proof-of-Work
+    PoW = False
+
     # index used in child key derivation
     chain_index = 0
     # Full name (e.g. Bitcoin)
