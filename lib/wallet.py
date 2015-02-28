@@ -876,6 +876,20 @@ class Abstract_Wallet(object):
             imported_account.update_password(old_password, new_password)
             self.save_accounts()
 
+        # loop through chains an re-encrypt private keys
+        chaincodes = chainparams._known_chain_codes
+        for code in chaincodes:
+            # skip the active chain
+            if code == self.active_chain.code: continue
+            chain = self.storage.get_above_chain(code)
+            master_keys = chain.get('master_private_keys', None)
+            if master_keys is None: continue
+            for k, v in master_keys.items():
+                old = pw_decode(v, old_password)
+                new = pw_encode(old, new_password)
+                chain['master_private_keys'][k] = new
+            self.storage.put_above_chain(code, chain)
+
         if hasattr(self, 'master_private_keys'):
             for k, v in self.master_private_keys.items():
                 b = pw_decode(v, old_password)
