@@ -869,7 +869,7 @@ class Abstract_Wallet(object):
         if self.has_seed():
             decoded = self.get_seed(old_password)
             self.seed = pw_encode( decoded, new_password)
-            self.storage.put('seed', self.seed, True)
+            self.storage.put_above_chain('seed', self.seed, True)
 
         imported_account = self.accounts.get(IMPORTED_ACCOUNT)
         if imported_account:
@@ -884,7 +884,7 @@ class Abstract_Wallet(object):
             self.storage.put('master_private_keys', self.master_private_keys, True)
 
         self.use_encryption = (new_password != None)
-        self.storage.put('use_encryption', self.use_encryption,True)
+        self.storage.put_above_chain('use_encryption', self.use_encryption,True)
 
     def freeze(self,addr):
         if self.is_mine(addr) and addr not in self.frozen_addresses:
