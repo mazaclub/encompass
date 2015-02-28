@@ -20,7 +20,6 @@ RUN apt-get update -y \
      && apt-get update -y \
      && apt-get install -y curl  wine1.7 xvfb wget \
      && apt-get install -y winbind \
-     && apt-get install -y python-pip pyqt4-dev-tools \
      && apt-get purge -y python-software-properties \
      && apt-get autoclean -y 
 
