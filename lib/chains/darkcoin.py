@@ -23,7 +23,6 @@ class Darkcoin(CryptoCur):
     block_explorers = {
         'CryptoID': 'https://chainz.cryptoid.info/drk/',
         'CoinPlorer': 'https://coinplorer.com/DRK',
-        
     }
 
     base_units = {
@@ -39,10 +38,10 @@ class Darkcoin(CryptoCur):
     DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}
 
     DEFAULT_SERVERS = {
+        'descartes.darkco.in':DEFAULT_PORTS,
         'drk1.electrum-servers.us':DEFAULT_PORTS,
+        '103.13.228.168':DEFAULT_PORTS,
     }
-
-
 
     def set_headers_path(self, path):
         self.headers_path = path
@@ -125,7 +124,6 @@ class Darkcoin(CryptoCur):
         return h
 
 
-      
     def hash_header(self, header):
         return rev_hex(HashX11(self.header_to_string(header).decode('hex')).encode('hex'))
 
