@@ -1,3 +1,9 @@
+# Release 0.4.4
+
+ * Change deterministic.spec to include modules more explicitly
+
+ * Fix an issue in which updating a password would only affect the active chain
+
 # Release 0.4.0
 
  * Implement Darkcoin Chainkey module
