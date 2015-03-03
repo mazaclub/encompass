@@ -3,9 +3,9 @@
 # We don't put these files in to actually include them in the script but to make the Analysis method scan them for imports
 a = Analysis(['encompass', 'gui/qt/main_window.py', 'gui/qt/lite_window.py', 'gui/text.py',
               'lib/util.py', 'lib/wallet.py', 'lib/simple_config.py',
-              'lib/bitcoin.py','requests/__init__.py','tlslite/__init__.py'
+              'lib/bitcoin.py','lib/interface.py'
               ],
-             hiddenimports=["lib","gui","requests"],
+             hiddenimports=["lib","gui"],
              pathex=['lib','gui','plugins','packages'],
              hookspath=None)
 
