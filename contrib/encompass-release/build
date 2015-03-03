@@ -2,7 +2,12 @@
 
 function buildBinary(){
   mkdir $(pwd)/releases
+  echo "Making Release packages for $VERSION"
   $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ mazaclub/encompass-winbuild /root/make_release $VERSION
+  echo "Making Windows EXEs for $VERSION"
+  $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ mazaclub/encompass-winbuild /usr/bin/build-binary $VERSION
+  echo "Additional Packaging for $VERSION"
+  $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-winbuild /bin/bash
   if [[ $? = 0 ]]; then
     echo "Build successful."
   else
