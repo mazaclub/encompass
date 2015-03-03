@@ -72,6 +72,8 @@ COPY ./helpers/darkcoin_hash.pyd /root/darkcoin_hash.pyd
 COPY ./helpers/make_packages /root/make_packages
 COPY ./helpers/make_release /root/make_release
 COPY ./helpers/build-binary /usr/bin/build-binary
+#COPY ./helpers/make_debian /root/make_debian
+#COPY ./helpers/debian-installer.sh /root/debian-installer.sh
 
 # Clean up stale wine processes
 RUN rm -rf /tmp/.wine-*

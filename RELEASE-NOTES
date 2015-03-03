@@ -1,3 +1,16 @@
+# Release 0.4.4
+ 
+ * Fixes issues with password encryption of seed & master privkeys
+   - previous versions would only correctly update the encryption of the active chain
+   - this could result in seed and/or master privkeys being unencrypted
+   - this version will correct old wallets, however users are advised to move funds if leaking deleted data is a concern
+   - more details available on https://maza.club/encompass
+
+ * Implements updated Change Currency dialog, now shows status of PoW checks being done in ChainKey module, and
+   number of servers listed in the module. 
+
+ * Makes Windows releases more deterministic - specifies all dependencies in make_packages, resolves issues with requests module
+
 # Release 0.4.0
 
  * Implement Darkcoin Chainkey module
