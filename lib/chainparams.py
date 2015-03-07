@@ -7,29 +7,29 @@ import chains
 #   chain_index: The index (BIP-0044) used in child key derivation
 #       This is just for organization, the class of the actual
 #       cryptocur has the chain index as well.
+#   coin_name: Full name of the cryptocurrency
 #   code: Abbreviated form of the cryptocurrency
 #   module_name: Name of the module containing specifics on the cryptocur
-#   class_name: Name of the class implementing the cryptocur
 
 active_chain = None
 
-ChainParams = namedtuple('ChainParams', ('chain_index', 'code', 'module_name', 'class_name'))
+ChainParams = namedtuple('ChainParams', ('chain_index', 'coin_name', 'code', 'module_name'))
 
 _known_chains = (
     # Bitcoin
-    ChainParams(0, 'BTC', 'bitcoin', 'Bitcoin'),
+    ChainParams(0, 'Bitcoin', 'BTC', 'bitcoin'),
 
     # Litecoin
-    ChainParams(2, 'LTC', 'litecoin', 'Litecoin'),
+    ChainParams(2, 'Litecoin', 'LTC', 'litecoin'),
 
     # Darkcoin
-    ChainParams(5, 'DRK', 'darkcoin', 'Darkcoin'),
+    ChainParams(5, 'Darkcoin', 'DRK', 'darkcoin'),
     
     # Mazacoin
-    ChainParams(13, 'MZC', 'mazacoin', 'Mazacoin'),
+    ChainParams(13, 'Mazacoin', 'MZC', 'mazacoin'),
 
     # Viacoin
-    ChainParams(14, 'VIA', 'viacoin', 'Viacoin'),
+    ChainParams(14, 'Viacoin', 'VIA', 'viacoin'),
 )
 
 _known_chain_dict = dict((i.code, i) for i in _known_chains)
@@ -92,5 +92,5 @@ def get_chain_instance(code):
     params = get_params(code)
     module_name = params.module_name
     classmodule = importlib.import_module(''.join(['chainkey.chains.', module_name]))
-    classInst = getattr(classmodule, params.class_name)
+    classInst = getattr(classmodule, 'Currency')
     return classInst()

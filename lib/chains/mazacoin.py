@@ -37,12 +37,6 @@ class Mazacoin(CryptoCur):
         'tate.cryptoadhd.com':DEFAULT_PORTS,
     }
 
-    def set_headers_path(self, path):
-        self.headers_path = path
-
-    def path(self):
-        return self.headers_path
-
     # Used on chain reorg
     def reorg_handler(self, local_height):
         name = self.path()
@@ -338,3 +332,4 @@ class Mazacoin(CryptoCur):
 
         return self.get_target_dgw3(block_height, chain)
 
+Currency = Mazacoin
