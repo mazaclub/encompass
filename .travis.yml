@@ -4,8 +4,8 @@ python:
 install: 
   - pip install slowaes==0.1a1 ecdsa>=0.9 pbkdf2 requests pyasn1 pyasn1-modules tlslite>=0.4.5 qrcode SocksiPy-branch ltc_scrypt
   - git clone https://github.com/guruvan/darkcoin_hash
-  - git checkout 1.1
   - cd darkcoin_hash
+  - git checkout 1.1
   - python setup.py install
   - cd ..
 script: nosetests -e gui
