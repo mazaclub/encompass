@@ -6,6 +6,7 @@ import darkcoin_hash as darkhash
 HashX11 = lambda x: darkhash.getPoWHash(x)
 
 class Darkcoin(CryptoCur):
+    PoW = False
     chain_index = 5
     coin_name = 'Darkcoin'
     code = 'DRK'
@@ -42,12 +43,6 @@ class Darkcoin(CryptoCur):
         'drk1.electrum-servers.us':DEFAULT_PORTS,
         '103.13.228.168':DEFAULT_PORTS,
     }
-
-    def set_headers_path(self, path):
-        self.headers_path = path
-
-    def path(self):
-        return self.headers_path
 
     def verify_chain(self, chain):
 
@@ -203,3 +198,4 @@ class Darkcoin(CryptoCur):
         new_bits = c + MM * i
         return new_bits, new_target
 
+Currency = Darkcoin

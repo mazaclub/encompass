@@ -12,7 +12,6 @@ try:
 except ImportError:
     from scrypt import scrypt_1024_1_1_80 as getPoWHash
 
-
 class Viacoin(CryptoCur):
     PoW = False
     chain_index = 14
@@ -48,12 +47,6 @@ class Viacoin(CryptoCur):
         'server.vialectrum.org': DEFAULT_PORTS,
         'vialectrum.viacoin.net': DEFAULT_PORTS,
     }
-
-    def set_headers_path(self, path):
-        self.headers_path = path
-
-    def path(self):
-        return self.headers_path
 
     def verify_chain(self, chain):
 
@@ -211,3 +204,4 @@ class Viacoin(CryptoCur):
         return new_bits, new_target
 
 
+Currency = Viacoin

@@ -35,9 +35,11 @@ In addition to those constants, some more modular information is required, inclu
 
 Also, the number of headers in one chunk is stored in the `chunk_size` variable. This is 2016 in Electrum.
 
+Lastly, after the currency class definition, it is required to define a variable called `Currency` as the currency's class name. For example, `Currency = Bitcoin` in bitcoin.py, where the class name is "Bitcoin."
+
 ### Functions
 
-All functions for verifying headers are required in a chainkey module. Most importantly, `get_target()`, `verify_chain()`, and `verify_chunk()`, but also any functions they rely on, including `set_headers_path()`, `path()`, `header_to_string()`, `header_from_string()`, `hash_header()`, `save_chunk()`, `save_header()`, and `read_header()`.
+All functions for verifying headers are required in a chainkey module. Most importantly, `get_target()`, `verify_chain()`, and `verify_chunk()`, but also any functions they rely on, including `header_to_string()`, `header_from_string()`, `hash_header()`, `save_chunk()`, `save_header()`, and `read_header()`.
 
 Note that commonly in Electrum forks, the functions `save_chunk()` and `save_header()` make a call to a function `set_local_height()`. This call must be removed in the chainkey module, as `set_local_height()` is called elsewhere. Also note that any calls to `print_error()` may be removed, as importing that function is not required.
 
