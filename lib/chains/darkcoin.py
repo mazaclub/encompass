@@ -21,8 +21,10 @@ class Darkcoin(CryptoCur):
     COINBASE_MATURITY = 100
 
     block_explorers = {
+        'Blockchains': 'http://blockchains.io/drk/',
         'CryptoID': 'https://chainz.cryptoid.info/drk/',
-        'CoinPlorer': 'https://coinplorer.com/DRK',
+        'CoinPlorer': 'https://coinplorer.com/DRK/',
+        'Official': 'http://explorer.darkcoin.io/',
     }
 
     base_units = {
@@ -38,9 +40,12 @@ class Darkcoin(CryptoCur):
     DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}
 
     DEFAULT_SERVERS = {
-        'descartes.darkco.in':DEFAULT_PORTS,
-        'drk1.electrum-servers.us':DEFAULT_PORTS,
-        '103.13.228.168':DEFAULT_PORTS,
+        'descartes.darkco.in':DEFAULT_PORTS,       # vertoe
+        'electrum.darkcointalk.org':DEFAULT_PORTS, # propulsion
+        'drk1.electrum-servers.us':DEFAULT_PORTS,  # elm4ever
+        'electrum.drk.siampm.com':DEFAULT_PORTS,   # thelazier
+        'electrum-drk.club':DEFAULT_PORTS,         # duffman
+        'drk.khavr.com':DEFAULT_PORTS,             # akhavr
     }
 
     def set_headers_path(self, path):
