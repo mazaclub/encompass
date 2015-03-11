@@ -115,6 +115,37 @@ class SimpleConfig(object):
             out = self.user_config.get('active_chain_code', default)
         return out
 
+    def get_above_chain(self, key, default = None):
+        out = None
+        with self.lock:
+            out = self.read_only_options.get(key)
+            if not out:
+                try:
+                    out = self.user_config.get(key, default)
+                except KeyError:
+                    out = None
+        return out
+
+    def set_key_above_chain(self, key, value, save=True):
+        if not self.is_modifiable(key):
+            print "Warning: not changing key '%s' because it is not modifiable" \
+                  " (passed as command line option or defined in /etc/encompass.conf)"%key
+        with self.lock:
+            self.user_config[key] = value
+            if save:
+                self.save_user_config()
+        return
+
+    def get_chain_config(self, chaincode):
+        '''Convenience method for getting a chain's config dict'''
+        return self.get_above_chain(chaincode)
+
+    def set_chain_config(self, chaincode, value):
+        '''Convenience method for setting a chain's config dict'''
+        if not chainparams.is_known_chain(chaincode):
+            return False
+        return self.set_key_above_chain(chaincode, value)
+
     def set_key(self, key, value, save = True):
         if not self.is_modifiable(key):
             print "Warning: not changing key '%s' because it is not modifiable" \
