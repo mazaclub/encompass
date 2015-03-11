@@ -125,6 +125,15 @@ class WalletStorage(object):
                 v = copy.deepcopy(v)
             return v
 
+    def get_chain_value(self, code, key, default=None):
+        """Shortcut for getting info within a certain chain"""
+        try:
+            chain = self.get_above_chain(code)
+            data = chain.get(key)
+        except:
+            data = None
+        return data
+
     def get(self, key, default=None):
         try:
             active_chain_code = self.config.get_active_chain_code()
