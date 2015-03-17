@@ -244,8 +244,10 @@ class Abstract_Wallet(object):
             self.update_tx_outputs(tx_hash)
 
         # save wallet type the first time
-        if self.storage.get('wallet_type') is None:
-            self.storage.put('wallet_type', self.wallet_type, True)
+        if self.storage.get_above_chain('wallet_type') is None:
+            self.storage.put_above_chain('wallet_type', self.wallet_type, True)
+        #if self.storage.get('wallet_type') is None:
+        #    self.storage.put('wallet_type', self.wallet_type, True)
 
     def set_chain(self, chaincode):
         result = self.storage.config.set_active_chain_code(chaincode)
@@ -1717,7 +1719,10 @@ class Wallet(object):
             sys.exit(1)
 
         run_hook('add_wallet_types', wallet_types)
-        wallet_type = storage.get('wallet_type')
+        wallet_type = storage.get_above_chain('wallet_type')
+        # If wallet_type isn't above chain, get it from where it used to be
+        if wallet_type is None:
+            wallet_type = storage.get('wallet_type')
         if wallet_type:
             for cat, t, name, c in wallet_types:
                 if t == wallet_type:
