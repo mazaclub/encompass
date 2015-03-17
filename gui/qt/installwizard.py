@@ -368,7 +368,7 @@ class InstallWizard(QDialog):
                 wallet_type = '2fa'
 
             if action == 'create':
-                self.storage.put('wallet_type', wallet_type, False)
+                self.storage.put_above_chain('wallet_type', wallet_type, False)
 
         if action is None:
             return
@@ -569,7 +569,7 @@ class InstallWizard(QDialog):
                 wallet.create_main_account(password)
 
             else:
-                self.storage.put('wallet_type', t)
+                self.storage.put_above_chain('wallet_type', t)
                 wallet = run_hook('installwizard_restore', self, self.storage)
                 if not wallet:
                     return
