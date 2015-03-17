@@ -49,12 +49,6 @@ class Litecoin(CryptoCur):
         'rho.hicapacity.org': DEFAULT_PORTS,
     }
 
-    def set_headers_path(self, path):
-        self.headers_path = path
-
-    def path(self):
-        return self.headers_path
-
     def verify_chain(self, chain):
 
         first_header = chain[0]
@@ -209,3 +203,4 @@ class Litecoin(CryptoCur):
         new_bits = c + MM * i
         return new_bits, new_target
 
+Currency = Litecoin

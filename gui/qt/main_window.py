@@ -1796,7 +1796,7 @@ class ElectrumWindow(QMainWindow):
             server_trust = chainkey.chainparams.get_server_trust(ch.code)
             uses_pow = server_trust['pow']
             num_servers = server_trust['servers']
-            item = QTreeWidgetItem([ch.code, ch.class_name, y_or_n(uses_pow), str(num_servers)])
+            item = QTreeWidgetItem([ch.code, ch.coin_name, y_or_n(uses_pow), str(num_servers)])
             chains_view.addTopLevelItem(item)
         chains_view.setCurrentItem(chains_view.topLevelItem(0))
         main_layout.addWidget(chains_view)
