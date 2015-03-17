@@ -72,8 +72,7 @@ class InstallWizard(QDialog):
         self.wallet_types = [
             ('standard',  _("Standard wallet")),
             ('twofactor', _("Wallet with two-factor authentication")),
-            # Multisig is disabled (TODO)
-            #('multisig',  _("Multi-signature wallet")),
+            ('multisig',  _("Multi-signature wallet")),
             ('hardware',  _("Hardware wallet")),
         ]
 
