@@ -267,7 +267,7 @@ class TrezorWallet(NewWallet):
         except Exception, e:
             give_error(e)
         try:
-            msg_sig = self.get_client().sign_message('Bitcoin', address_n, message)
+            msg_sig = self.get_client().sign_message(self.active_chain.coin_name, address_n, message)
         except Exception, e:
             give_error(e)
         finally:
@@ -289,7 +289,7 @@ class TrezorWallet(NewWallet):
         inputs = self.tx_inputs(tx)
         outputs = self.tx_outputs(tx)
         try:
-            signed_tx = self.get_client().sign_tx('Bitcoin', inputs, outputs)[1]
+            signed_tx = self.get_client().sign_tx(self.active_chain.coin_name, inputs, outputs)[1]
         except Exception, e:
             give_error(e)
         finally:
@@ -384,7 +384,7 @@ class TrezorWallet(NewWallet):
             address = self.addresses(False)[0]
             address_id = self.address_id(address)
             n = self.get_client().expand_path(address_id)
-            device_address = self.get_client().get_address('Bitcoin', n)
+            device_address = self.get_client().get_address(self.active_chain.coin_name, n)
             self.device_checked = True
 
             if device_address != address:
