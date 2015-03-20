@@ -14,6 +14,7 @@ from chainkey.plugins import BasePlugin, hook
 from chainkey.transaction import deserialize
 from chainkey.wallet import NewWallet
 from chainkey.util import print_error
+from chainkey import chainparams
 
 from chainkey_gui.qt.password_dialog import make_password_dialog, run_password_dialog
 from chainkey_gui.qt.util import ok_cancel_buttons, EnterButton
@@ -56,8 +57,6 @@ class Plugin(BasePlugin):
         return TREZOR
 
     def is_available(self):
-        # Disabled until compatibility is ensured
-        return False
         if self.wallet is None:
             return self._is_available
         if self.wallet.storage.get('wallet_type') == 'trezor':
@@ -218,13 +217,13 @@ class TrezorWallet(NewWallet):
 
     def address_id(self, address):
         account_id, (change, address_index) = self.get_address_index(address)
-        return "44'/0'/%s'/%d/%d" % (account_id, change, address_index)
+        return "44'/%d'/%s'/%d/%d" % (self.active_chain.chain_index, account_id, change, address_index)
 
     def create_main_account(self, password):
         self.create_account('Main account', None) #name, empty password
 
     def derive_xkeys(self, root, derivation, password):
-        derivation = derivation.replace(self.root_name,"44'/0'/")
+        derivation = derivation.replace(self.root_name,"44'/%d'/" % (self.active_chain.chain_index))
         xpub = self.get_public_key(derivation)
         return xpub, None
 
@@ -236,7 +235,7 @@ class TrezorWallet(NewWallet):
 
     def get_master_public_key(self):
         if not self.mpk:
-            self.mpk = self.get_public_key("44'/0'")
+            self.mpk = self.get_public_key("44'/%d'" % (self.active_chain.chain_index))
         return self.mpk
 
     def i4b(self, x):
@@ -349,9 +348,9 @@ class TrezorWallet(NewWallet):
                 txoutputtype.address = address
             txoutputtype.amount = amount
             addrtype, hash_160 = bc_address_to_hash_160(address)
-            if addrtype == 0:
+            if addrtype == self.active_chain.p2pkh_version:
                 txoutputtype.script_type = types.PAYTOADDRESS
-            elif addrtype == 5:
+            elif addrtype == self.active_chain.p2sh_version:
                 txoutputtype.script_type = types.PAYTOSCRIPTHASH
             else:
                 raise BaseException('addrtype')
