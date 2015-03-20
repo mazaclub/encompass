@@ -13,11 +13,10 @@ from chainkey.bitcoin import EncodeBase58Check, public_key_to_bc_address, bc_add
 from chainkey.i18n import _
 from chainkey.plugins import BasePlugin, hook
 from chainkey.transaction import deserialize
-from chainkey.wallet import BIP32_HD_Wallet
+from chainkey.wallet import NewWallet
 from chainkey.util import print_error
 from chainkey import chainparams
 
-###from chainkey_gui.qt.password_dialog import make_password_dialog, run_password_dialog
 from chainkey_gui.qt.util import ok_cancel_buttons, EnterButton
 
 try:
@@ -194,12 +193,12 @@ class Plugin(BasePlugin):
 
 from chainkey.wallet import pw_decode, bip32_private_derivation, bip32_root
 
-class TrezorWallet(BIP32_HD_Wallet):
+class TrezorWallet(NewWallet):
     wallet_type = 'trezor'
     root_derivation = "m/44'/0'"
 
     def __init__(self, storage):
-        BIP32_HD_Wallet.__init__(self, storage)
+        NewWallet.__init__(self, storage)
         self.transport = None
         self.client = None
         self.mpk = None
@@ -509,15 +508,6 @@ class TrezorQtGuiMixin(object):
         log("Enter one word of mnemonic: ")
         word = raw_input()
         return proto.WordAck(word=word)
-
-    def password_dialog(self, msg=None):
-        if not msg:
-            msg = _("Please enter your Trezor password")
-
-        d = QDialog()
-        d.setModal(1)
-        d.setLayout( make_password_dialog(d, None, msg, False) )
-        return run_password_dialog(d, None, None)
 
     def pin_dialog(self, msg):
         d = QDialog(None)
