@@ -5,6 +5,7 @@ from struct import pack
 from sys import stderr
 from time import sleep
 from base64 import b64encode, b64decode
+import unicodedata
 
 import chainkey
 from chainkey.account import BIP32_Account
@@ -12,11 +13,11 @@ from chainkey.bitcoin import EncodeBase58Check, public_key_to_bc_address, bc_add
 from chainkey.i18n import _
 from chainkey.plugins import BasePlugin, hook
 from chainkey.transaction import deserialize
-from chainkey.wallet import NewWallet
+from chainkey.wallet import BIP32_HD_Wallet
 from chainkey.util import print_error
 from chainkey import chainparams
 
-from chainkey_gui.qt.password_dialog import make_password_dialog, run_password_dialog
+###from chainkey_gui.qt.password_dialog import make_password_dialog, run_password_dialog
 from chainkey_gui.qt.util import ok_cancel_buttons, EnterButton
 
 try:
@@ -37,6 +38,20 @@ def give_error(message):
     print_error(message)
     raise Exception(message)
 
+def trezor_passphrase_dialog(msg):
+    from chainkey_gui.qt.password_dialog import make_password_dialog, run_password_dialog
+    d = QDialog()
+    d.setModal(1)
+    d.setLayout(make_password_dialog(d, None, msg, False))
+    confirmed, p, passphrase = run_password_dialog(d, None, None)
+    if not confirmed:
+        return None
+    if passphrase is None:
+        passphrase = '' # Even blank string is valid Trezor passphrase
+    passphrase = unicodedata.normalize('NFKD', unicode(passphrase))
+    return passphrase
+
+
 class Plugin(BasePlugin):
 
     def fullname(self):
@@ -50,17 +65,20 @@ class Plugin(BasePlugin):
         self._is_available = self._init()
         self._requires_settings = True
         self.wallet = None
-        chainkey.wallet.wallet_types.append(('hardware', 'trezor', _("Trezor wallet"), TrezorWallet))
+        if self._is_available:
+            chainkey.wallet.wallet_types.append(('hardware', 'trezor', _("Trezor wallet"), TrezorWallet))
 
     def _init(self):
         return TREZOR
 
     def is_available(self):
-        if self.wallet is None:
-            return self._is_available
-        if self.wallet.storage.get('wallet_type') == 'trezor':
-            return True
-        return False
+        if not self._is_available:
+            return False
+        if not self.wallet:
+            return False
+        if self.wallet.storage.get_above_chain('wallet_type') != 'trezor':
+            return False
+        return True
 
     def requires_settings(self):
         return self._requires_settings
@@ -71,11 +89,9 @@ class Plugin(BasePlugin):
     def is_enabled(self):
         if not self.is_available():
             return False
-
-        if not self.wallet or self.wallet.storage.get('wallet_type') == 'trezor':
-            return True
-
-        return self.wallet.storage.get('use_' + self.name) is True
+        if self.wallet.has_seed():
+            return False
+        return True
 
     def enable(self):
         return BasePlugin.enable(self)
@@ -94,28 +110,39 @@ class Plugin(BasePlugin):
     @hook
     def close_wallet(self):
         print_error("trezor: clear session")
-        if self.wallet.client:
+        if self.wallet and self.wallet.client:
             self.wallet.client.clear_session()
+            self.wallet.client.transport.close()
 
     @hook
     def load_wallet(self, wallet):
-        self.wallet = wallet
         if self.trezor_is_connected():
             if not self.wallet.check_proper_device():
                 QMessageBox.information(self.window, _('Error'), _("This wallet does not match your Trezor device"), _('OK'))
+                self.wallet.force_watching_only = True
         else:
             QMessageBox.information(self.window, _('Error'), _("Trezor device not detected.\nContinuing in watching-only mode."), _('OK'))
+            self.wallet.force_watching_only = True
 
     @hook
     def installwizard_restore(self, wizard, storage):
-        if storage.get('wallet_type') != 'trezor': 
+        if storage.get_above_chain('wallet_type') != 'trezor': 
+            return
+        seed = wizard.enter_seed_dialog("Enter your Trezor seed", None, func=lambda x:True)
+        if not seed:
             return
         wallet = TrezorWallet(storage)
-        try:
-            wallet.create_main_account(None)
-        except BaseException as e:
-            QMessageBox.information(None, _('Error'), str(e), _('OK'))
+        self.wallet = wallet
+        passphrase = trezor_passphrase_dialog(_("Please enter your Trezor passphrase.") + '\n' + _("Press OK if you do not use one."))
+        if passphrase is None:
+            QMessageBox.critical(None, _('Error'), _("Password request canceled"), _('OK'))
             return
+        password = wizard.password_dialog()
+        wallet.add_seed(seed, password)
+        wallet.add_cosigner_seed(seed, 'x/', password, passphrase)
+        wallet.create_main_account(password)
+        # disable trezor plugin
+        self.set_enabled(False)
         return wallet
 
     @hook
@@ -125,6 +152,10 @@ class Plugin(BasePlugin):
             self.wallet.trezor_sign(tx)
         except Exception as e:
             tx.error = str(e)
+    @hook
+    def receive_menu(self, menu, addrs):
+        if not self.wallet.is_watching_only() and self.wallet.atleast_version(1, 3) and len(addrs) == 1:
+            menu.addAction(_("Show on TREZOR"), lambda: self.wallet.show_address(addrs[0]))
 
     def settings_widget(self, window):
         return EnterButton(_('Settings'), self.settings_dialog)
@@ -161,16 +192,19 @@ class Plugin(BasePlugin):
         else:
             return False
 
+from chainkey.wallet import pw_decode, bip32_private_derivation, bip32_root
 
-class TrezorWallet(NewWallet):
+class TrezorWallet(BIP32_HD_Wallet):
     wallet_type = 'trezor'
+    root_derivation = "m/44'/0'"
 
     def __init__(self, storage):
-        NewWallet.__init__(self, storage)
+        BIP32_HD_Wallet.__init__(self, storage)
         self.transport = None
         self.client = None
         self.mpk = None
         self.device_checked = False
+        self.force_watching_only = False
 
     def get_action(self):
         if not self.accounts:
@@ -188,11 +222,8 @@ class TrezorWallet(NewWallet):
     def can_change_password(self):
         return False
 
-    def has_seed(self):
-        return False
-
     def is_watching_only(self):
-        return False
+        return self.force_watching_only
 
     def get_client(self):
         if not TREZOR:
@@ -205,14 +236,21 @@ class TrezorWallet(NewWallet):
             except:
                 give_error('Could not connect to your Trezor. Please verify the cable is connected and that no other app is using it.')
             self.client = QtGuiTrezorClient(self.transport)
-	    if (self.client.features.major_version == 1 and self.client.features.minor_version < 2) or (self.client.features.major_version == 1 and self.client.features.minor_version == 2 and self.client.features.patch_version < 1):
-		give_error('Outdated Trezor firmware. Please update the firmware from https://www.mytrezor.com') 
             self.client.set_tx_api(self)
             #self.client.clear_session()# TODO Doesn't work with firmware 1.1, returns proto.Failure
             self.client.bad = False
             self.device_checked = False
             self.proper_device = False
+            if not self.atleast_version(1, 2, 1):
+                give_error('Outdated Trezor firmware. Please update the firmware from https://www.mytrezor.com')
         return self.client
+
+    def compare_version(self, major, minor=0, patch=0):
+        features = self.get_client().features
+        return cmp([features.major_version, features.minor_version, features.patch_version], [major, minor, patch])
+
+    def atleast_version(self, major, minor=0, patch=0):
+        return self.compare_version(major, minor, patch) >= 0
 
     def address_id(self, address):
         account_id, (change, address_index) = self.get_address_index(address)
@@ -221,10 +259,25 @@ class TrezorWallet(NewWallet):
     def create_main_account(self, password):
         self.create_account('Main account', None) #name, empty password
 
+    def mnemonic_to_seed(self, mnemonic, passphrase):
+        # trezor uses bip39
+        import pbkdf2, hashlib, hmac
+        PBKDF2_ROUNDS = 2048
+        mnemonic = unicodedata.normalize('NFKD', ' '.join(mnemonic.split()))
+        passphrase = unicodedata.normalize('NFKD', passphrase)
+        return pbkdf2.PBKDF2(mnemonic, 'mnemonic' + passphrase, iterations = PBKDF2_ROUNDS, macmodule = hmac, digestmodule = hashlib.sha512).read(64)
+
     def derive_xkeys(self, root, derivation, password):
-        derivation = derivation.replace(self.root_name,"44'/%d'/" % (self.active_chain.chain_index))
-        xpub = self.get_public_key(derivation)
-        return xpub, None
+        x = self.master_private_keys.get(root)
+        if x:
+            root_xprv = pw_decode(x, password)
+            xprv, xpub = bip32_private_derivation(root_xprv, root, derivation)
+            return xpub, xprv
+        else:
+            derivation = derivation.replace(self.root_name,"44'/%d'/" % (self.active_chain.chain_index))
+            xpub = self.get_public_key(derivation)
+            return xpub, None
+
 
     def get_public_key(self, bip32_path):
         address_n = self.get_client().expand_path(bip32_path)
@@ -256,6 +309,21 @@ class TrezorWallet(NewWallet):
         #finally:
         #    twd.emit(SIGNAL('trezor_done'))
         #return str(decrypted_msg)
+
+    def show_address(self, address):
+        if not self.check_proper_device():
+            give_error('Wrong device or password')
+        try:
+            address_path = self.address_id(address)
+            address_n = self.get_client().expand_path(address_path)
+        except Exception, e:
+            give_error(e)
+        try:
+            self.get_client().get_address(self.active_chain.coin_name, address_n, True)
+        except Exception, e:
+            give_error(e)
+        finally:
+            twd.emit(SIGNAL('trezor_done'))
 
     def sign_message(self, address, message, password):
         if not self.check_proper_device():
@@ -322,7 +390,7 @@ class TrezorWallet(NewWallet):
             txinputtype.prev_index = prev_index
 
             if 'scriptSig' in txinput:
-                script_sig = txinput['scriptSig']
+                script_sig = txinput['scriptSig'].decode('hex')
                 txinputtype.script_sig = script_sig
 
             if 'sequence' in txinput:
@@ -406,6 +474,8 @@ class TrezorQtGuiMixin(object):
             message = "Confirm transaction fee on Trezor device to continue"
         elif msg.code == 7:
             message = "Confirm message to sign on Trezor device to continue"
+        elif msg.code == 10:
+            message = "Confirm address on Trezor device to continue"
         else:
             message = "Check Trezor device to continue"
         twd.start(message)
@@ -426,13 +496,12 @@ class TrezorQtGuiMixin(object):
             return proto.Cancel()
         return proto.PinMatrixAck(pin=pin)
 
-    def callback_PassphraseRequest(self, msg):
-        confirmed, p, passphrase = self.password_dialog()
-        if not confirmed:
+    def callback_PassphraseRequest(self, req):
+        msg = _("Please enter your Trezor passphrase.")
+        passphrase = trezor_passphrase_dialog(msg)
+        if passphrase is None:
             QMessageBox.critical(None, _('Error'), _("Password request canceled"), _('OK'))
             return proto.Cancel()
-        if passphrase is None:
-            passphrase='' # Even blank string is valid Trezor passphrase
         return proto.PassphraseAck(passphrase=passphrase)
 
     def callback_WordRequest(self, msg):
