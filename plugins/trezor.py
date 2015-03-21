@@ -64,6 +64,7 @@ class Plugin(BasePlugin):
         self._is_available = self._init()
         self._requires_settings = True
         self.wallet = None
+        self.window = None
         if self._is_available:
             chainkey.wallet.wallet_types.append(('hardware', 'trezor', _("Trezor wallet"), TrezorWallet))
 
