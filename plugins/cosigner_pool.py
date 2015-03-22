@@ -105,8 +105,6 @@ class Plugin(BasePlugin):
         return True
 
     def is_available(self):
-        # Disabled until compatibility is ensured
-        return False
         if self.wallet is None:
             return True
         return self.wallet.wallet_type in ['2of2', '2of3']
@@ -131,7 +129,7 @@ class Plugin(BasePlugin):
     def transaction_dialog(self, d):
         self.send_button = b = QPushButton(_("Send to cosigner"))
         b.clicked.connect(lambda: self.do_send(d.tx))
-        d.buttons.insertWidget(2, b)
+        d.buttons.insert(2, b)
         self.transaction_dialog_update(d)
 
     @hook
