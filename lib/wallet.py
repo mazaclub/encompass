@@ -1588,13 +1588,7 @@ class Wallet_2of2(Multisig_Wallet):
     wallet_type = '2of2'
 
     def __init__(self, storage):
-        chain_code = storage.config.get_active_chain_code()
-        if chain_code is None:
-            chain_code = chainparams.get_active_chain().code
-
-        chain_index = chainparams.get_chain_index(chain_code)
-        self.root_derivation = "m/44'/{}'".format(chain_index)
-        BIP32_Wallet.__init__(self, storage)
+        Multisig_Wallet.__init__(self, storage)
 
     def can_import(self):
         return False
