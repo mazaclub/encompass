@@ -1560,7 +1560,11 @@ class Multisig_Wallet(BIP32_Wallet, Mnemonic):
 
     def __init__(self, storage):
         BIP32_Wallet.__init__(self, storage)
-        chain_code = storage.config.get_active_chain_code()
+        try:
+            chain_code = storage.config.get_active_chain_code()
+        # constructor was passed a dict instead of a config object
+        except AttributeError:
+            chain_code = chainparams.get_active_chain().code
         if chain_code is None:
             chain_code = chainparams.get_active_chain().code
 
