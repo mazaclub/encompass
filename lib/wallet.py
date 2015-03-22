@@ -1554,8 +1554,33 @@ class NewWallet(BIP32_HD_Wallet, Mnemonic):
         if not self.accounts:
             return 'create_accounts'
 
+class Multisig_Wallet(BIP32_Wallet, Mnemonic):
+    root_name = "x1/"
+    root_derivation = "m/44'/0'"
 
-class Wallet_2of2(BIP32_Wallet, Mnemonic):
+    def __init__(self, storage):
+        BIP32_Wallet.__init__(self, storage)
+        chain_code = storage.config.get_active_chain_code()
+        if chain_code is None:
+            chain_code = chainparams.get_active_chain().code
+
+        chain_index = chainparams.get_chain_index(chain_code)
+        self.root_derivation = "m/44'/{}'".format(chain_index)
+        self.master_public_keys  = storage.get_above_chain('master_public_keys', {})
+        self.master_private_keys = storage.get_above_chain('master_private_keys', {})
+
+    def can_import(self):
+        return False
+
+    def add_master_public_key(self, name, xpub):
+        self.master_public_keys[name] = xpub
+        self.storage.put_above_chain('master_public_keys', self.master_public_keys, True)
+
+    def add_master_private_key(self, name, xpriv, password):
+        self.master_private_keys[name] = pw_encode(xpriv, password)
+        self.storage.put_above_chain('master_private_keys', self.master_private_keys, True)
+
+class Wallet_2of2(Multisig_Wallet):
     # Wallet with multisig addresses.
     # Cannot create accounts
     root_name = "x1/"
