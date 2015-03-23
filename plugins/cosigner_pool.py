@@ -93,15 +93,9 @@ class Plugin(BasePlugin):
     def init_qt(self, gui):
         self.win = gui.main_window
         self.win.connect(self.win, SIGNAL('cosigner:receive'), self.on_receive)
-        if self.listener is None:
-            self.listener = Listener(self)
-            self.listener.start()
 
     def enable(self):
         self.set_enabled(True)
-        self.init_qt()
-        if self.win.wallet:
-            self.load_wallet(self.win.wallet)
         return True
 
     def is_available(self):
@@ -114,14 +108,15 @@ class Plugin(BasePlugin):
         self.wallet = wallet
         if not self.is_available():
             return
-        mpk = self.wallet.get_master_public_keys()
+        if self.listener is None:
+            self.listener = Listener(self)
+            self.listener.start()
         self.cosigner_list = []
-        for key, xpub in mpk.items():
-            keyname = key + '/' # fixme
+        for key, xpub in self.wallet.master_public_keys.items():
             K = bitcoin.deserialize_xkey(xpub)[-1].encode('hex')
             _hash = bitcoin.Hash(K).encode('hex')
-            if self.wallet.master_private_keys.get(keyname):
-                self.listener.set_key(keyname, _hash)
+            if self.wallet.master_private_keys.get(key):
+                self.listener.set_key(key, _hash)
             else:
                 self.cosigner_list.append((xpub, K, _hash))
 
@@ -129,7 +124,7 @@ class Plugin(BasePlugin):
     def transaction_dialog(self, d):
         self.send_button = b = QPushButton(_("Send to cosigner"))
         b.clicked.connect(lambda: self.do_send(d.tx))
-        d.buttons.insert(2, b)
+        d.buttons.insertWidget(2, b)
         self.transaction_dialog_update(d)
 
     @hook
