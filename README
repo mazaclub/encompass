@@ -11,6 +11,11 @@ Homepage: https://maza.club/encompass
 
 1. GETTING STARTED
 ------------------
+First thing you need to do is run:
+  pyrcc4 icons.qrc -o gui/qt/icons_rc.py
+
+If you do not have pyrcc4 on your system, you may need to install the PyQt4-devel package first.
+
 
 To run Encompass from this directory, just do:
 
