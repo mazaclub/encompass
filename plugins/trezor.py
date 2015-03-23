@@ -117,6 +117,9 @@ class Plugin(BasePlugin):
     @hook
     def load_wallet(self, wallet):
         if self.trezor_is_connected():
+            if not wallet.is_supported_coin():
+                QMessageBox.information(self.window, _('Error'), _("Wallet firmware does not support the active currency.\nContinuing in watching-only mode."), _('OK'))
+                self.wallet.force_watching_only = True
             if not self.wallet.check_proper_device():
                 QMessageBox.information(self.window, _('Error'), _("This wallet does not match your Trezor device"), _('OK'))
                 self.wallet.force_watching_only = True
@@ -244,6 +247,13 @@ class TrezorWallet(NewWallet):
             if not self.atleast_version(1, 2, 1):
                 give_error('Outdated Trezor firmware. Please update the firmware from https://www.mytrezor.com')
         return self.client
+
+    def is_supported_coin(self):
+        coins_list = [ c.coin_name for c in self.get_client().features.coins ]
+        print_error('Wallet firmware supported coins: {}'.format(coins_list))
+        if self.active_chain.coin_name in coins_list:
+            return True
+        return False
 
     def compare_version(self, major, minor=0, patch=0):
         features = self.get_client().features
