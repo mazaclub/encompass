@@ -842,6 +842,8 @@ class Abstract_Wallet(object):
         keypairs = {}
         x_pubkeys = tx.inputs_to_sign()
         for x in x_pubkeys:
+            if not self.can_sign_xpubkey(x):
+                continue
             sec = self.get_private_key_from_xpubkey(x, password)
             print "sec", sec
             if sec:
