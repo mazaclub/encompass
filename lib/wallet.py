@@ -83,7 +83,11 @@ class WalletStorage(object):
         if not os.path.exists(dirpath):
             os.mkdir(dirpath)
 
-        new_path = os.path.join(config.path, "wallets", "default_wallet")
+        if config.get_above_chain('use_default_wallet', True):
+            current_wallet = 'default_wallet'
+        else:
+            current_wallet = config.get_above_chain('current_wallet', 'default_wallet')
+        new_path = os.path.join(config.path, "wallets", current_wallet)
 
         # default path in pre 1.9 versions
         old_path = os.path.join(config.path, "electrum.dat")
