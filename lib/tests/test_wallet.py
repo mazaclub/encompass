@@ -7,6 +7,10 @@ import json
 
 from StringIO import StringIO
 from lib.wallet import WalletStorage, NewWallet
+from lib import chainparams
+
+if chainparams.get_active_chain() is None:
+    chainparams.set_active_chain('BTC')
 
 
 class FakeConfig(object):
