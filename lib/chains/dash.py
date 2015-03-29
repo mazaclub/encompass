@@ -1,14 +1,14 @@
-'''Chain-specific Darkcoin code'''
+'''Chain-specific Dash code'''
 from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256
 import os
 import darkcoin_hash as darkhash
 
 HashX11 = lambda x: darkhash.getPoWHash(x)
 
-class Darkcoin(CryptoCur):
+class Dash(CryptoCur):
     PoW = False
     chain_index = 5
-    coin_name = 'Darkcoin'
+    coin_name = 'Dash'
     code = 'DRK'
     p2pkh_version = 76
     p2sh_version = 16
@@ -27,10 +27,9 @@ class Darkcoin(CryptoCur):
     }
 
     base_units = {
-        'DRK': 8,
-        'mDRK': 5,
-        'uDRK': 2,
-        'duffs': 0
+        'DASH': 8,
+        'mDASH': 5,
+        'uDASH: 2,
     }
 
     chunk_size = 2016
@@ -198,4 +197,4 @@ class Darkcoin(CryptoCur):
         new_bits = c + MM * i
         return new_bits, new_target
 
-Currency = Darkcoin
+Currency = Dash
