@@ -81,8 +81,8 @@ class TestWalletStorage(WalletTestCase):
             contents = f.write(contents)
 
         storage = WalletStorage(self.fake_config)
-        self.assertEqual("b", storage.get("a"))
-        self.assertEqual("d", storage.get("c"))
+        self.assertEqual("b", storage.get_above_chain("a"))
+        self.assertEqual("d", storage.get_above_chain("c"))
 
     def test_write_dictionnary_to_file(self):
         path = os.path.join(self.user_dir, "somewallet")
