@@ -71,7 +71,7 @@ class Test_SimpleConfig(unittest.TestCase):
                               read_system_config_function=fake_read_system,
                               read_user_config_function=fake_read_user,
                               read_user_dir_function=read_user_dir)
-        self.assertEqual(another_path, config.get("electrum_path"))
+        self.assertEqual(another_path, config.get_above_chain("electrum_path"))
 
     def test_simple_config_user_config_is_used_if_others_arent_specified(self):
         """If no system-wide configuration and no command-line options are
@@ -84,7 +84,7 @@ class Test_SimpleConfig(unittest.TestCase):
                               read_user_config_function=fake_read_user,
                               read_user_dir_function=read_user_dir)
         self.assertEqual(self.options.get("electrum_path"),
-                         config.get("electrum_path"))
+                         config.get_above_chain("electrum_path"))
 
     def test_cannot_set_options_passed_by_command_line(self):
         fake_read_system = lambda : {}
