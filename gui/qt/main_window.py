@@ -234,6 +234,10 @@ class ElectrumWindow(QMainWindow):
 
         self.clear_receive_tab()
         self.update_receive_tab()
+
+        use_default_wallet = self.config.get_above_chain('use_default_wallet', True)
+        if use_default_wallet == False:
+            self.config.set_key_above_chain('current_wallet', os.path.basename(self.wallet.storage.path))
         run_hook('load_wallet', wallet)
 
 
@@ -2772,6 +2776,12 @@ class ElectrumWindow(QMainWindow):
         can_edit_fees_cb.stateChanged.connect(on_editfees)
         can_edit_fees_help = HelpButton(_('This option lets you edit fees in the send tab.'))
         widgets.append((can_edit_fees_cb, None, can_edit_fees_help))
+
+        use_def_wallet_cb = QCheckBox(_('Open default_wallet on wallet start'))
+        use_def_wallet_cb.setChecked(self.config.get_above_chain('use_default_wallet', True))
+        use_def_wallet_cb.stateChanged.connect(lambda x: self.config.set_key_above_chain('use_default_wallet', use_def_wallet_cb.isChecked()))
+        use_def_wallet_help = HelpButton(_('Open default_wallet when Encompass starts. Otherwise, open the last wallet that was open.'))
+        widgets.append((use_def_wallet_cb, None, use_def_wallet_help))
 
         for a,b,c in widgets:
             i = grid.rowCount()
