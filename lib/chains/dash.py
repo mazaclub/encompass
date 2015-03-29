@@ -1,15 +1,15 @@
-'''Chain-specific Darkcoin code'''
+'''Chain-specific Dash code'''
 from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256
 import os
 import darkcoin_hash as darkhash
 
 HashX11 = lambda x: darkhash.getPoWHash(x)
 
-class Darkcoin(CryptoCur):
+class Dash(CryptoCur):
     PoW = False
     chain_index = 5
-    coin_name = 'Darkcoin'
-    code = 'DRK'
+    coin_name = 'Dash'
+    code = 'DASH'
     p2pkh_version = 76
     p2sh_version = 16
     wif_version = 204
@@ -22,15 +22,14 @@ class Darkcoin(CryptoCur):
     COINBASE_MATURITY = 100
 
     block_explorers = {
-        'CryptoID': 'https://chainz.cryptoid.info/drk/',
+        'CryptoID': 'https://chainz.cryptoid.info/dash/',
         'CoinPlorer': 'https://coinplorer.com/DRK',
     }
 
     base_units = {
-        'DRK': 8,
-        'mDRK': 5,
-        'uDRK': 2,
-        'duffs': 0
+        'DASH': 8,
+        'mDASH': 5,
+        'uDASH': 2,
     }
 
     chunk_size = 2016
@@ -39,9 +38,10 @@ class Darkcoin(CryptoCur):
     DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}
 
     DEFAULT_SERVERS = {
-        'descartes.darkco.in':DEFAULT_PORTS,
-        'drk1.electrum-servers.us':DEFAULT_PORTS,
-        '103.13.228.168':DEFAULT_PORTS,
+        'electrum.darkcointalk.org':DEFAULT_PORTS, # propulsion
+        'drk1.electrum-servers.us':DEFAULT_PORTS,  # elm4ever
+        'electrum.drk.siampm.com':DEFAULT_PORTS,   # thelazier
+        'electrum-drk.club':DEFAULT_PORTS,         # duffman
     }
 
     def verify_chain(self, chain):
@@ -198,4 +198,4 @@ class Darkcoin(CryptoCur):
         new_bits = c + MM * i
         return new_bits, new_target
 
-Currency = Darkcoin
+Currency = Dash
