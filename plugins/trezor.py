@@ -190,6 +190,36 @@ class Plugin(BasePlugin):
         layout.addWidget(current_label_label,3,0)
         layout.addWidget(change_label_button,3,1)
 
+        def remove_pin():
+#            twd.start("Please confirm pin removal on Trezor")
+            try:
+                status = self.wallet.get_client().change_pin(True)
+                print_error(status)
+            except Exception, e:
+                give_error(e)
+            finally:
+                twd.emit(SIGNAL('trezor_done'))
+#            twd.stop()
+
+        def modify_pin():
+#            twd.start("Please confirm pin change on Trezor")
+            try:
+                status = self.wallet.get_client().change_pin()
+                print_error(status)
+            except Exception, e:
+                give_error(e)
+            finally:
+                twd.emit(SIGNAL('trezor_done'))
+#            twd.stop()
+
+        remove_pin_button = QPushButton("Remove Pin")
+        remove_pin_button.clicked.connect(remove_pin)
+        layout.addWidget(remove_pin_button, 4,0)
+
+        change_pin_button = QPushButton("Change Pin")
+        change_pin_button.clicked.connect(modify_pin)
+        layout.addWidget(change_pin_button, 4,1)
+
         if d.exec_():
             return True
         else:
