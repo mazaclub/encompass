@@ -154,7 +154,11 @@ class SimpleConfig(object):
 
         active_chain_code = self.get_active_chain_code()
         with self.lock:
-            self.user_config[active_chain_code][key] = value
+            try:
+                self.user_config[active_chain_code][key] = value
+            except KeyError:
+                self.user_config[active_chain_code] = {}
+                self.user_config[active_chain_code][key] = value
             if save:
                 self.save_user_config()
 

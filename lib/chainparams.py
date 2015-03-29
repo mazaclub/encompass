@@ -92,5 +92,11 @@ def get_chain_instance(code):
     params = get_params(code)
     module_name = params.module_name
     classmodule = importlib.import_module(''.join(['chainkey.chains.', module_name]))
+    # If nothing was imported, try with a different import path
+    # Note that this is the path nosetests use, and so this is necessary
+    try:
+        classInst = getattr(classmodule, 'Currency')
+    except AttributeError:
+        classmodule = importlib.import_module(''.join(['lib.chains.', module_name]))
     classInst = getattr(classmodule, 'Currency')
     return classInst()
