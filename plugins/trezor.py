@@ -103,6 +103,11 @@ class Plugin(BasePlugin):
             return False
         return True
 
+    def show_message(self, msg):
+        if self.window is None:
+            return
+        self.window.show_message(msg)
+
     @hook
     def init_qt(self, gui):
         self.window = gui.main_window
@@ -161,6 +166,8 @@ class Plugin(BasePlugin):
             menu.addAction(_("Show on TREZOR"), lambda: self.wallet.show_address(addrs[0]))
 
     def settings_widget(self, window):
+        if self.window is None:
+            self.window = window
         return EnterButton(_('Settings'), self.settings_dialog)
 
     def settings_dialog(self):
@@ -195,6 +202,7 @@ class Plugin(BasePlugin):
             try:
                 status = self.wallet.get_client().change_pin(True)
                 print_error(status)
+                self.show_message(status)
             except Exception, e:
                 give_error(e)
             finally:
@@ -206,6 +214,7 @@ class Plugin(BasePlugin):
             try:
                 status = self.wallet.get_client().change_pin()
                 print_error(status)
+                self.show_message(status)
             except Exception, e:
                 give_error(e)
             finally:
