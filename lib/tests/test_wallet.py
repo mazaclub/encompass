@@ -21,6 +21,9 @@ class FakeConfig(object):
     def get(self, key, default=None):
         return self.store.get(key, default)
 
+    def get_above_chain(self, key, default=None):
+        return self.store.get(key, default)
+
 
 class FakeSynchronizer(object):
 
