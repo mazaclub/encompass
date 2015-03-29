@@ -180,6 +180,10 @@ if __name__ == '__main__':
     if config.get_active_chain_code() is None:
         config.set_active_chain_code('mzc')
 
+    # Backwards-compatible Darkcoin->Dash rebrand
+    if config.get_active_chain_code() == 'DRK':
+        config.set_active_chain_code('DASH')
+
     # URI scheme for active chain
     uri_scheme = ''.join(['^', chainparams.get_active_chain().coin_name.lower(), ':'])
     if len(args) == 0:
