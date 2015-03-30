@@ -95,7 +95,7 @@ def get_chain_instance(code):
     try:
         classmodule = importlib.import_module(''.join(['chainkey.chains.', module_name]))
         classInst = getattr(classmodule, 'Currency')
-    except AttributeError:
+    except (AttributeError, ImportError):
         classmodule = importlib.import_module(''.join(['lib.chains.', module_name]))
     classInst = getattr(classmodule, 'Currency')
     return classInst()
