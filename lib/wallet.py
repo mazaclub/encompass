@@ -1558,10 +1558,11 @@ class NewWallet(BIP32_HD_Wallet, Mnemonic):
 
 class Multisig_Wallet(BIP32_Wallet, Mnemonic):
     root_name = "x1/"
-    root_derivation = "m/44'/0'"
+    root_derivation = "m/44'/0'/0'"
 
     def __init__(self, storage):
         BIP32_Wallet.__init__(self, storage)
+        self.root_derivation = "m/44'/0'/0'"
         try:
             chain_code = storage.config.get_active_chain_code()
         # constructor was passed a dict instead of a config object
@@ -1570,8 +1571,6 @@ class Multisig_Wallet(BIP32_Wallet, Mnemonic):
         if chain_code is None:
             chain_code = chainparams.get_active_chain().code
 
-        chain_index = chainparams.get_chain_index(chain_code)
-        self.root_derivation = "m/44'/{}'".format(chain_index)
         self.master_public_keys  = storage.get_above_chain('master_public_keys', {})
         self.master_private_keys = storage.get_above_chain('master_private_keys', {})
 
@@ -1589,8 +1588,6 @@ class Multisig_Wallet(BIP32_Wallet, Mnemonic):
 class Wallet_2of2(Multisig_Wallet):
     # Wallet with multisig addresses.
     # Cannot create accounts
-    root_name = "x1/"
-    root_derivation = "m/44'/0'"
     wallet_type = '2of2'
 
     def __init__(self, storage):
