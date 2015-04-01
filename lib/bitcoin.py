@@ -371,7 +371,7 @@ def public_key_from_private_key(sec, addrtype=128):
     return public_key.encode('hex')
 
 
-def address_from_private_key(sec, addrtype=0, wif_verison=128):
+def address_from_private_key(sec, addrtype=0, wif_version=128):
     public_key = public_key_from_private_key(sec, wif_version)
     address = public_key_to_bc_address(public_key.decode('hex'), addrtype)
     return address
