@@ -113,12 +113,13 @@ class Plugin(BasePlugin):
             self.listener.start()
         self.cosigner_list = []
         for key, xpub in self.wallet.master_public_keys.items():
-            K = bitcoin.deserialize_xkey(xpub)[-1].encode('hex')
+            xpub_chain = bitcoin.bip32_public_derivation(xpub, "", "/{}".format(self.wallet.active_chain.chain_index))
+            K = bitcoin.deserialize_xkey(xpub_chain)[-1].encode('hex')
             _hash = bitcoin.Hash(K).encode('hex')
             if self.wallet.master_private_keys.get(key):
                 self.listener.set_key(key, _hash)
             else:
-                self.cosigner_list.append((xpub, K, _hash))
+                self.cosigner_list.append((xpub_chain, K, _hash))
 
     @hook
     def transaction_dialog(self, d):
