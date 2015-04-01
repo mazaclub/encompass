@@ -532,8 +532,9 @@ class Transaction:
     def sweep(klass, privkeys, network, to_address, fee):
         inputs = []
         for privkey in privkeys:
-            pubkey = public_key_from_private_key(privkey)
-            address = address_from_private_key(privkey)
+            pubkey = public_key_from_private_key(privkey, chainparams.get_active_chain().wif_version)
+            address = address_from_private_key(privkey,
+                chainparams.get_active_chain().p2pkh_version, chainparams.get_active_chain().wif_version)
             u = network.synchronous_get([ ('blockchain.address.listunspent',[address])])[0]
             pay_script = klass.pay_script('address', address)
             for item in u:
@@ -750,13 +751,13 @@ class Transaction:
                     x_pubkeys = txin['x_pubkeys']
                     ii = x_pubkeys.index(x_pubkey)
                     sec = keypairs[x_pubkey]
-                    pubkey = public_key_from_private_key(sec)
+                    pubkey = public_key_from_private_key(sec, self.chain.wif_version)
                     txin['x_pubkeys'][ii] = pubkey
                     txin['pubkeys'][ii] = pubkey
                     self.inputs[i] = txin
                     # add signature
                     for_sig = Hash(self.tx_for_sig(i).decode('hex'))
-                    pkey = regenerate_key(sec)
+                    pkey = regenerate_key(sec, self.chain.wif_version)
                     secexp = pkey.secret
                     private_key = ecdsa.SigningKey.from_secret_exponent( secexp, curve = SECP256k1 )
                     public_key = private_key.get_verifying_key()

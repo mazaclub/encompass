@@ -325,20 +325,20 @@ def PrivKeyToSecret(privkey):
     return privkey[9:9+32]
 
 
-def SecretToASecret(secret, compressed=False, addrtype=0):
-    vchIn = chr((addrtype+128)&255) + secret
+def SecretToASecret(secret, compressed=False, addrtype=128):
+    vchIn = chr(addrtype) + secret
     if compressed: vchIn += '\01'
     return EncodeBase58Check(vchIn)
 
-def ASecretToSecret(key, addrtype=0):
+def ASecretToSecret(key, addrtype=128):
     vch = DecodeBase58Check(key)
-    if vch and vch[0] == chr((addrtype+128)&255):
+    if vch and vch[0] == chr(addrtype):
         return vch[1:]
     else:
         return False
 
-def regenerate_key(sec):
-    b = ASecretToSecret(sec)
+def regenerate_key(sec, addrtype=128):
+    b = ASecretToSecret(sec, addrtype)
     if not b:
         return False
     b = b[0:32]
@@ -357,23 +357,23 @@ def GetSecret(pkey):
     return ('%064x' % pkey.secret).decode('hex')
 
 
-def is_compressed(sec):
-    b = ASecretToSecret(sec)
+def is_compressed(sec, addrtype=128):
+    b = ASecretToSecret(sec, addrtype)
     return len(b) == 33
 
 
-def public_key_from_private_key(sec):
+def public_key_from_private_key(sec, addrtype=128):
     # rebuild public key from private key, compressed or uncompressed
-    pkey = regenerate_key(sec)
+    pkey = regenerate_key(sec, addrtype)
     assert pkey
-    compressed = is_compressed(sec)
+    compressed = is_compressed(sec, addrtype)
     public_key = GetPubKey(pkey.pubkey, compressed)
     return public_key.encode('hex')
 
 
-def address_from_private_key(sec, addrtype=0):
-    public_key = public_key_from_private_key(sec)
-    address = public_key_to_bc_address(public_key.decode('hex'))
+def address_from_private_key(sec, addrtype=0, wif_version=128):
+    public_key = public_key_from_private_key(sec, wif_version)
+    address = public_key_to_bc_address(public_key.decode('hex'), addrtype)
     return address
 
 
@@ -391,9 +391,9 @@ def is_address(addr):
     return addr == hash_160_to_bc_address(h, addrtype)
 
 
-def is_private_key(key):
+def is_private_key(key, addrtype=128):
     try:
-        k = ASecretToSecret(key)
+        k = ASecretToSecret(key, addrtype)
         return k is not False
     except:
         return False
@@ -787,7 +787,7 @@ def bip32_public_derivation(xpub, branch, sequence, testnet=False):
     return EncodeBase58Check(xpub)
 
 
-def bip32_private_key(sequence, k, chain):
+def bip32_private_key(sequence, k, chain, addrtype=128):
     for i in sequence:
         k, chain = CKD_priv(k, chain, i)
-    return SecretToASecret(k, True)
+    return SecretToASecret(k, True, addrtype)
