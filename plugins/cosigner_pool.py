@@ -176,10 +176,11 @@ class Plugin(BasePlugin):
         message = self.listener.message
         key = self.listener.keyname
         xprv = self.wallet.get_master_private_key(key, password)
-        if not xprv:
+        xprv_chain = bitcoin.bip32_private_derivation(xprv, "", "/{}".format(self.wallet.active_chain.chain_index))[0]
+        if not xprv_chain:
             return
         try:
-            k = bitcoin.deserialize_xkey(xprv)[-1].encode('hex')
+            k = bitcoin.deserialize_xkey(xprv_chain)[-1].encode('hex')
             EC = bitcoin.EC_KEY(k.decode('hex'))
             message = EC.decrypt_message(message)
         except Exception as e:

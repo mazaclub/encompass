@@ -404,6 +404,26 @@ class BIP32_Account_2of2(BIP32_Account):
     def get_type(self):
         return _('Multisig 2 of 2')
 
+    def get_private_key(self, sequence, wallet, password):
+        out = []
+        if len(sequence) == 2:
+            sequence.insert(0, self.active_chain.chain_index)
+#        xpubs = self.get_master_pubkeys()
+#        roots = [k for k, v in wallet.master_public_keys.iteritems() if v in xpubs]
+#        for root in roots:
+#            xpriv = wallet.get_master_private_key(root, password)
+#            if not xpriv:
+#                continue
+#            _, _, _, c, k = deserialize_xkey(xpriv)
+#            pk = bip32_private_key( sequence, k, c )
+#            out.append(pk)
+
+        xpriv = wallet.get_master_private_key("x1/", password)
+        _, _, _, c, k = deserialize_xkey(xpriv)
+        pk = bip32_private_key( sequence, k, c )
+        out.append(pk)
+
+        return out
 
 class BIP32_Account_2of3(BIP32_Account_2of2):
 
