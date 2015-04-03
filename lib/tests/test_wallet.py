@@ -154,7 +154,7 @@ class TestNewWallet(WalletTestCase):
 
         # Importing a key works.
         self.wallet.import_key(self.import_private_key, "")
-        self.assertEqual(2, len(self.wallet.addresses()))
+        self.assertEqual(1, len(self.wallet.addresses()))
         self.assertIn(self.import_key_address, self.wallet.addresses())
 
         self.assertTrue(self.wallet.has_imported_keys())
@@ -162,7 +162,7 @@ class TestNewWallet(WalletTestCase):
         # Deleting the key works.
         self.wallet.delete_imported_key(self.import_key_address)
         self.assertFalse(self.wallet.has_imported_keys())
-        self.assertEqual(1, len(self.wallet.addresses()))
+        self.assertEqual(0, len(self.wallet.addresses()))
         self.assertNotIn(self.import_key_address, self.wallet.addresses())
 
     def test_update_password(self):
