@@ -1439,9 +1439,7 @@ class BIP32_HD_Wallet(BIP32_Wallet):
     def addresses(self, b=True):
         l = BIP32_Wallet.addresses(self, b)
         if self.next_account:
-            if len(self.accounts.keys()) <= self.next_account[0]:
-                return l
-            next_address = self.next_account[2]
+            _, _, next_address = self.next_account
             if next_address not in l:
                 l.append(next_address)
         return l
