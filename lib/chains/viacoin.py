@@ -58,7 +58,7 @@ class Viacoin(CryptoCur):
             height = header.get('block_height')
 
             prev_hash = self.hash_header(prev_header)
-            bits, target = self.get_target(height/2016, chain)
+            #bits, target = self.get_target(height/2016, chain)
             _hash = self.pow_hash_header(header)
             try:
                 assert prev_hash == header.get('prev_block_hash')
@@ -83,7 +83,7 @@ class Viacoin(CryptoCur):
             if prev_header is None: raise
             previous_hash = self.hash_header(prev_header)
 
-        bits, target = self.get_target(index)
+        #bits, target = self.get_target(index)
 
         for i in range(num):
             height = index*2016 + i
