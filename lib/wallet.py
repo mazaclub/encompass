@@ -846,6 +846,8 @@ class Abstract_Wallet(object):
         keypairs = {}
         x_pubkeys = tx.inputs_to_sign()
         for x in x_pubkeys:
+            if not self.can_sign_xpubkey(x):
+                continue
             sec = self.get_private_key_from_xpubkey(x, password)
             print "sec", sec
             if sec:
@@ -1558,13 +1560,116 @@ class NewWallet(BIP32_HD_Wallet, Mnemonic):
         if not self.accounts:
             return 'create_accounts'
 
-
-class Wallet_2of2(BIP32_Wallet, Mnemonic):
-    # Wallet with multisig addresses.
-    # Cannot create accounts
+# Multisig wallets use a different derivation path
+# Instead of m/44'/coin'/... we use m/44'/0'/coin/...
+# Keys are derived in this manner:
+# Cosigners share public keys. For a given chain, the public key used
+# in the main account is the chain_index-th non-hardened child of
+# the master public key.
+#
+# Example
+# The public key that we share with our cosigner is m/44'/0'
+# To generate addresses for Bitcoin,  we use m/44'/0'/0/for_change/index  as the key in the script hash.
+# To generate addresses for Mazacoin, we use m/44'/0'/13/for_change/index as the key in the script hash.
+class Multisig_Wallet(BIP32_Wallet, Mnemonic):
     root_name = "x1/"
     root_derivation = "m/44'/0'"
+
+    def __init__(self, storage):
+        BIP32_Wallet.__init__(self, storage)
+        try:
+            chain_code = storage.config.get_active_chain_code()
+        # constructor was passed a dict instead of a config object
+        except AttributeError:
+            chain_code = chainparams.get_active_chain().code
+        if chain_code is None:
+            chain_code = chainparams.get_active_chain().code
+
+        chain_index = chainparams.get_chain_index(chain_code)
+        self.root_derivation = "m/44'/0'"
+
+        self.master_public_keys  = storage.get_above_chain('master_public_keys', {})
+        self.master_private_keys = storage.get_above_chain('master_private_keys', {})
+
+    def can_import(self):
+        return False
+
+    def add_master_public_key(self, name, xpub):
+        self.master_public_keys[name] = xpub
+        self.storage.put_above_chain('master_public_keys', self.master_public_keys, True)
+
+    def add_master_private_key(self, name, xpriv, password):
+        self.master_private_keys[name] = pw_encode(xpriv, password)
+        self.storage.put_above_chain('master_private_keys', self.master_private_keys, True)
+
+    def can_sign_xpubkey(self, x_pubkey):
+        if x_pubkey[0:2] in ['02','03','04']:
+            addr = bitcoin.public_key_to_bc_address(x_pubkey.decode('hex'), self.active_chain.p2pkh_version)
+            return self.is_mine(addr)
+        elif x_pubkey[0:2] == 'ff':
+            xpub, sequence = BIP32_Account.parse_xpubkey(x_pubkey)
+            for k, account in self.accounts.items():
+                if xpub == account.get_master_pubkeys()[0]:
+                    return True
+            return False
+        elif x_pubkey[0:2] == 'fe':
+            xpub, sequence = OldAccount.parse_xpubkey(x_pubkey)
+            return xpub == self.get_master_public_key()
+        elif x_pubkey[0:2] == 'fd':
+            addrtype = ord(x_pubkey[2:4].decode('hex'))
+            addr = hash_160_to_bc_address(x_pubkey[4:].decode('hex'), addrtype)
+            return self.is_mine(addr)
+        else:
+            raise BaseException("z")
+
+    def get_private_key_from_xpubkey(self, x_pubkey, password):
+        if x_pubkey[0:2] in ['02','03','04']:
+            addr = bitcoin.public_key_to_bc_address(x_pubkey.decode('hex'), self.active_chain.p2pkh_version)
+            if self.is_mine(addr):
+                return self.get_private_key(addr, password)[0]
+        elif x_pubkey[0:2] == 'ff':
+            xpub, sequence = BIP32_Account.parse_xpubkey(x_pubkey)
+            for k, account in self.accounts.items():
+                if xpub == account.get_master_pubkeys()[0]:
+                    pk = account.get_private_key(sequence, self, password)
+                    return pk[0]
+        elif x_pubkey[0:2] == 'fe':
+            xpub, sequence = OldAccount.parse_xpubkey(x_pubkey)
+            for k, account in self.accounts.items():
+                if xpub in account.get_master_pubkeys():
+                    pk = account.get_private_key(sequence, self, password)
+                    return pk[0]
+        elif x_pubkey[0:2] == 'fd':
+            addrtype = ord(x_pubkey[2:4].decode('hex'))
+            addr = hash_160_to_bc_address(x_pubkey[4:].decode('hex'), addrtype)
+            if self.is_mine(addr):
+                return self.get_private_key(addr, password)[0]
+        else:
+            raise BaseException("z")
+
+    def sign_transaction(self, tx, password):
+        if self.is_watching_only():
+            return
+        # check that the password is correct. This will raise if it's not.
+        self.check_password(password)
+        keypairs = {}
+        x_pubkeys = tx.inputs_to_sign()
+        for x in x_pubkeys:
+            sec = self.get_private_key_from_xpubkey(x, password)
+            print "sec", sec
+            if sec:
+                keypairs[ x ] = sec
+        if keypairs:
+            tx.sign(keypairs)
+        run_hook('sign_transaction', tx, password)
+
+class Wallet_2of2(Multisig_Wallet):
+    # Wallet with multisig addresses.
+    # Cannot create accounts
     wallet_type = '2of2'
+
+    def __init__(self, storage):
+        Multisig_Wallet.__init__(self, storage)
 
     def can_import(self):
         return False
@@ -1572,7 +1677,9 @@ class Wallet_2of2(BIP32_Wallet, Mnemonic):
     def create_main_account(self, password):
         xpub1 = self.master_public_keys.get("x1/")
         xpub2 = self.master_public_keys.get("x2/")
-        account = BIP32_Account_2of2({'xpub':xpub1, 'xpub2':xpub2})
+        acc_xpub1 = bip32_public_derivation(xpub1, "", "/{}".format(self.active_chain.chain_index))
+        acc_xpub2 = bip32_public_derivation(xpub2, "", "/{}".format(self.active_chain.chain_index))
+        account = BIP32_Account_2of2({'xpub':acc_xpub1, 'xpub2':acc_xpub2})
         self.add_account('0', account)
 
     def get_master_public_keys(self):
@@ -1600,7 +1707,10 @@ class Wallet_2of3(Wallet_2of2):
         xpub1 = self.master_public_keys.get("x1/")
         xpub2 = self.master_public_keys.get("x2/")
         xpub3 = self.master_public_keys.get("x3/")
-        account = BIP32_Account_2of3({'xpub':xpub1, 'xpub2':xpub2, 'xpub3':xpub3})
+        acc_xpub1 = bip32_public_derivation(xpub1, "", "/{}".format(self.active_chain.chain_index))
+        acc_xpub2 = bip32_public_derivation(xpub2, "", "/{}".format(self.active_chain.chain_index))
+        acc_xpub3 = bip32_public_derivation(xpub3, "", "/{}".format(self.active_chain.chain_index))
+        account = BIP32_Account_2of3({'xpub':acc_xpub1, 'xpub2':acc_xpub2, 'xpub3':acc_xpub3})
         self.add_account('0', account)
 
     def get_master_public_keys(self):

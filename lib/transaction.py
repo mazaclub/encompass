@@ -347,6 +347,7 @@ def parse_xpub(x_pubkey):
 
 
 def parse_scriptSig(d, bytes):
+    active_chain = chainparams.get_active_chain()
     try:
         decoded = [ x for x in script_GetOp(bytes) ]
     except Exception:
@@ -416,7 +417,7 @@ def parse_scriptSig(d, bytes):
     d['pubkeys'] = pubkeys
     redeemScript = Transaction.multisig_script(pubkeys,2)
     d['redeemScript'] = redeemScript
-    d['address'] = hash_160_to_bc_address(hash_160(redeemScript.decode('hex')), 5)
+    d['address'] = hash_160_to_bc_address(hash_160(redeemScript.decode('hex')), active_chain.p2sh_version)
 
 
 

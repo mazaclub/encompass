@@ -371,6 +371,9 @@ class BIP32_Account_2of2(BIP32_Account):
     def __init__(self, v):
         BIP32_Account.__init__(self, v)
         self.xpub2 = v['xpub2']
+        # chain-specific derivation
+#        self.xpub = bip32_public_derivation(self.xpub, "", "/{}".format(self.active_chain.chain_index))
+#        self.xpub2 = bip32_public_derivation(self.xpub2, "", "/{}".format(self.active_chain.chain_index))
 
     def dump(self):
         d = BIP32_Account.dump(self)
@@ -389,7 +392,7 @@ class BIP32_Account_2of2(BIP32_Account):
 
     def pubkeys_to_address(self, pubkeys):
         redeem_script = Transaction.multisig_script(sorted(pubkeys), 2)
-        address = hash_160_to_bc_address(hash_160(redeem_script.decode('hex')), 5)
+        address = hash_160_to_bc_address(hash_160(redeem_script.decode('hex')), self.active_chain.p2sh_version)
         return address
 
     def get_address(self, for_change, n):
@@ -401,12 +404,34 @@ class BIP32_Account_2of2(BIP32_Account):
     def get_type(self):
         return _('Multisig 2 of 2')
 
+    def get_private_key(self, sequence, wallet, password):
+        out = []
+        if len(sequence) == 2:
+            sequence.insert(0, self.active_chain.chain_index)
+#        xpubs = self.get_master_pubkeys()
+#        roots = [k for k, v in wallet.master_public_keys.iteritems() if v in xpubs]
+#        for root in roots:
+#            xpriv = wallet.get_master_private_key(root, password)
+#            if not xpriv:
+#                continue
+#            _, _, _, c, k = deserialize_xkey(xpriv)
+#            pk = bip32_private_key( sequence, k, c )
+#            out.append(pk)
+
+        xpriv = wallet.get_master_private_key("x1/", password)
+        _, _, _, c, k = deserialize_xkey(xpriv)
+        pk = bip32_private_key( sequence, k, c )
+        out.append(pk)
+
+        return out
 
 class BIP32_Account_2of3(BIP32_Account_2of2):
 
     def __init__(self, v):
         BIP32_Account_2of2.__init__(self, v)
         self.xpub3 = v['xpub3']
+        # chain-specific derivation
+#        self.xpub3 = bip32_public_derivation(self.xpub3, "", "/{}".format(self.active_chain.chain_index))
 
     def dump(self):
         d = BIP32_Account_2of2.dump(self)

@@ -93,20 +93,12 @@ class Plugin(BasePlugin):
     def init_qt(self, gui):
         self.win = gui.main_window
         self.win.connect(self.win, SIGNAL('cosigner:receive'), self.on_receive)
-        if self.listener is None:
-            self.listener = Listener(self)
-            self.listener.start()
 
     def enable(self):
         self.set_enabled(True)
-        self.init_qt()
-        if self.win.wallet:
-            self.load_wallet(self.win.wallet)
         return True
 
     def is_available(self):
-        # Disabled until compatibility is ensured
-        return False
         if self.wallet is None:
             return True
         return self.wallet.wallet_type in ['2of2', '2of3']
@@ -116,16 +108,18 @@ class Plugin(BasePlugin):
         self.wallet = wallet
         if not self.is_available():
             return
-        mpk = self.wallet.get_master_public_keys()
+        if self.listener is None:
+            self.listener = Listener(self)
+            self.listener.start()
         self.cosigner_list = []
-        for key, xpub in mpk.items():
-            keyname = key + '/' # fixme
-            K = bitcoin.deserialize_xkey(xpub)[-1].encode('hex')
+        for key, xpub in self.wallet.master_public_keys.items():
+            xpub_chain = bitcoin.bip32_public_derivation(xpub, "", "/{}".format(self.wallet.active_chain.chain_index))
+            K = bitcoin.deserialize_xkey(xpub_chain)[-1].encode('hex')
             _hash = bitcoin.Hash(K).encode('hex')
-            if self.wallet.master_private_keys.get(keyname):
-                self.listener.set_key(keyname, _hash)
+            if self.wallet.master_private_keys.get(key):
+                self.listener.set_key(key, _hash)
             else:
-                self.cosigner_list.append((xpub, K, _hash))
+                self.cosigner_list.append((xpub_chain, K, _hash))
 
     @hook
     def transaction_dialog(self, d):
@@ -182,10 +176,11 @@ class Plugin(BasePlugin):
         message = self.listener.message
         key = self.listener.keyname
         xprv = self.wallet.get_master_private_key(key, password)
-        if not xprv:
+        xprv_chain = bitcoin.bip32_private_derivation(xprv, "", "/{}".format(self.wallet.active_chain.chain_index))[0]
+        if not xprv_chain:
             return
         try:
-            k = bitcoin.deserialize_xkey(xprv)[-1].encode('hex')
+            k = bitcoin.deserialize_xkey(xprv_chain)[-1].encode('hex')
             EC = bitcoin.EC_KEY(k.decode('hex'))
             message = EC.decrypt_message(message)
         except Exception as e:
