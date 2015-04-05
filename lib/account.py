@@ -146,7 +146,9 @@ class ImportedAccount(Account):
         address = self.get_addresses(0)[i]
         pk = pw_decode(self.keypairs[address][1], password)
         # this checks the password
-        assert address == address_from_private_key(pk)
+        assert address == address_from_private_key(pk,
+            addrtype = self.active_chain.p2pkh_version, 
+            wif_version = self.active_chain.wif_version)
         return [pk]
 
     def has_change(self):
@@ -332,7 +334,7 @@ class BIP32_Account(Account):
             if not xpriv:
                 continue
             _, _, _, c, k = deserialize_xkey(xpriv)
-            pk = bip32_private_key( sequence, k, c )
+            pk = bip32_private_key( sequence, k, c, self.active_chain.wif_version )
             out.append(pk)
         return out
 

@@ -295,7 +295,7 @@ class Abstract_Wallet(object):
     def convert_imported_keys(self, password):
         for k, v in self.imported_keys.items():
             sec = pw_decode(v, password)
-            pubkey = public_key_from_private_key(sec)
+            pubkey = public_key_from_private_key(sec, self.active_chain.wif_version)
             address = public_key_to_bc_address(pubkey.decode('hex'))
             assert address == k
             self.import_key(sec, password)
@@ -353,7 +353,7 @@ class Abstract_Wallet(object):
 
     def import_key(self, sec, password):
         try:
-            pubkey = public_key_from_private_key(sec)
+            pubkey = public_key_from_private_key(sec, self.active_chain.wif_version)
             address = public_key_to_bc_address(pubkey.decode('hex'))
         except Exception:
             raise Exception('Invalid private key')
@@ -434,7 +434,7 @@ class Abstract_Wallet(object):
         keys = self.get_private_key(address, password)
         assert len(keys) == 1
         sec = keys[0]
-        key = regenerate_key(sec)
+        key = regenerate_key(sec, self.active_chain.wif_version)
         compressed = is_compressed(sec)
         return key.sign_message(message, compressed, address)
 
@@ -442,7 +442,7 @@ class Abstract_Wallet(object):
         address = public_key_to_bc_address(pubkey.decode('hex'), self.active_chain.p2pkh_version)
         keys = self.get_private_key(address, password)
         secret = keys[0]
-        ec = regenerate_key(secret)
+        ec = regenerate_key(secret, self.active_chain.wif_version)
         decrypted = ec.decrypt_message(message)
         return decrypted
 
@@ -1904,7 +1904,7 @@ class Wallet(object):
         if not text:
             return False
         for x in text.split():
-            if not bitcoin.is_private_key(x):
+            if not bitcoin.is_private_key(x, chainparams.get_active_chain().wif_version):
                 return False
         return True
 
