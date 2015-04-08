@@ -7,20 +7,23 @@ import os
 import sys
 import platform
 import imp
+del os.link
 
+#os.system("pyrcc4 icons.qrc -o gui/qt/icons_rc.py")
 
 version = imp.load_source('version', 'lib/version.py')
 util = imp.load_source('util', 'lib/util.py')
 
 if sys.version_info[:3] < (2, 6, 0):
     sys.exit("Error: Encompass requires Python version >= 2.6.0...")
-
 usr_share = util.usr_share_dir()
-if not os.access(usr_share, os.W_OK):
-    try:
-        os.mkdir(usr_share)
-    except:
-        sys.exit("Error: cannot write to %s.\nIf you do not have root permissions, you may install Encompass in a virtualenv.\nAlso, please note that you can run Encompass without installing it on your system."%usr_share)
+if (len(sys.argv) > 1 and (sys.argv[1] == "install")): 
+   usr_share = util.usr_share_dir()
+   if not os.access(usr_share, os.W_OK):
+       try:
+           os.mkdir(usr_share)
+       except:
+           sys.exit("Error: cannot write to %s.\nIf you do not have root permissions, you may install Encompass in a virtualenv.\nAlso, please note that you can run Encompass without installing it on your system."%usr_share)
 
 data_files = []
 if (len(sys.argv) > 1 and (sys.argv[1] == "sdist")) or (platform.system() != 'Windows' and platform.system() != 'Darwin'):
@@ -151,8 +154,8 @@ setup(
 
     ],
     description="Lightweight Multi-Coin Wallet",
-    author="Tyler Willis",
-    author_email="kefkius@mail.com",
+    author="Tyler Willis, Rob Nelson, mazaclub",
+    author_email="encompass-security@maza.club",
     license="GNU GPLv3",
     url="https://maza.club/encompass",
     long_description="""Lightweight Multi-Coin Wallet for Electrum-supported coins."""

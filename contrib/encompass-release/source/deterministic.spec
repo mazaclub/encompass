@@ -5,8 +5,8 @@ a = Analysis(['encompass', 'gui/qt/main_window.py', 'gui/qt/lite_window.py', 'gu
               'lib/util.py', 'lib/wallet.py', 'lib/simple_config.py',
               'lib/bitcoin.py','lib/interface.py'
               ],
-             hiddenimports=["lib","gui"],
-             pathex=['lib','gui','plugins','packages'],
+             hiddenimports=["lib","gui","plugins"],
+             pathex=['lib','gui','plugins','packages','packages/google/protobuf'],
              hookspath=None)
 
 ##### include mydir in distribution #######
@@ -42,13 +42,6 @@ a.datas += extra_datas('plugins')
 
 # Dependencies
 a.datas += extra_datas('packages')
-a.datas += extra_datas('aes')
-a.datas += extra_datas('ecdsa')
-a.datas += extra_datas('pyasn1')
-a.datas += extra_datas('pyasn1_modules')
-a.datas += extra_datas('qrcode')
-a.datas += extra_datas('requests')
-a.datas += extra_datas('tlslite')
 
 pyz = PYZ(a.pure)
 exe = EXE(pyz,

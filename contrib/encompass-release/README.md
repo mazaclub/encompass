@@ -1,6 +1,46 @@
-#### Tate Release and Windows builder
+### Encompass Release builder
 
-Create (semi)unattended Tate Package Release and  Windows builds on Linux using docker.
+BUILDS MULTIPLATFORM RELEASE - UNNECESSARY for SOURCE OPERATION!
+ - if you just want to install Encompass from source:
+ ```
+ cd ../../
+ pyrcc4 icons.qrc -o gui/qt/icons_qrc.py
+ python setup.py install
+ ```
+
+### This contains the full and complete release process for Encompass as followed by mazaclub.
+
+QuickStart
+```
+./build version type
+```
+Types supported are:
+ * local
+   - build from local source - copies your local repo to a build dir, and builds
+ * master
+   - build from current github master
+ * tagged
+   - build from github tagged release
+ * SIGNED
+   - signed
+```
+   ./build 0.5.0 local
+```
+
+Currently only local and SIGNED are well tested!
+
+
+As of Encompass-0.5.0 OSX builds are supported. 
+Intended use is on OSX, with boot2docker installed
+With a few modifications, operation on Ubuntu is supported, but will not create the OSX version.
+
+Alternate build should be done form Ubuntu host with docker 1.5.0 installed.
+
+
+
+
+
+Create (semi)unattended Encompass Package Release and  Linux, Android, OSX, and Windows builds on OSX using docker.
 
 All you need is docker to build a full release for Linux/OSX (native python) and Windows Setup.exe
 
@@ -14,7 +54,7 @@ This contains 4 primary scripts:
  - helpers/make_release
    gets the current requested release tag from github and packages a release
 
- - helpers/make_packages
+ - helpers/make_packages helpers/make_windows helpers/make_android
    performs the packaging necessary to create tarball and windows releases
 
  - helpers/build-binary
@@ -38,7 +78,7 @@ This build should be easily adaptable to any electrum derived wallet.
 ##### Getting started
 
 
-Clone this repository and run ./build 0.2 (or whatever the latest stable release is) and if
+Clone this repository and run ./build 2.0b2 (or whatever the latest stable release is) and if
 all goes well your windows binary should appear in the releases folder.
 
 
@@ -50,25 +90,10 @@ since the build script runs directly on the host, writing to the host's filesyst
 and this doesn't provide the mean to specify a docker version,this is not 100% deterministic. 
 A future update will include a vagrant box file to specify a build VM to run the build script.
 
-The script also does a little extra work as we integrate it into Tate and our release process.
+The script also does a little extra work as we integrate it into Encompass and our release process.
 
 There's a lot to apt-get in the Dockerfile, this will take a while to build 
-the docker image. Once the docker image is built on your machine, the tate build 
+the docker image. Once the docker image is built on your machine, the Encompass build 
 runs quickly. 
 
-# LTC_SCRYPT Windows Module
-This module is build with an additional dockerimage with support for 
-compiling external modules for Windows
-
-https://github.com/ogrisel/python-winbuilder used from 
-dockerhub in this release, and will be integrated into the
-package/build system in a later release. 
-
-
-This image is also available as an automated build on dockerhub
-<code>git clone https://github.com/mazaclub/tate-winbuild && cd tate-winbuild
-docker pull mazaclub/tate-winbuild
-./build 0.2
-</code>
-Current image size is approximately 2.1GB 
 
