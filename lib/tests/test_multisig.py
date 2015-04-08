@@ -5,7 +5,7 @@ import unittest
 
 from StringIO import StringIO
 from lib.bitcoin import bip32_root, bip32_private_derivation, bip32_public_derivation, xpub_from_xprv, deserialize_xkey, hash_160, hash_160_to_bc_address
-from lib.wallet import WalletStorage, Wallet_2of2
+from lib.wallet import WalletStorage, Wallet_2of2, Electrum_Wallet_2of2
 from lib import chainparams
 from lib.transaction import Transaction
 
@@ -188,3 +188,64 @@ class TestMultisigWallet(WalletTestCase):
         p2sh_addr = hash_160_to_bc_address( hash_160(redeem_script.decode('hex')), self.wallet.active_chain.p2sh_version )
         self.assertEqual('4s7Z2JSWS54Q9chXp8fDvifiXhxiwbX2oN', p2sh_addr)
 
+class TestElectrumMultisigWallet(WalletTestCase):
+
+
+    seed_text = "travel nowhere air position hill peace suffer parent beautiful rise blood power home crumble teach"
+    password = "secret"
+
+    # mnemonic_to_seed should be this
+    actual_root_privkey = 'xprv9s21ZrQH143K3cU1yF5gBUQqHw8QBnH5Cgym3XqSRZmfSJ3J2NYzjd7UcdHwjwBjKXD3ZvwoMLo88F4oaVhYgZZ5SdmZ9RA9Wdf93U8iZB3'
+    cosigner_root_privkey = 'xprv9s21ZrQH143K3JbPiE2mvQ9oNniEpZyWS9cTVAu1H3kSGSB4JjWDBmAz9s28uQGkjFw5gJWwckbzdusrprN7J2pbvHKhNXMYLFJ9KMuv5Dw'
+
+    cosigner_master_pubkey = None
+
+    def setUp(self):
+        super(TestElectrumMultisigWallet, self).setUp()
+        self.storage = WalletStorage(self.fake_config)
+        self.wallet = Electrum_Wallet_2of2(self.storage)
+
+        self.cosigner_master_pubkey = xpub_from_xprv(self.cosigner_root_privkey)
+
+        self.wallet.set_chain("BTC")
+        self.wallet.add_seed(self.seed_text, self.password)
+        self.wallet.create_master_keys(self.password)
+        self.wallet.add_master_public_key("x2/", self.cosigner_master_pubkey)
+        self.wallet.create_main_account(self.password)
+
+    def _switch_chain(self, chaincode):
+        self.wallet.set_chain(chaincode)
+        action = self.wallet.get_action()
+        while action is not None:
+            if action == 'add_chain':
+                self.wallet.create_master_keys(self.password)
+            elif action == 'create_accounts':
+                self.wallet.create_main_account(self.password)
+            action = self.wallet.get_action()
+
+
+    def test_p2sh_address_creation(self):
+        x1_first_key = bip32_public_derivation(self.wallet.master_public_keys.get("x1/"), "", "/0/0")
+        x2_first_key = bip32_public_derivation(self.wallet.master_public_keys.get("x2/"), "", "/0/0")
+        x_pubkeys = [x1_first_key, x2_first_key]
+        raw_pubkeys = map( lambda x: deserialize_xkey(x)[4], x_pubkeys )
+        pubkeys = map( lambda x: x.encode('hex'), raw_pubkeys )
+
+        # Compare redeem script to manually calculated one
+        redeem_script = Transaction.multisig_script(sorted(pubkeys), 2)
+        self.assertEqual('522102f6563ada02891c89e9a76230b3ae36a416973277c782b7b349b89c76b29c406f2103014693476115d8e3aaa5d7b7d12b99bcb738cc788ad788ed16a16b63263c9d3852ae',
+            redeem_script)
+
+        p2sh_addr = hash_160_to_bc_address( hash_160(redeem_script.decode('hex')), self.wallet.active_chain.p2sh_version )
+        self.assertEqual('38eZFfAjWJjeGf6XiowAFng5DCjUudU971', p2sh_addr)
+
+        # switch chains
+        self._switch_chain("MZC")
+
+        # Compare redeem script to manually calculated one
+        redeem_script = Transaction.multisig_script(sorted(pubkeys), 2)
+        self.assertEqual('522102f6563ada02891c89e9a76230b3ae36a416973277c782b7b349b89c76b29c406f2103014693476115d8e3aaa5d7b7d12b99bcb738cc788ad788ed16a16b63263c9d3852ae',
+            redeem_script)
+
+        p2sh_addr = hash_160_to_bc_address( hash_160(redeem_script.decode('hex')), self.wallet.active_chain.p2sh_version )
+        self.assertEqual('4jzyC6MtM2b9YPespVGSCHmDjDmFogmbHE', p2sh_addr)

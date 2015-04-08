@@ -101,7 +101,7 @@ class Plugin(BasePlugin):
     def is_available(self):
         if self.wallet is None:
             return True
-        return self.wallet.wallet_type in ['2of2', '2of3']
+        return self.wallet.wallet_type in ['2of2', '2of3', 'elec_2of2']
 
     @hook
     def load_wallet(self, wallet):
@@ -113,7 +113,10 @@ class Plugin(BasePlugin):
             self.listener.start()
         self.cosigner_list = []
         for key, xpub in self.wallet.master_public_keys.items():
-            xpub_chain = bitcoin.bip32_public_derivation(xpub, "", "/{}".format(self.wallet.active_chain.chain_index))
+            if self.wallet.wallet_type not in ['elec_2of2']:
+                xpub_chain = bitcoin.bip32_public_derivation(xpub, "", "/{}".format(self.wallet.active_chain.chain_index))
+            else:
+                xpub_chain = xpub
             K = bitcoin.deserialize_xkey(xpub_chain)[-1].encode('hex')
             _hash = bitcoin.Hash(K).encode('hex')
             if self.wallet.master_private_keys.get(key):
@@ -176,7 +179,10 @@ class Plugin(BasePlugin):
         message = self.listener.message
         key = self.listener.keyname
         xprv = self.wallet.get_master_private_key(key, password)
-        xprv_chain = bitcoin.bip32_private_derivation(xprv, "", "/{}".format(self.wallet.active_chain.chain_index))[0]
+        if self.wallet.wallet_type not in ['elec_2of2']:
+            xprv_chain = bitcoin.bip32_private_derivation(xprv, "", "/{}".format(self.wallet.active_chain.chain_index))[0]
+        else:
+            xprv_chain = xprv
         if not xprv_chain:
             return
         try:

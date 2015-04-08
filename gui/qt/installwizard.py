@@ -355,7 +355,7 @@ class InstallWizard(QDialog):
         if action == 'new':
             action, wallet_type = self.restore_or_create()
             if wallet_type == 'multisig':
-                wallet_type = self.choice(_("Multi Signature Wallet"), 'Select wallet type', [('2of2', _("2 of 2")),('2of3',_("2 of 3"))])
+                wallet_type = self.choice(_("Multi Signature Wallet"), 'Select wallet type', [('2of2', _("2 of 2")),('2of3',_("2 of 3")),('elec_2of2',_("Electrum-compatible 2 of 2"))])
                 if not wallet_type:
                     return
             elif wallet_type == 'hardware':

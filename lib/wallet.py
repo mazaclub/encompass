@@ -1730,6 +1730,46 @@ class Wallet_2of3(Wallet_2of2):
         if not self.accounts:
             return 'create_accounts'
 
+class Multisig_Electrum_Wallet(Multisig_Wallet):
+    def __init__(self, storage):
+        Multisig_Wallet.__init__(self, storage)
+        self.master_public_keys  = storage.get_above_chain('master_public_keys', {})
+        self.master_private_keys = storage.get_above_chain('master_private_keys', {})
+
+    def can_import(self):
+        return False
+
+class Electrum_Wallet_2of2(Multisig_Electrum_Wallet):
+    root_name = "x1/"
+    root_derivation = "m/"
+    wallet_type = "elec_2of2"
+
+    def __init__(self, storage):
+        Multisig_Electrum_Wallet.__init__(self, storage)
+        self.root_derivation = "m/"
+
+    def get_action(self):
+        xpub1 = self.master_public_keys.get("x1/")
+        xpub2 = self.master_public_keys.get("x2/")
+        if self.seed == '':
+            return 'create_seed'
+        if xpub1 is None:
+            return 'add_chain'
+        if xpub2 is None:
+            return 'add_cosigner'
+        if not self.accounts:
+            return 'create_accounts'
+
+    def get_master_public_keys(self):
+        xpub1 = self.master_public_keys.get("x1/")
+        xpub2 = self.master_public_keys.get("x2/")
+        return {'x1':xpub1, 'x2':xpub2}
+
+    def create_main_account(self, password):
+        xpub1 = self.master_public_keys.get("x1/")
+        xpub2 = self.master_public_keys.get("x2/")
+        account = BIP32_Account_2of2({'xpub': xpub1, 'xpub2': xpub2})
+        self.add_account('0', account)
 
 class OldWallet(Deterministic_Wallet):
     wallet_type = 'old'
@@ -1810,7 +1850,8 @@ wallet_types = [
     ('standard', 'standard', ("Standard wallet"),          NewWallet),
     ('standard', 'imported', ("Imported wallet"),          Imported_Wallet),
     ('multisig', '2of2',     ("Multisig wallet (2 of 2)"), Wallet_2of2),
-    ('multisig', '2of3',     ("Multisig wallet (2 of 3)"), Wallet_2of3)
+    ('multisig', '2of3',     ("Multisig wallet (2 of 3)"), Wallet_2of3),
+    ('multisig', 'elec_2of2',("Electrum Multisig wallet (2 of 2)"), Electrum_Wallet_2of2)
 ]
 
 # former WalletFactory
