@@ -9,8 +9,10 @@ recursive-include plugins *.py
 recursive-include packages *.py
 include app.fil
 include icons.qrc
+include *.pem
 recursive-include icons *
 recursive-include scripts *
 recursive-include data *
 recursive-include locale *.mo
 recursive-include docs *
+

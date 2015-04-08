@@ -1,5 +1,5 @@
 """
-py2app/py2exe build script for Electrum Litecoin
+py2app/py2exe build script for Encompass 
 
 Usage (Mac OS X):
      python setup.py py2app
@@ -18,8 +18,8 @@ from lib.util import print_error
 from lib.version import ELECTRUM_VERSION as version
 
 
-name = "Electrum"
-mainscript = 'electrum'
+name = "Encompass"
+mainscript = 'encompass'
 
 if sys.version_info[:3] < (2, 6, 0):
     print_error("Error: " + name + " requires Python version >= 2.6.0...")
@@ -28,7 +28,7 @@ if sys.version_info[:3] < (2, 6, 0):
 if sys.platform == 'darwin':
     from plistlib import Plist
     plist = Plist.fromFile('Info.plist')
-    plist.update(dict(CFBundleIconFile='electrum.icns'))
+    plist.update(dict(CFBundleIconFile='encompass.icns'))
 
     shutil.copy(mainscript, mainscript + '.py')
     mainscript += '.py'
@@ -38,7 +38,7 @@ if sys.platform == 'darwin':
         options=dict(py2app=dict(argv_emulation=True,
                                  includes=['PyQt4.QtCore', 'PyQt4.QtGui', 'PyQt4.QtWebKit', 'PyQt4.QtNetwork', 'sip'],
                                  packages=['lib', 'gui', 'plugins'],
-                                 iconfile='electrum.icns',
+                                 iconfile='encompass.icns',
                                  plist=plist,
                                  resources=["data", "icons"])),
     )
@@ -66,7 +66,7 @@ if sys.platform == 'darwin':
     os.remove(mainscript)
     resource = "dist/" + name + ".app/Contents/Resources/"
 
-    dir_util.copy_tree("locale", resource + "locale/")
+    #dir_util.copy_tree("locale", resource + "locale/")
     # Try to locate qt_menu
     # Let's try the port version first!
     if os.path.isfile("/opt/local/lib/Resources/qt_menu.nib"):

@@ -1,28 +1,18 @@
-FROM ubuntu:14.04
+FROM guruvan/ubuntu-32bit:14.04
+# IMAGE
 MAINTAINER Rob Nelson <guruvan@maza.club>
 
 VOLUME ["/opt/wine-electrum/drive_c/encompass"]
 
 RUN apt-get update -y \
-     && apt-get upgrade -y \
-     && apt-get install -y git python-pip pyqt4-dev-tools zip unzip python-dev \
-     && pip install --pre slowaes && pip install ecdsa \
-     && pip install pyasn1 && pip install pyasn1_modules \
-     && pip install qrcode && pip install requests \
-     && pip install tlslite && pip install pbkdf2 \
-     && pip install SocksiPy-branch \
-     && pip install ltc_scrypt \
-     && git clone https://github.com/guruvan/darkcoin_hash \
-     && cd darkcoin_hash \
-     && python setup.py install \
      && apt-get install -y software-properties-common && add-apt-repository -y ppa:ubuntu-wine/ppa \
-     && dpkg --add-architecture i386 \
      && apt-get update -y \
-     && apt-get install -y curl  wine1.7 xvfb wget \
-     && apt-get install -y winbind \
+     && apt-get install -y --no-install-recommends wine1.7 xvfb wget \
+        zip \
+        winbind \
      && apt-get purge -y python-software-properties \
      && apt-get autoclean -y 
-
+RUN apt-get install -y unzip
 
 # Versions
 ENV PYTHON_URL https://www.python.org/ftp/python/2.7.8/python-2.7.8.msi
@@ -66,14 +56,6 @@ RUN xvfb-run -a --server-num=4 wineboot && sleep 5 \
      && wget -q -O nsis.exe $NSIS_URL \
      && rm -rf /tmp/.wine-* && xvfb-run -a wine nsis.exe /S
 
-
-COPY ./helpers/ltc_scrypt.pyd /root/ltc_scrypt.pyd
-COPY ./helpers/darkcoin_hash.pyd /root/darkcoin_hash.pyd
-COPY ./helpers/make_packages /root/make_packages
-COPY ./helpers/make_release /root/make_release
-COPY ./helpers/build-binary /usr/bin/build-binary
-#COPY ./helpers/make_debian /root/make_debian
-#COPY ./helpers/debian-installer.sh /root/debian-installer.sh
 
 # Clean up stale wine processes
 RUN rm -rf /tmp/.wine-*
