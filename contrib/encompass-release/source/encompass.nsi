@@ -8,7 +8,7 @@
 
   ;Name and file
   Name "Encompass"
-  OutFile "c:/encompass/encompass-setup.exe"
+  OutFile "dist/encompass-setup.exe"
 
   ;Default installation folder
   InstallDir "$PROGRAMFILES\Encompass"

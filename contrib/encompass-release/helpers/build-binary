@@ -23,7 +23,7 @@ $PYTHON "C:/PyInstaller/pyinstaller.py" -y "C:/encompass/deterministic.spec"
 cp /opt/wine-electrum/drive_c/encompass/encompass.nsi $SOURCEDIR/
 
 echo "Running c:/encompass/Encompass-$VERSION/encompass.nsi for install"
-xvfb-run wine c:\\"Program Files (x86)"\\NSIS\\makensis.exe -V1 c:/encompass/Encompass-$VERSION/encompass.nsi
+xvfb-run wine c:\\"Program Files"\\NSIS\\makensis.exe -V1 c:/encompass/Encompass-$VERSION/encompass.nsi
 
 
 cleanup
