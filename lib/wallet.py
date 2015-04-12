@@ -1549,8 +1549,8 @@ class NewWallet(BIP32_HD_Wallet, Mnemonic):
             chain_code = storage.config.get_active_chain_code()
         except AttributeError:
             chain_code = chainparams.get_active_chain().code
-        if self.active_chain_code is None:
-            self.active_chain_code = 'BTC'
+        if chain_code is None:
+            chain_code = 'BTC'
 
         chain_index = chainparams.get_chain_index(chain_code)
         self.root_derivation = "m/44'/{}'".format(chain_index)
