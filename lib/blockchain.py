@@ -36,8 +36,7 @@ class Blockchain(threading.Thread):
         self.lock = threading.Lock()
         self.local_height = 0
         self.running = False
-        # Currently disabled until chain-specific URLs implemented
-        self.headers_url = ''#'http://headers.electrum.org/blockchain_headers'
+        self.headers_url = self.active_chain.headers_url
         self.set_local_height()
         self.queue = Queue.Queue()
 

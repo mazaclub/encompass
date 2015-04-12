@@ -73,6 +73,9 @@ class CryptoCur(object):
     # Number of headers in one chunk
     chunk_size = 2016
 
+    # URL where a header bootstrap can be downloaded
+    headers_url = ''
+
     ### Methods ###
 
 

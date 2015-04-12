@@ -32,6 +32,7 @@ In addition to those constants, some more modular information is required, inclu
 - `PoW`: A boolean value expressing whether or not Proof-of-Work verification is implemented.
 - `block_explorers`: A dictionary of {name : URL} strings for viewing a transaction online.
 - `base_units`: A dictionary of {name : decimal point} units for the coin, such as "mBTC" and "BTC".
+- `headers_url`: URL where a headers bootstrap can be downloaded. If there isn't one, do not implement this - or just assign an empty string (`""`) to it.
 
 Also, the number of headers in one chunk is stored in the `chunk_size` variable. This is 2016 in Electrum.
 
