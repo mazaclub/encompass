@@ -322,8 +322,9 @@ def x_to_xpub(x_pubkey):
 
 
 
-def parse_xpub(x_pubkey):
-    active_chain = chainparams.get_active_chain()
+def parse_xpub(x_pubkey, active_chain=None):
+    if active_chain is None:
+        active_chain = chainparams.get_active_chain()
     if x_pubkey[0:2] in ['02','03','04']:
         pubkey = x_pubkey
     elif x_pubkey[0:2] == 'ff':
@@ -346,8 +347,9 @@ def parse_xpub(x_pubkey):
     return pubkey, address
 
 
-def parse_scriptSig(d, bytes):
-    active_chain = chainparams.get_active_chain()
+def parse_scriptSig(d, bytes, active_chain=None):
+    if active_chain is None:
+        active_chain = chainparams.get_active_chain()
     try:
         decoded = [ x for x in script_GetOp(bytes) ]
     except Exception:
@@ -422,9 +424,10 @@ def parse_scriptSig(d, bytes):
 
 
 
-def get_address_from_output_script(bytes):
+def get_address_from_output_script(bytes, active_chain=None):
+    if active_chain is None:
+        active_chain = chainparams.get_active_chain()
     decoded = [ x for x in script_GetOp(bytes) ]
-    active_chain = chainparams.get_active_chain()
 
     # The Genesis Block, self-payments, and pay-by-IP-address payments look like:
     # 65 BYTES:... CHECKSIG
