@@ -97,7 +97,7 @@ class Network(threading.Thread):
 
         self.lock = threading.Lock()
         self.num_server = 8 if not self.config.get('oneserver') else 0
-        self.blockchain = Blockchain(self.config, self)
+        self.blockchain = Blockchain(self.config, self, self.active_chain)
         self.interfaces = {}
         self.queue = Queue.Queue()
         self.protocol = self.config.get('protocol','s')

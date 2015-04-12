@@ -208,8 +208,10 @@ class Abstract_Wallet(object):
         # saved fields
         try:
             self.active_chain_code     = storage.config.get_active_chain_code()
-        except:
+        except AttributeError:
             self.active_chain_code = chainparams.get_active_chain().code
+        if self.active_chain_code is None:
+            self.active_chain_code = 'BTC'
         self.active_chain          = chainparams.get_chain_instance(self.active_chain_code)
         self.seed_version          = storage.get_above_chain('seed_version', NEW_SEED_VERSION)
         self.use_change            = storage.get('use_change',True)
@@ -1545,8 +1547,10 @@ class NewWallet(BIP32_HD_Wallet, Mnemonic):
     def __init__(self, storage):
         try:
             chain_code = storage.config.get_active_chain_code()
-        except:
+        except AttributeError:
             chain_code = chainparams.get_active_chain().code
+        if chain_code is None:
+            chain_code = 'BTC'
 
         chain_index = chainparams.get_chain_index(chain_code)
         self.root_derivation = "m/44'/{}'".format(chain_index)

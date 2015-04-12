@@ -322,8 +322,9 @@ def x_to_xpub(x_pubkey):
 
 
 
-def parse_xpub(x_pubkey):
-    active_chain = chainparams.get_active_chain()
+def parse_xpub(x_pubkey, active_chain=None):
+    if active_chain is None:
+        active_chain = chainparams.get_active_chain()
     if x_pubkey[0:2] in ['02','03','04']:
         pubkey = x_pubkey
     elif x_pubkey[0:2] == 'ff':
@@ -346,8 +347,9 @@ def parse_xpub(x_pubkey):
     return pubkey, address
 
 
-def parse_scriptSig(d, bytes):
-    active_chain = chainparams.get_active_chain()
+def parse_scriptSig(d, bytes, active_chain=None):
+    if active_chain is None:
+        active_chain = chainparams.get_active_chain()
     try:
         decoded = [ x for x in script_GetOp(bytes) ]
     except Exception:
@@ -422,9 +424,10 @@ def parse_scriptSig(d, bytes):
 
 
 
-def get_address_from_output_script(bytes):
+def get_address_from_output_script(bytes, active_chain=None):
+    if active_chain is None:
+        active_chain = chainparams.get_active_chain()
     decoded = [ x for x in script_GetOp(bytes) ]
-    active_chain = chainparams.get_active_chain()
 
     # The Genesis Block, self-payments, and pay-by-IP-address payments look like:
     # 65 BYTES:... CHECKSIG
@@ -513,12 +516,12 @@ class Transaction:
         self.outputs = outputs
         self.locktime = locktime
         self.raw = None
-        self.chain = chainparams.get_active_chain()
+        self.active_chain = chainparams.get_active_chain()
 
     @classmethod
     def deserialize(klass, raw):
         self = klass([],[])
-        self.chain = chainparams.get_active_chain()
+        self.active_chain = chainparams.get_active_chain()
         self.update(raw)
         return self
 
@@ -530,12 +533,15 @@ class Transaction:
         self.locktime = d['lockTime']
 
     @classmethod
-    def sweep(klass, privkeys, network, to_address, fee):
+    def sweep(klass, privkeys, network, to_address, fee, active_chain=None):
+        if active_chain is None:
+            active_chain = chainparams.get_active_chain()
+        self.active_chain = active_chain
         inputs = []
         for privkey in privkeys:
-            pubkey = public_key_from_private_key(privkey, chainparams.get_active_chain().wif_version)
+            pubkey = public_key_from_private_key(privkey, self.active_chain.wif_version)
             address = address_from_private_key(privkey,
-                chainparams.get_active_chain().p2pkh_version, chainparams.get_active_chain().wif_version)
+                self.active_chain.p2pkh_version, self.active_chain.wif_version)
             u = network.synchronous_get([ ('blockchain.address.listunspent',[address])])[0]
             pay_script = klass.pay_script('address', address)
             for item in u:
@@ -588,19 +594,21 @@ class Transaction:
 
 
     @classmethod
-    def pay_script(self, type, addr):
-        self.chain = chainparams.get_active_chain()
+    def pay_script(self, type, addr, active_chain=None):
+        if active_chain is None:
+            active_chain = chainparams.get_active_chain()
+        self.active_chain = active_chain
         if type == 'op_return':
             h = addr.encode('hex')
             return '6a' + push_script(h)
         else:
             assert type == 'address'
         addrtype, hash_160 = bc_address_to_hash_160(addr)
-        if addrtype == self.chain.p2pkh_version:
+        if addrtype == self.active_chain.p2pkh_version:
             script = '76a9'                                      # op_dup, op_hash_160
             script += push_script(hash_160.encode('hex'))
             script += '88ac'                                     # op_equalverify, op_checksig
-        elif addrtype == self.chain.p2sh_version:
+        elif addrtype == self.active_chain.p2sh_version:
             script = 'a9'                                        # op_hash_160
             script += push_script(hash_160.encode('hex'))
             script += '87'                                       # op_equal
@@ -752,13 +760,13 @@ class Transaction:
                     x_pubkeys = txin['x_pubkeys']
                     ii = x_pubkeys.index(x_pubkey)
                     sec = keypairs[x_pubkey]
-                    pubkey = public_key_from_private_key(sec, self.chain.wif_version)
+                    pubkey = public_key_from_private_key(sec, self.active_chain.wif_version)
                     txin['x_pubkeys'][ii] = pubkey
                     txin['pubkeys'][ii] = pubkey
                     self.inputs[i] = txin
                     # add signature
                     for_sig = Hash(self.tx_for_sig(i).decode('hex'))
-                    pkey = regenerate_key(sec, self.chain.wif_version)
+                    pkey = regenerate_key(sec, self.active_chain.wif_version)
                     secexp = pkey.secret
                     private_key = ecdsa.SigningKey.from_secret_exponent( secexp, curve = SECP256k1 )
                     public_key = private_key.get_verifying_key()
@@ -788,7 +796,7 @@ class Transaction:
             if type == 'address':
                 addr = x
             elif type == 'pubkey':
-                addr = public_key_to_bc_address(x.decode('hex'), self.chain.p2pkh_version)
+                addr = public_key_to_bc_address(x.decode('hex'), self.active_chain.p2pkh_version)
             elif type == 'op_return':
                 try:
                     addr = 'OP_RETURN: "' + x.decode('utf8') + '"'

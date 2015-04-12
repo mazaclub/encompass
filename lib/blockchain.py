@@ -24,12 +24,12 @@ import chainparams
 
 class Blockchain(threading.Thread):
 
-    def __init__(self, config, network):
+    def __init__(self, config, network, active_chain):
         threading.Thread.__init__(self)
         self.daemon = True
         self.config = config
 
-        self.active_chain = chainparams.get_active_chain()
+        self.active_chain = active_chain
         self.chunk_size = self.active_chain.chunk_size
 
         self.network = network
