@@ -41,6 +41,8 @@ class Viacoin(CryptoCur):
 
     chunk_size = 2016
 
+    headers_url = 'http://headers.vialectrum.org/blockchain_headers'
+
     DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}
 
     DEFAULT_SERVERS = {

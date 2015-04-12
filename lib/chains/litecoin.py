@@ -27,6 +27,8 @@ class Litecoin(CryptoCur):
         'mLTC': 5
     }
 
+    headers_url = 'http://headers.electrum-ltc.org/blockchain_headers'
+
 
     DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}
 

@@ -33,6 +33,8 @@ class Bitcoin(CryptoCur):
 
     chunk_size = 2016
 
+    headers_url = 'http://headers.electrum.org/blockchain_headers'
+
     # Network
     DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}
 
