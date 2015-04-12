@@ -114,6 +114,7 @@ class ElectrumWindow(QMainWindow):
 
         self.config = config
         self.network = network
+        self.active_chain = chainkey.chainparams.get_active_chain()
         self.gui_object = gui_object
         self.tray = gui_object.tray
         self.go_lite = gui_object.go_lite
@@ -203,6 +204,7 @@ class ElectrumWindow(QMainWindow):
     def load_wallet(self, wallet):
         import chainkey
         self.wallet = wallet
+        self.active_chain = wallet.active_chain
         self.update_wallet_format()
         # set up chain-specifics
         self.load_block_explorers()
@@ -317,10 +319,10 @@ class ElectrumWindow(QMainWindow):
 
 
     def load_block_explorers(self):
-        self.block_explorers = chainkey.chainparams.get_active_chain().block_explorers
+        self.block_explorers = self.active_chain.block_explorers
 
     def load_base_units(self):
-        self.base_units = chainkey.chainparams.get_active_chain().base_units
+        self.base_units = self.active_chain.base_units
 
     def init_menubar(self):
         menubar = QMenuBar()
@@ -861,7 +863,7 @@ class ElectrumWindow(QMainWindow):
         amount = self.receive_amount_e.get_amount()
         message = unicode(self.receive_message_e.text()).encode('utf8')
         self.save_request_button.setEnabled((amount is not None) or (message != ""))
-        uri_scheme = chainkey.chainparams.get_active_chain().coin_name.lower()
+        uri_scheme = self.active_chain.coin_name.lower()
         if addr:
             query = []
             if amount:
@@ -1535,7 +1537,7 @@ class ElectrumWindow(QMainWindow):
             payto_addr = item.data(0,33).toString()
             menu.addAction(_("Copy to Clipboard"), lambda: self.app.clipboard().setText(addr))
             menu.addAction(_("Pay to"), lambda: self.payto(payto_addr))
-            uri_scheme = ''.join([chainkey.chainparams.get_active_chain().coin_name.lower(), ':'])
+            uri_scheme = ''.join([self.active_chain.coin_name.lower(), ':'])
             menu.addAction(_("QR code"), lambda: self.show_qrcode(uri_scheme + addr, _("Address")))
             if is_editable:
                 menu.addAction(_("Edit label"), lambda: self.edit_label(False))
@@ -1814,7 +1816,7 @@ class ElectrumWindow(QMainWindow):
 
     def change_currency(self, chaincode):
         import installwizard
-        current_chain_code = chainkey.chainparams.get_active_chain().code
+        current_chain_code = self.active_chain.code
         self.close_wallet()
         time.sleep(0.3)
         self.config.set_active_chain_code(chaincode)
@@ -2245,7 +2247,7 @@ class ElectrumWindow(QMainWindow):
         if not data:
             return
         # if the user scanned a coin URI
-        uri_scheme = ''.join([chainkey.chainparams.get_active_chain().coin_name.lower(), ':'])
+        uri_scheme = ''.join([self.active_chain.coin_name.lower(), ':'])
         if data.startswith(uri_scheme):
             self.pay_from_URI(data)
             return
@@ -2678,7 +2680,7 @@ class ElectrumWindow(QMainWindow):
 
         fee_label = QLabel(_('Transaction fee per kb') + ':')
         fee_help = HelpButton(_('Fee per kilobyte of transaction.') + '\n' \
-                              + _('Recommended value') + ': ' + self.format_amount(chainkey.chainparams.get_active_chain().RECOMMENDED_FEE) + ' ' + self.base_unit())
+                              + _('Recommended value') + ': ' + self.format_amount(self.active_chain.RECOMMENDED_FEE) + ' ' + self.base_unit())
         fee_e = BTCAmountEdit(self.get_decimal_point)
         fee_e.setAmount(self.wallet.fee_per_kb)
         if not self.config.is_modifiable('fee_per_kb'):
