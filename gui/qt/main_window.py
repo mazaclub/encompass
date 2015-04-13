@@ -1810,10 +1810,9 @@ class ElectrumWindow(QMainWindow):
         d.setLayout(main_layout)
 
         if not d.exec_(): return
-        chaincode = str(chains_view.currentItem().text(0))
-        self.emit(QtCore.SIGNAL('change_currency'), chaincode)
+        self.on_currency_select()
 
-    def on_currency_select(self, item):
+    def on_currency_select(self):
         chaincode = str(self.chains_view.currentItem().text(0))
         self.change_currency_window.close()
         self.emit(QtCore.SIGNAL('change_currency'), chaincode)
