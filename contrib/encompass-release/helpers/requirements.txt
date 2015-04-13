@@ -9,3 +9,5 @@ SocksiPy-branch==1.01
 protobuf==2.6.1
 tlslite==0.4.8
 dnspython
+ltc_scrypt==1.0
+darkcoin_hash==1.1
