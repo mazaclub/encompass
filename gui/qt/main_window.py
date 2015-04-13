@@ -1776,7 +1776,7 @@ class ElectrumWindow(QMainWindow):
 
     def change_currency_dialog(self):
         import operator
-        d = QDialog(self)
+        self.change_currency_window = d = QDialog(self)
         d.setWindowTitle(_('Change Currency'))
         main_layout = QVBoxLayout()
         change_info = QLabel( _("Note that you will need to enter your password the first time you use a new currency.\n") )
@@ -1787,7 +1787,7 @@ class ElectrumWindow(QMainWindow):
         key_info.setWordWrap(True)
         main_layout.addWidget(key_info)
 
-        chains_view = QTreeWidget()
+        self.chains_view = chains_view = QTreeWidget()
         chains_view.setColumnCount(4)
         chains_view.setHeaderLabels([ _('Code'), _('Currency'), _('PoW'), _('Servers') ])
         chains_view.setColumnWidth(0, 75)
@@ -1795,6 +1795,7 @@ class ElectrumWindow(QMainWindow):
         chains_view.setColumnWidth(2, 60)
         chains_view.setColumnWidth(3, 50)
         chains_view.setMinimumWidth(325)
+        chains_view.itemActivated.connect(self.on_currency_select)
         chains = chainkey.chainparams._known_chains
         # Yes or No
         y_or_n = lambda x: 'Yes' if x==True else 'No'
@@ -1811,7 +1812,11 @@ class ElectrumWindow(QMainWindow):
         d.setLayout(main_layout)
 
         if not d.exec_(): return
-        chaincode = str(chains_view.currentItem().text(0))
+        self.on_currency_select()
+
+    def on_currency_select(self):
+        chaincode = str(self.chains_view.currentItem().text(0))
+        self.change_currency_window.close()
         self.emit(QtCore.SIGNAL('change_currency'), chaincode)
 
     def change_currency(self, chaincode):
