@@ -7,6 +7,7 @@ set -xeo pipefail
 ## doesn't fully install deps
 ##
 VERSION="$1"
+HOSTARCH="$2"
 
 apt-get install -y python-pip python-all debhelper
 pip install stdeb
@@ -46,10 +47,10 @@ cd /root/repo/debian_package
 cp -av /root/requirements.txt /root/repo/debian_package/Encompass-${VERSION}
 tar -cpzvf encompass-${VERSION}_ubuntu.tar.gz Encompass-${VERSION}
 
-sed -e 's/ELECTRUM_VERSION/'${VERSION}'/g' /root/debian_installer.in > /root/debian_installer.sh
-cat /root/debian_installer.sh encompass-${VERSION}_ubuntu.tar.gz  > encompass-${VERSION}_ubuntu
-chmod +x encompass-${VERSION}_ubuntu
+sed -e 's/ELECTRUM_VERSION/'${VERSION}'/g' -e 's/HOSTARCH/'${HOSTARCH}'/g' /root/debian_installer.in > /root/debian_installer.sh
+cat /root/debian_installer.sh encompass-${VERSION}_ubuntu.tar.gz  > encompass-${VERSION}_ubuntu-${HOSTARCH}.bin
+chmod +x encompass-${VERSION}_ubuntu-${HOSTARCH}.bin
 test -d /root/release-packages/Ubuntu || mkdir -pv /root/release-packages/Ubuntu
 cp -av /root/repo/debian_package/Encompass-${VERSION} /root/release-packages/Ubuntu 
 mv /root/repo/debian_package/encompass-${VERSION}_ubuntu.tar.gz  /root/release-packages/Ubuntu
-mv /root/repo/debian_package/encompass-${VERSION}_ubuntu  /root/release-packages/Ubuntu
+mv /root/repo/debian_package/encompass-${VERSION}_ubuntu-${HOSTARCH}.bin  /root/release-packages/Ubuntu

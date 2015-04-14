@@ -5,7 +5,7 @@
 
 pkgname=encompass-git
 _gitname=encompass
-_gitbranch="local_build"
+_gitbranch="check_repo_for_correct_branch"
 pkgver=4216.3b91b31
 pkgrel=1
 pkgdesc="Multi-currency wallet based on Electrum. Supports Bitcoin, Litecoin, Dash, Mazacoin, Viacoin (git development version)."

@@ -53,6 +53,12 @@ then
   test -f /root/repo/setup.py || die 3
   echo "Building from local sources as Version ${VERSION}"
   check_ver
+elif [ "${BUILDTYPE}" = "rc" ]
+then 
+   git clone https://github.com/mazaclub/encompass repo
+   cd /root/repo
+   git checkout release/v${VERSION} || die 2
+
 else "Building from Tagged Version: ${VERSION}"
   git clone https://github.com/mazaclub/encompass repo
   cd /root/repo

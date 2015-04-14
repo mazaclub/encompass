@@ -15,7 +15,7 @@ function get_archpkg (){
   then 
      archbranch="v${VERSION}"
   else
-     archbranch="\"local_build\""
+     archbranch="\"check_repo_for_correct_branch\""
   fi
   test -d ../../contrib/ArchLinux || mkdir -v ../../contrib/ArchLinux
   cd ../../contrib/ArchLinux
@@ -42,9 +42,9 @@ function build_osx (){
   test -d ../src || mkdir ../src 
   mv dist/Encompass.app ../src/ 
   cd ..
-  make
+  #make  -  makes the unneeded dmg
   test -d helpers/release-packages/OSX || mkdir -pv helpers/release-packages/OSX
-  mv Encompass-${VER}.dmg helpers/release-packages/OSX
+  #mv Encompass-${VER}.dmg helpers/release-packages/OSX
   mv src/Encompass.app helpers/release-packages/OSX
   cp helpers/make_OSX-installer.sh helpers/release-packages/OSX
   thisdir=$(pwd)
@@ -72,7 +72,7 @@ function buildBinary(){
    && echo "Attempting OSX Build: Requires Darwin Buildhost" \
    && build_osx ${VERSION} \
    && echo "Debian Packaging" \
-   && $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/helpers:/root  -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-release:${VERSION} /root/make_debian ${VERSION} 
+   && $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/helpers:/root  -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-release:${VERSION} /root/make_debian ${VERSION} amd64 
   if [[ $? = 0 ]]; then
     echo "Build successful."
   else
@@ -82,19 +82,25 @@ function buildBinary(){
   cp $(pwd)/source/Encompass-${VERSION}/dist/encompass.exe $(pwd)/releases/Encompass-$VERSION.exe
   cp $(pwd)/source/Encompass-${VERSION}/dist/encompass-setup.exe $(pwd)/releases/Encompass-$VERSION-setup.exe
   cp -av $(pwd)/helpers/release-packages/* $(pwd)/releases/
+  if [ "${TYPE}" = "rc" ]; then export TYPE=SIGNED ; fi
   if [ "${TYPE}" = "SIGNED" ] ; then
-    ${DOCKERBIN} push mazaclub/encompass-winbuild-${VERSION}
-    ${DOCKERBIN} push mazaclub/encompass-release-${VERSION}
+    ${DOCKERBIN} push mazaclub/encompass-winbuild:${VERSION}
+    ${DOCKERBIN} push mazaclub/encompass-release:${VERSION}
+    ${DOCKERBIN} push mazaclub/encompass32-release:${VERSION}
+    ${DOCKERBIN} tag -f ogrisel/python-winbuilder mazaclub/python-winbuilder:${VERSION}
+    ${DOCKERBIN} push mazaclub/python-winbuilder:${VERSION}
     cd releases
     for release in * 
     do
-      if [ ! -d ${release} ]; then 
+      if [ ! -d ${release} ]; then
          sign_release ${release}
       else
          cd ${release}
          for i in * 
          do 
-           sign_release ${i}
+           if [ ! -d ${i} ]; then
+              sign_release ${i}
+	   fi
          done
          cd ..
       fi
