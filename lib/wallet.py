@@ -1161,6 +1161,23 @@ class Abstract_Wallet(object):
     def can_change_password(self):
         return not self.is_watching_only()
 
+    def get_all_labels(self):
+        chaincodes = chainparams._known_chain_codes
+        labels = {}
+        for code in sorted(chaincodes):
+            d = self.storage.get_chain_value(code, 'labels', {})
+            labels[code] = d
+        return labels
+
+    def set_all_labels(self, new_labels):
+        chaincodes = chainparams._known_chain_codes
+        for code, d in new_labels:
+            if not chainparams.is_known_chain(code):
+                continue
+            # is_known_chain does code.upper(), so we need to do this
+            # as well to make sure it's really upper case
+            self.storage.set_chain_value(code.upper(), 'labels', d)
+
 class Imported_Wallet(Abstract_Wallet):
     wallet_type = 'imported'
 
