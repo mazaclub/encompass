@@ -34,8 +34,8 @@ check_ver () {
 
 install_pip () {
 ## install dependencies to build environment
-pip install --upgrade  --no-compile -t packages -r /root/requirements.txt
-pip install --upgrade -r /root/requirements.txt
+pip install  --upgrade  --no-compile -t packages -r /root/requirements.txt
+pip install  --upgrade -r /root/requirements.txt
 
 }
 

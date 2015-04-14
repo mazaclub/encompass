@@ -10,4 +10,4 @@ protobuf==2.6.1
 tlslite==0.4.8
 dnspython
 ltc_scrypt==1.0
-darkcoin_hash==1.1
+git+https://github.com/guruvan/darkcoin_hash#egg=darkcoin_hash

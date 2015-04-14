@@ -1,12 +1,30 @@
 #!/bin/bash -l
 set -xeo pipefail
 
+
 function sign_release () {
          sha1sum ${release} > ${1}.sha1
          md5sum ${release} > ${1}.md5
          gpg --sign --armor --detach  ${1}
          gpg --sign --armor --detach  ${1}.md5
          gpg --sign --armor --detach  ${1}.sha1
+}
+function get_archpkg (){
+  thisdir=$(pwd)
+  if [ "${TYPE}" = "SIGNED" ]
+  then 
+     archbranch="v${VERSION}"
+  else
+     archbranch="\"local_build\""
+  fi
+  test -d ../../contrib/ArchLinux || mkdir -v ../../contrib/ArchLinux
+  cd ../../contrib/ArchLinux
+  wget https://aur.archlinux.org/packages/en/encompass-git/encompass-git.tar.gz
+  tar -xpzvf encompass-git.tar.gz
+  sed -e 's/_gitbranch\=.*/_gitbranch='${archbranch}'/g' encompass-git/PKGBUILD > encompass-git/PKGBUILD.new
+  mv encompass-git/PKGBUILD.new encompass-git/PKGBUILD
+  rm encompass-git.tar.gz
+  cd ${thisdir}
 }
 function build_osx (){
   if [ "$(uname)" = "Darwin" ];
@@ -136,7 +154,7 @@ function buildDarkcoinHash() {
   echo "Building Darkcoin_hash for Windows"
    wget https://github.com/guruvan/darkcoin_hash/archive/1.1.tar.gz
    tar -xpzvf 1.1.tar.gz
-   docker run -t -i \
+   docker run -ti --rm \
     -e WINEPREFIX="/wine/wine-py2.7.8-32" \
     -v $(pwd)/darkcoin_hash-1.1:/code \
     -v $(pwd)/helpers:/helpers \
@@ -214,6 +232,7 @@ else
         echo "Using docker at $DOCKERBIN"
 fi
 
+get_archpkg
 buildLtcScrypt
 buildDarkcoinHash
 # Build docker image
