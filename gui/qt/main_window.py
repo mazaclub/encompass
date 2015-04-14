@@ -2455,21 +2455,21 @@ class ElectrumWindow(QMainWindow):
             f = open(labelsFile, 'r')
             data = f.read()
             f.close()
-            for key, value in json.loads(data).items():
-                self.wallet.set_label(key, value)
+            labels_dict = json.loads(data)
+            self.wallet.set_all_labels(labels_dict)
             QMessageBox.information(None, _("Labels imported"), _("Your labels were imported from")+" '%s'" % str(labelsFile))
         except (IOError, os.error), reason:
             QMessageBox.critical(None, _("Unable to import labels"), _("Encompass was unable to import your labels.")+"\n" + str(reason))
 
 
     def do_export_labels(self):
-        labels = self.wallet.labels
+        labels = self.wallet.get_all_labels()
         try:
-            fileName = self.getSaveFileName(_("Select file to save your labels"), 'electrum_labels.dat', "*.dat")
+            fileName = self.getSaveFileName(_("Select file to save your labels"), 'encompass_labels.dat', "*.dat")
             if fileName:
                 with open(fileName, 'w+') as f:
                     json.dump(labels, f)
-                QMessageBox.information(None, _("Labels exported"), _("Your labels where exported to")+" '%s'" % str(fileName))
+                QMessageBox.information(None, _("Labels exported"), _("Your labels were exported to")+" '%s'" % str(fileName))
         except (IOError, os.error), reason:
             QMessageBox.critical(None, _("Unable to export labels"), _("Encompass was unable to export your labels.")+"\n" + str(reason))
 
