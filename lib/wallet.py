@@ -138,6 +138,19 @@ class WalletStorage(object):
             data = None
         return data
 
+    def set_chain_value(self, code, key, value):
+        """Shortcut for setting info within a certain chain"""
+        try:
+            json.dumps(key)
+            json.dumps(value)
+            chain = self.get_above_chain(code)
+        except:
+            return
+        with self.lock:
+            if value is not None and chain is not None:
+                self.data[code][key] = copy.deepcopy(value)
+                self.write()
+
     def get(self, key, default=None):
         try:
             active_chain_code = self.config.get_active_chain_code()
