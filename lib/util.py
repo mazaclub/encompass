@@ -168,17 +168,20 @@ def age(from_date, since_date = None, target_tz=None, include_seconds=False):
 #_ud = re.compile('%([0-9a-hA-H]{2})', re.MULTILINE)
 #urldecode = lambda x: _ud.sub(lambda m: chr(int(m.group(1), 16)), x)
 
-def parse_URI(uri):
+def parse_URI(uri, active_chain=None):
     import urlparse
     import bitcoin
     from decimal import Decimal
     import chainparams
 
+    if active_chain is None:
+        active_chain = chainparams.get_active_chain()
+
     if ':' not in uri:
         assert bitcoin.is_address(uri)
         return uri, None, None, None, None
 
-    uri_scheme = chainparams.get_active_chain().coin_name.lower()
+    uri_scheme = active_chain.coin_name.lower()
     u = urlparse.urlparse(uri)
     assert u.scheme == uri_scheme
 
