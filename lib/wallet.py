@@ -39,6 +39,7 @@ from plugins import run_hook
 import bitcoin
 from synchronizer import WalletSynchronizer
 from mnemonic import Mnemonic
+from simple_config import SimpleConfig
 
 
 
@@ -50,6 +51,8 @@ class WalletStorage(object):
 
     def __init__(self, config):
         self.lock = threading.RLock()
+        if not isinstance(config, SimpleConfig):
+            config = SimpleConfig(config)
         self.config = config
         self.data = {}
         self.file_exists = False
@@ -139,9 +142,8 @@ class WalletStorage(object):
         return data
 
     def get(self, key, default=None):
-        try:
-            active_chain_code = self.config.get_active_chain_code()
-        except:
+        active_chain_code = self.config.get_active_chain_code()
+        if active_chain_code is None:
             active_chain_code = chainparams.get_active_chain().code
         with self.lock:
             v = self.data[active_chain_code].get(key)
@@ -174,9 +176,8 @@ class WalletStorage(object):
         except:
             print_error("json error: cannot save", key)
 
-        try:
-            active_chain_code = self.config.get_active_chain_code()
-        except:
+        active_chain_code = self.config.get_active_chain_code()
+        if active_chain_code is None:
             active_chain_code = chainparams.get_active_chain().code
         with self.lock:
             if value is not None:
@@ -206,12 +207,9 @@ class Abstract_Wallet(object):
         self.electrum_version = ELECTRUM_VERSION
         self.gap_limit_for_change = 3 # constant
         # saved fields
-        try:
-            self.active_chain_code     = storage.config.get_active_chain_code()
-        except AttributeError:
-            self.active_chain_code = chainparams.get_active_chain().code
+        self.active_chain_code     = storage.config.get_active_chain_code()
         if self.active_chain_code is None:
-            self.active_chain_code = 'BTC'
+            self.active_chain_code = chainparams.get_active_chain().code
         self.active_chain          = chainparams.get_chain_instance(self.active_chain_code)
         self.seed_version          = storage.get_above_chain('seed_version', NEW_SEED_VERSION)
         self.use_change            = storage.get('use_change',True)
@@ -1545,16 +1543,9 @@ class NewWallet(BIP32_HD_Wallet, Mnemonic):
     wallet_type = 'standard'
 
     def __init__(self, storage):
-        try:
-            chain_code = storage.config.get_active_chain_code()
-        except AttributeError:
-            chain_code = chainparams.get_active_chain().code
-        if chain_code is None:
-            chain_code = 'BTC'
-
-        chain_index = chainparams.get_chain_index(chain_code)
-        self.root_derivation = "m/44'/{}'".format(chain_index)
         BIP32_HD_Wallet.__init__(self, storage)
+        chain_index = chainparams.get_chain_index(self.active_chain_code)
+        self.root_derivation = "m/44'/{}'".format(chain_index)
 
     def get_action(self):
         if self.seed == '':
