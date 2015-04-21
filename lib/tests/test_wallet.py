@@ -17,7 +17,10 @@ class FakeConfig(object):
     """A stub config file to be used in tests"""
     def __init__(self, path):
         self.path = path
-        self.store = {}
+        self.store = {'electrum_path': self.path}
+
+    def __getitem__(self, key):
+        return self.store[key]
 
     def set(self, key, value):
         self.store[key] = value
@@ -27,6 +30,9 @@ class FakeConfig(object):
 
     def get_above_chain(self, key, default=None):
         return self.store.get(key, default)
+
+    def keys(self):
+        return self.store.keys()
 
 
 class FakeSynchronizer(object):

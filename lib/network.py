@@ -27,14 +27,18 @@ DEFAULT_SERVERS = {
 DISCONNECTED_RETRY_INTERVAL = 60
 
 
-def parse_servers(result):
+def parse_servers(result, active_chain=None):
     """ parse servers list into dict format"""
     from version import PROTOCOL_VERSION
     servers = {}
-    try:
-        defaultports = chainparams.get_active_chain().DEFAULT_PORTS
-    except:
-        defaultports = DEFAULT_PORTS
+    defaultports = None
+    if active_chain is None:
+        try:
+            defaultports = chainparams.get_active_chain().DEFAULT_PORTS
+        except:
+            defaultports = DEFAULT_PORTS
+    else:
+        defaultports = active_chain.DEFAULT_PORTS
     for item in result:
         host = item[1]
         out = {}
@@ -72,11 +76,12 @@ def filter_protocol(servers, p):
     return l
 
 
-def pick_random_server(p='s'):
-    try:
-        servers = chainparams.get_active_chain().DEFAULT_SERVERS
-    except:
-        servers = DEFAULT_SERVERS
+def pick_random_server(p='s', servers=None):
+    if servers is None:
+        try:
+            servers = chainparams.get_active_chain().DEFAULT_SERVERS
+        except:
+            servers = DEFAULT_SERVERS
     return random.choice( filter_protocol(servers,p) )
 
 from simple_config import SimpleConfig
@@ -106,7 +111,7 @@ class Network(threading.Thread):
         # Server for addresses and transactions
         self.default_server = self.config.get('server')
         if not self.default_server:
-            self.default_server = pick_random_server(self.protocol)
+            self.default_server = pick_random_server(self.protocol, self.default_servers)
 
         self.irc_servers = {} # returned by interface (list from irc)
 
@@ -470,7 +475,7 @@ class Network(threading.Thread):
 
     def on_peers(self, i, r):
         if not r: return
-        self.irc_servers = parse_servers(r.get('result'))
+        self.irc_servers = parse_servers(r.get('result'), self.active_chain)
         self.notify('servers')
 
     def on_banner(self, i, r):
