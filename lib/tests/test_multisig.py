@@ -14,7 +14,13 @@ class FakeConfig(object):
     """A stub config file to be used in tests"""
     def __init__(self, path):
         self.path = path
-        self.store = {}
+        self.store = {'electrum_path': self.path}
+
+    def __getitem__(self, key):
+        return self.store[key]
+
+    def keys(self):
+        return self.store.keys()
 
     def set_active_chain_code(self, value, save=True):
         value = value.upper()
