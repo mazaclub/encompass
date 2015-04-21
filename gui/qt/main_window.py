@@ -114,7 +114,10 @@ class ElectrumWindow(QMainWindow):
 
         self.config = config
         self.network = network
-        self.active_chain = chainkey.chainparams.get_active_chain()
+        if isinstance(config, SimpleConfig):
+            self.active_chain = chainkey.chainparams.get_chain_instance( self.config.get_active_chain_code() )
+        else:
+            self.active_chain = chainkey.chainparams.get_active_chain()
         self.gui_object = gui_object
         self.tray = gui_object.tray
         self.go_lite = gui_object.go_lite
