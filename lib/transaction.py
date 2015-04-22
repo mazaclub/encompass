@@ -511,17 +511,18 @@ class Transaction:
             self.raw = self.serialize()
         return self.raw
 
-    def __init__(self, inputs, outputs, locktime=0):
+    def __init__(self, inputs, outputs, locktime=0, active_chain=None):
         self.inputs = inputs
         self.outputs = outputs
         self.locktime = locktime
         self.raw = None
-        self.active_chain = chainparams.get_active_chain()
+        if active_chain is None:
+            active_chain = chainparams.get_active_chain()
+        self.active_chain = active_chain
 
     @classmethod
-    def deserialize(klass, raw):
-        self = klass([],[])
-        self.active_chain = chainparams.get_active_chain()
+    def deserialize(klass, raw, active_chain=None):
+        self = klass([],[], active_chain=active_chain)
         self.update(raw)
         return self
 
