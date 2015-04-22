@@ -1,7 +1,11 @@
 import unittest
 from lib.util import format_satoshis, parse_URI
+from lib import chainparams
 
 class TestUtil(unittest.TestCase):
+
+    def setUp(self):
+        chainparams.set_active_chain("BTC")
 
     def test_format_satoshis(self):
         result = format_satoshis(1234)
@@ -18,8 +22,8 @@ class TestUtil(unittest.TestCase):
         expected = "-0.00001234"
         self.assertEqual(expected, result)
 
-    def _do_test_parse_URI(self, uri, expected_address, expected_amount, expected_label, expected_message, expected_request_url):
-        address, amount, label, message, request_url = parse_URI(uri)
+    def _do_test_parse_URI(self, uri, expected_address, expected_amount, expected_label, expected_message, expected_request_url, chaincode="BTC"):
+        address, amount, label, message, request_url = parse_URI(uri, active_chain=chainparams.get_chain_instance(chaincode))
         self.assertEqual(expected_address, address)
         self.assertEqual(expected_amount, amount)
         self.assertEqual(expected_label, label)
@@ -28,13 +32,19 @@ class TestUtil(unittest.TestCase):
 
     def test_parse_URI_address(self):
         self._do_test_parse_URI('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', '', '', '', '')
+        self._do_test_parse_URI('mazacoin:MCfUZ1w4JtBWQF5DwrHLCCpXUnxTYhEh89', 'MCfUZ1w4JtBWQF5DwrHLCCpXUnxTYhEh89', '', '', '', '', "MZC")
+        self.assertRaises(AssertionError, self._do_test_parse_URI, 'mazacoin:MCfUZ1w4JtBWQF5DwrHLCCpXUnxTYhEh89', 'MCfUZ1w4JtBWQF5DwrHLCCpXUnxTYhEh89', '', '', '', '')
 
     def test_parse_URI_only_address(self):
         self._do_test_parse_URI('15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', None, None, None, None)
+        self._do_test_parse_URI('MCfUZ1w4JtBWQF5DwrHLCCpXUnxTYhEh89', 'MCfUZ1w4JtBWQF5DwrHLCCpXUnxTYhEh89', None, None, None, None, "MZC")
+        self.assertRaises(AssertionError, self._do_test_parse_URI,'MCfUZ1w4JtBWQF5DwrHLCCpXUnxTYhEh89', 'MCfUZ1w4JtBWQF5DwrHLCCpXUnxTYhEh89', None, None, None, None)
 
 
     def test_parse_URI_address_label(self):
         self._do_test_parse_URI('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?label=electrum%20test', '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', '', 'electrum test', '', '')
+        self._do_test_parse_URI('mazacoin:MCfUZ1w4JtBWQF5DwrHLCCpXUnxTYhEh89?label=electrum%20test', 'MCfUZ1w4JtBWQF5DwrHLCCpXUnxTYhEh89', '', 'electrum test', '', '', "MZC")
+        self.assertRaises(AssertionError, self._do_test_parse_URI, 'bitcoin:MCfUZ1w4JtBWQF5DwrHLCCpXUnxTYhEh89?label=electrum%20test', 'MCfUZ1w4JtBWQF5DwrHLCCpXUnxTYhEh89', '', 'electrum test', '', '', "MZC")
 
     def test_parse_URI_address_message(self):
         self._do_test_parse_URI('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?message=electrum%20test', '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', '', '', 'electrum test', '')
