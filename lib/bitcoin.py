@@ -381,13 +381,18 @@ def is_valid(addr):
     return is_address(addr)
 
 
-def is_address(addr):
+def is_address(addr, active_chain=None):
     ADDRESS_RE = re.compile('[1-9A-HJ-NP-Za-km-z]{26,}\\Z')
     if not ADDRESS_RE.match(addr): return False
     try:
         addrtype, h = bc_address_to_hash_160(addr)
     except Exception:
         return False
+    # optionally test if it's the right chain
+    if active_chain is not None:
+        if addrtype != active_chain.p2pkh_version and addrtype != active_chain.p2sh_version:
+            return False
+
     return addr == hash_160_to_bc_address(h, addrtype)
 
 
