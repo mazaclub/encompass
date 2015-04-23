@@ -9,6 +9,9 @@ function sign_release () {
          gpg --sign --armor --detach  ${1}.md5
          gpg --sign --armor --detach  ${1}.sha1
 }
+function build_win32trezor {
+ ./helpers/build-hidapi.sh
+}
 function get_archpkg (){
   thisdir=$(pwd)
   if [ "${TYPE}" = "SIGNED" ]
@@ -69,19 +72,21 @@ function buildBinary(){
   $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/releases:/releases -v $(pwd)/helpers:/root  -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-release:${VERSION} /root/make_release $VERSION $TYPE \
    && echo "Making Windows EXEs for $VERSION" \
    && $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/helpers:/root  -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-winbuild:${VERSION} /root/build-binary $VERSION \
+   && ls -la source/Encompass-"${VERSION}"/dist/encompass-setup.exe \
    && echo "Attempting OSX Build: Requires Darwin Buildhost" \
    && build_osx ${VERSION} \
-   && echo "Debian Packaging" \
-   && $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/helpers:/root  -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-release:${VERSION} /root/make_debian ${VERSION} amd64 
+   && echo "Linux Packaging" \
+   && $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/helpers:/root  -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-release:${VERSION} /root/make_linux ${VERSION}
+##   && $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/helpers:/root  -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-release:${VERSION} /root/make_debian ${VERSION} amd64 
   if [[ $? = 0 ]]; then
     echo "Build successful."
   else
     echo "Seems like the build failed. Exiting."
     exit
   fi
-  cp $(pwd)/source/Encompass-${VERSION}/dist/encompass.exe $(pwd)/releases/Encompass-$VERSION.exe
-  cp $(pwd)/source/Encompass-${VERSION}/dist/encompass-setup.exe $(pwd)/releases/Encompass-$VERSION-setup.exe
-  cp -av $(pwd)/helpers/release-packages/* $(pwd)/releases/
+  mv $(pwd)/source/Encompass-${VERSION}/dist/encompass.exe $(pwd)/releases/Windows/Encompass-$VERSION.exe
+  mv $(pwd)/source/Encompass-${VERSION}/dist/encompass-setup.exe $(pwd)/releases/Windows/Encompass-$VERSION-setup.exe
+  mv $(pwd)/helpers/release-packages/* $(pwd)/releases/
   if [ "${TYPE}" = "rc" ]; then export TYPE=SIGNED ; fi
   if [ "${TYPE}" = "SIGNED" ] ; then
     ${DOCKERBIN} push mazaclub/encompass-winbuild:${VERSION}
@@ -120,6 +125,7 @@ function buildImage(){
   esac
 }
 
+
 function buildLtcScrypt() {
 ## this will be integrated into the main build in a later release
    wget https://pypi.python.org/packages/source/l/ltc_scrypt/ltc_scrypt-1.0.tar.gz
@@ -131,11 +137,11 @@ function buildLtcScrypt() {
     ogrisel/python-winbuilder wineconsole --backend=curses  Z:\\helpers\\ltc_scrypt-build.bat
    cp -av ltc_scrypt-1.0/build/lib.win32-2.7/ltc_scrypt.pyd helpers/ltc_scrypt.pyd
    echo "Building ltc_scrypt for Linux/Android"
-   docker run -ti --rm \
-    -v $(pwd)/ltc_scrypt-1.0:/code \
-    -v $(pwd)/helpers:/helpers \
-    mazaclub/encompass-release:${VERSION} /bin/sh -c "cd /code ;python setup.py build" 
-   cp -av ltc_scrypt-1.0/build/lib.linux-x86_64-2.7/ltc_scrypt.so helpers/ltc_scrypt.so
+   #docker run -ti --rm \
+   # -v $(pwd)/ltc_scrypt-1.0:/code \
+   # -v $(pwd)/helpers:/helpers \
+   # mazaclub/encompass-release:${VERSION} /bin/sh -c "cd /code ;python setup.py build" 
+   #cp -av ltc_scrypt-1.0/build/lib.linux-x86_64-2.7/ltc_scrypt.so helpers/ltc_scrypt.so
 
 #   echo "Building ltc_scrypt module for OSX"
 #   docker run -it --rm \
@@ -166,12 +172,12 @@ function buildDarkcoinHash() {
     -v $(pwd)/helpers:/helpers \
     ogrisel/python-winbuilder wineconsole --backend=curses  Z:\\helpers\\darkcoin_hash-build.bat
    cp darkcoin_hash-1.1/build/lib.win32-2.7/darkcoin_hash.pyd helpers/darkcoin_hash.pyd
-   echo "Building darkcoin_hash for Linux/Android"
-   docker run -ti --rm \
-    -v $(pwd)/darkcoin_hash-1.1:/code \
-    -v $(pwd)/helpers:/helpers \
-    mazaclub/encompass-release:${VERSION} /bin/sh -c "cd /code ;python setup.py build" 
-   cp -av darkcoin_hash-1.1/build/lib.linux-x86_64-2.7/darkcoin_hash.so helpers/darkcoin_hash.so
+   #echo "Building darkcoin_hash for Linux/Android"
+   #docker run -ti --rm \
+   # -v $(pwd)/darkcoin_hash-1.1:/code \
+   # -v $(pwd)/helpers:/helpers \
+   # mazaclub/encompass-release:${VERSION} /bin/sh -c "cd /code ;python setup.py build" 
+   #cp -av darkcoin_hash-1.1/build/lib.linux-x86_64-2.7/darkcoin_hash.so helpers/darkcoin_hash.so
 
    #echo "Building darkcoin_hash module for OSX"
    #docker run -it --rm \
@@ -237,10 +243,15 @@ if [[ -z "$DOCKERBIN" ]]; then
 else
         echo "Using docker at $DOCKERBIN"
 fi
-
+if [ "${TYPE}" = "rc" -o "${TYPE}" = "SIGNED" ]
+then 
+   ./clean
+fi
+ git clone https://github.com/mazaclub/python-trezor
 get_archpkg
-buildLtcScrypt
-buildDarkcoinHash
+    build_win32trezor
+   test -f helpers/ltc_scrypt.pyd || buildLtcScrypt
+   test -f helpers/darkcoin_hash.pyd || buildDarkcoinHash
 # Build docker image
  $DOCKERBIN images|awk '{print $1":"$2}'|grep "mazaclub/encompass-winbuild:${VERSION}" || buildImage winbuild
  $DOCKERBIN images|awk '{print $1":"$2}'|grep "mazaclub/encompass-release:${VERSION}" || buildImage release

@@ -12,22 +12,23 @@ Homepage: https://maza.club/encompass
 ----------------------
 
  - Installer package is provided at https://maza.club/encompass
- - To use simply download and:
+ - To download and use:
     ```
-    sudo /encompass_0.5.0_ubuntu 
+    cd ~
+    wget https://github.com/mazaclub/encompass/releases/v0.5.0/Encompass-0.5.0-Linux_x86_64.tgz
+    tar -xpzvf Encompass-0.5.0-Linux_x86_64.tgz
+    cd Encompass-0.5.0
+    ./encompass_x86_64.bin
     ```
-    This will: 
-      - extract the included .deb files for Encompass installation
-      - run dpkg -i to install each of the included .deb files
-      - install python-pip to your system
-      - use pip to install the remaining dependencies 
-      - use apt-get to clean up 
+
 
 Once successfully installed simply type
    ```
    encompass
    ```
    Your wallets will be located in /home/YOUR_LOGIN_NAME/.encompass/wallets
+
+Installation on 32bit machines is best achieved via github master or TAGGED branches
 
 2. HOW OFFICIAL PACKAGES ARE CREATED
 ------------------------------------

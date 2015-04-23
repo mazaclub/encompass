@@ -44,7 +44,8 @@ python setup.py --command-packages=stdeb.command bdist_deb
 cp deb_dist/python-* /root/repo/debian_package/Encompass-${VERSION}
 cd ..
 cd /root/repo/debian_package
-cp -av /root/requirements.txt /root/repo/debian_package/Encompass-${VERSION}
+# cp -av /root/requirements.txt /root/repo/debian_package/Encompass-${VERSION}
+sed -e 's/ltc_sc/\#ltc_sc/g' -e 's/darkcoin_h/\#darkcoin_h/g' /root/requirements.txt > /root/repo/debian_package/Encompass-${VERSION} 
 tar -cpzvf encompass-${VERSION}_ubuntu.tar.gz Encompass-${VERSION}
 
 sed -e 's/ELECTRUM_VERSION/'${VERSION}'/g' -e 's/HOSTARCH/'${HOSTARCH}'/g' /root/debian_installer.in > /root/debian_installer.sh

@@ -24,7 +24,7 @@ function success (){
  echo "Finished"
  exit 0
 }
-source /etc/lsb_release
+source /etc/lsb-release
 if [ "${DISTRIB_RELEASE}" != "14.04" ] 
 then
    echo "Encompass for Ubuntu supports v14.04 only"

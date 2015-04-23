@@ -74,14 +74,16 @@ setup(
 	'pyasn1==0.1.7',
 	'qrcode==5.1',
 	'SocksiPy-branch==1.01',
-	'protobuf==2.6.1',
+	'protobuf==2.5.0',
 	'tlslite==0.4.8',
 	'dnspython',
 	'ltc_scrypt==1.0',
-	'darkcoin_hash==1.1'
+	'darkcoin_hash==1.1',
+	'trezor==0.6.3'
     ],
     dependency_links=[
         "git+https://github.com/guruvan/darkcoin_hash#egg=darkcoin_hash"
+        "git+https://github.com/mazaclub/python-trezor#egg=trezor"
     ],
     package_dir={
         'chainkey': 'lib',

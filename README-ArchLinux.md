@@ -18,7 +18,7 @@ Homepage: https://maza.club/encompass
    - you are encouraged to use the official repo, contents are mirrored here for verification
    ```
    wget https://aur.archlinux.org/packages/en/encompass-git/encompass-git.tar.gz \
-    && tar -xpzvf encompass-git.tag.gz \
+    && tar -xpzvf encompass-git.tar.gz \
     && cd encompass-git \
     && mkpkg -s \
     && sudo pacman -U encompass-git-$VERSION.pkg.tar.xz
