@@ -2,10 +2,6 @@
 
 Encompass consolidates support for various currencies into one wallet. It is a BIP-0044-compliant multi-currency wallet based on Electrum. This Encompass client uses Electrum servers of supported currencies to retrieve necessary data, so no "Encompass server" is necessary.
 
-Licence: GNU GPL v3
-Author: Tyler Willis
-Contributors: Thomas Voegtlin (Electrum author), mazaclub, pooler, and many more
-Language: Python
 Homepage: https://maza.club/encompass
 ## Encompass on OSX
 

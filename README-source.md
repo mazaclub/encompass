@@ -2,10 +2,6 @@ Encompass - lightweight multi-coin client
 
 Encompass consolidates support for various currencies into one wallet. It is a BIP-0044-compliant multi-currency wallet based on Electrum. This Encompass client uses Electrum servers of supported currencies to retrieve necessary data, so no "Encompass server" is necessary.
 
-Licence: GNU GPL v3
-Author: Tyler Willis
-Contributors: Thomas Voegtlin (Electrum author), mazaclub, pooler, and many more
-Language: Python
 Homepage: https://maza.club/encompass
 
 ## Operation and Installation from Source
@@ -55,7 +51,7 @@ Use pyrcc4 to build the icons:
 If you do not have pyrcc4 on your system, you may need to install the PyQt4-devel or pyqt4-dev-tools package first.
 
 
-Then too run Encompass from the source directory:
+Then to run Encompass from the source directory:
    ```
    ./encompass
    ```
