@@ -1171,7 +1171,7 @@ class Abstract_Wallet(object):
 
     def set_all_labels(self, new_labels):
         chaincodes = chainparams._known_chain_codes
-        for code, d in new_labels:
+        for code, d in new_labels.items():
             if not chainparams.is_known_chain(code):
                 continue
             # is_known_chain does code.upper(), so we need to do this
