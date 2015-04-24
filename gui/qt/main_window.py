@@ -1876,7 +1876,7 @@ class ElectrumWindow(QMainWindow):
         address = str(line1.text())
         label = unicode(line2.text())
 
-        if not is_valid(address):
+        if not is_valid(address, self.active_chain):
             QMessageBox.warning(self, _('Error'), _('Invalid Address'), _('OK'))
             return
 
