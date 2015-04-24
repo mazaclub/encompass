@@ -377,8 +377,8 @@ def address_from_private_key(sec, addrtype=0, wif_version=128):
     return address
 
 
-def is_valid(addr):
-    return is_address(addr)
+def is_valid(addr, active_chain=None):
+    return is_address(addr, active_chain)
 
 
 def is_address(addr, active_chain=None):
