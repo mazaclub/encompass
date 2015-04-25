@@ -32,7 +32,6 @@ productbuild --synthesize \
     --package ${PRODUCT_NAME}-pre.pkg \
         Distribution.in
 cat Distribution.in
-sleep 20
 
 #echo "sed"
 sed -e '$ i\

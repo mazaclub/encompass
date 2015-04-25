@@ -2,17 +2,18 @@
 set -xeo pipefail
 
 
-function sign_release () {
+sign_release () {
          sha1sum ${release} > ${1}.sha1
          md5sum ${release} > ${1}.md5
          gpg --sign --armor --detach  ${1}
          gpg --sign --armor --detach  ${1}.md5
          gpg --sign --armor --detach  ${1}.sha1
 }
-function build_win32trezor {
+
+build_win32trezor() {
  ./helpers/build-hidapi.sh
 }
-function get_archpkg (){
+get_archpkg (){
   thisdir=$(pwd)
   if [ "${TYPE}" = "SIGNED" ]
   then 
@@ -29,7 +30,7 @@ function get_archpkg (){
   rm encompass-git.tar.gz
   cd ${thisdir}
 }
-function build_osx (){
+build_osx (){
   if [ "$(uname)" = "Darwin" ];
    then
   
@@ -58,13 +59,15 @@ function build_osx (){
   echo "OSX Build Requires OSX build host!"
  fi
 }
-function buildBinary(){
+prepare_repo(){
   if [ ${TYPE} = "local" ]
   then
     echo "Setting up Local build"
     test -d repo || mkdir -pv repo
     sudo tar -C ../../ -cpv --exclude=contrib/* . |sudo  tar -C repo -xpf -
   fi
+}
+buildBinary(){
   test -d releases || mkdir -pv $(pwd)/releases
   # echo "Making locales" 
   # $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/helpers:/root  -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-release:${VERSION} /bin/bash
@@ -84,8 +87,8 @@ function buildBinary(){
     echo "Seems like the build failed. Exiting."
     exit
   fi
-  mv $(pwd)/source/Encompass-${VERSION}/dist/encompass.exe $(pwd)/releases/Windows/Encompass-$VERSION.exe
-  mv $(pwd)/source/Encompass-${VERSION}/dist/encompass-setup.exe $(pwd)/releases/Windows/Encompass-$VERSION-setup.exe
+  #mv $(pwd)/source/Encompass-${VERSION}/dist/encompass.exe $(pwd)/releases/Windows/Encompass-$VERSION.exe
+  #mv $(pwd)/source/Encompass-${VERSION}/dist/encompass-setup.exe $(pwd)/releases/Windows/Encompass-$VERSION-setup.exe
   mv $(pwd)/helpers/release-packages/* $(pwd)/releases/
   if [ "${TYPE}" = "rc" ]; then export TYPE=SIGNED ; fi
   if [ "${TYPE}" = "SIGNED" ] ; then
@@ -115,7 +118,7 @@ function buildBinary(){
 
 }
 
-function buildImage(){
+buildImage(){
   echo "Building image"
   case "${1}" in 
   winbuild) $DOCKERBIN build -t mazaclub/encompass-winbuild:${VERSION} .
@@ -126,7 +129,7 @@ function buildImage(){
 }
 
 
-function buildLtcScrypt() {
+buildLtcScrypt() {
 ## this will be integrated into the main build in a later release
    wget https://pypi.python.org/packages/source/l/ltc_scrypt/ltc_scrypt-1.0.tar.gz
    tar -xpzvf ltc_scrypt-1.0.tar.gz
@@ -161,7 +164,7 @@ function buildLtcScrypt() {
 #    cp -v ltc_scrypt-1.0/build/lib.darwin-x64/ltc_scrypt.dylib helpers/ltc_scrypt.dylib
 
 }
-function buildDarkcoinHash() {
+buildDarkcoinHash() {
 ## this will be integrated into the main build in a later release
   echo "Building Darkcoin_hash for Windows"
    wget https://github.com/guruvan/darkcoin_hash/archive/1.1.tar.gz
@@ -198,7 +201,7 @@ function buildDarkcoinHash() {
 
 }
 
-function prepareFile(){
+prepareFile(){
   echo "Preparing file for Encompass version $VERSION"
   if [ -e "$TARGETPATH" ]; then
     echo "Version tar already downloaded."
@@ -248,15 +251,16 @@ then
    ./clean
 fi
  git clone https://github.com/mazaclub/python-trezor
+prepare_repo
 get_archpkg
-    build_win32trezor
-   test -f helpers/ltc_scrypt.pyd || buildLtcScrypt
-   test -f helpers/darkcoin_hash.pyd || buildDarkcoinHash
+build_win32trezor
+test -f helpers/ltc_scrypt.pyd || buildLtcScrypt
+test -f helpers/darkcoin_hash.pyd || buildDarkcoinHash
 # Build docker image
- $DOCKERBIN images|awk '{print $1":"$2}'|grep "mazaclub/encompass-winbuild:${VERSION}" || buildImage winbuild
- $DOCKERBIN images|awk '{print $1":"$2}'|grep "mazaclub/encompass-release:${VERSION}" || buildImage release
- test -f FORCE_IMG_BUILD &&  buildImage winbuild
- test -f FORCE_IMG_BUILD &&  buildImage release
+$DOCKERBIN images|awk '{print $1":"$2}'|grep "mazaclub/encompass-winbuild:${VERSION}" || buildImage winbuild
+$DOCKERBIN images|awk '{print $1":"$2}'|grep "mazaclub/encompass-release:${VERSION}" || buildImage release
+test -f FORCE_IMG_BUILD &&  buildImage winbuild
+test -f FORCE_IMG_BUILD &&  buildImage release
 
 # Prepare host file system
 #prepareFile

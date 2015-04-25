@@ -1,5 +1,6 @@
 # Release 0.5.0
 
+ * Produce Linux,OSX,Windows binary releases
  * Implement Trezor Hardware wallet 
    - trezor wallets are supported on all chains
    - custom firmware is required to access chains not supported in official firmware form Trezor
@@ -8,7 +9,7 @@
      - Encompass-multisig supports a single root key to derive addresses on all chains
  * Chain-specific WIF version bytes now used
  * Installation & Build Enhancements
-   - build system is updated to include building OSX and Ubuntu binary release packages
+   - build system is updated to include building OSX and Linux binary release packages
    - setup.py and setup-release.py modified to support user installation, sandbox building/installs
  * Bug-Fixes
    - o not include next_account address in wallet.addresses()
