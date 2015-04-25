@@ -306,8 +306,8 @@ def match_decoded_multisig(decoded):
     for opc, vch, ib in decoded:
         declist.append( (opc, (vch.encode('hex') if vch is not None else None  ), ib) )
     print('decoded: {}'.format(declist))
-    for i in range(1, 6):
-        for j in range(1, 6):
+    for i in range(1, 12):
+        for j in range(1, 12):
             op_m = 80 + i
             op_n = 80 + j
             match = [ op_m ]
