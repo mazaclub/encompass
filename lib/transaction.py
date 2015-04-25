@@ -300,6 +300,24 @@ def match_decoded(decoded, to_match):
             return False
     return True
 
+# match all the possible multisig scripts, return m and n
+def match_decoded_multisig(decoded):
+    declist = []
+    for opc, vch, ib in decoded:
+        declist.append( (opc, (vch.encode('hex') if vch is not None else None  ), ib) )
+    print('decoded: {}'.format(declist))
+    for i in range(1, 6):
+        for j in range(1, 6):
+            op_m = 80 + i
+            op_n = 80 + j
+            match = [ op_m ]
+            for ii in range(j):
+                match.append(opcodes.OP_PUSHDATA4)
+            match.append(op_n)
+            match.append(opcodes.OP_CHECKMULTISIG)
+            if match_decoded(decoded, match):
+                return (i, j)
+    return False
 
 def parse_sig(x_sig):
     s = []
@@ -390,7 +408,7 @@ def parse_scriptSig(d, bytes, active_chain=None):
         d['address'] = address
         return
 
-    # p2sh transaction, 2 of n
+    # p2sh transaction, m of n
     match = [ opcodes.OP_0 ]
     while len(match) < len(decoded):
         match.append(opcodes.OP_PUSHDATA4)
@@ -401,15 +419,15 @@ def parse_scriptSig(d, bytes, active_chain=None):
 
     x_sig = map(lambda x:x[1].encode('hex'), decoded[1:-1])
     d['signatures'] = parse_sig(x_sig)
-    d['num_sig'] = 2
 
     dec2 = [ x for x in script_GetOp(decoded[-1][1]) ]
-    match_2of2 = [ opcodes.OP_2, opcodes.OP_PUSHDATA4, opcodes.OP_PUSHDATA4, opcodes.OP_2, opcodes.OP_CHECKMULTISIG ]
-    match_2of3 = [ opcodes.OP_2, opcodes.OP_PUSHDATA4, opcodes.OP_PUSHDATA4, opcodes.OP_PUSHDATA4, opcodes.OP_3, opcodes.OP_CHECKMULTISIG ]
-    if match_decoded(dec2, match_2of2):
-        x_pubkeys = [ dec2[1][1].encode('hex'), dec2[2][1].encode('hex') ]
-    elif match_decoded(dec2, match_2of3):
-        x_pubkeys = [ dec2[1][1].encode('hex'), dec2[2][1].encode('hex'), dec2[3][1].encode('hex') ]
+    multis_mn = match_decoded_multisig(dec2)
+    if multis_mn:
+        multis_m = multis_mn[0]
+        multis_n = multis_mn[1]
+        x_pubkeys = map(lambda x:x[1].encode('hex'), dec2[1:-2])
+        print("Transaction::parseScriptsig: x_pubkeys: {}\n".format(x_pubkeys))
+        d['num_sig'] = multis_m
     else:
         print_error("cannot find address in input script", bytes.encode('hex'))
         return
@@ -571,24 +589,14 @@ class Transaction:
         n = len(public_keys)
         if num is None: num = n
 
-        assert num <= n and n in [2,3] , 'Only "2 of 2", and "2 of 3" transactions are supported'
-
-        if num==2:
-            s = '52'
-        elif num == 3:
-            s = '53'
-        else:
-            raise
+        # 0x50 + m
+        s = ''.join([ '5', hex(num)[-1] ])
 
         for k in public_keys:
             s += op_push(len(k)/2)
             s += k
-        if n==2:
-            s += '52'
-        elif n==3:
-            s += '53'
-        else:
-            raise
+        s += ''.join([ '5', hex(n)[-1] ])
+
         s += 'ae'
 
         return s
@@ -671,7 +679,7 @@ class Transaction:
                 else:
                     script = '00'                                    # op_0
                     script += sig_list
-                    redeem_script = self.multisig_script(pubkeys,2)
+                    redeem_script = self.multisig_script(pubkeys,num_sig)
                     script += push_script(redeem_script)
 
             elif for_sig==i:

@@ -1725,6 +1725,41 @@ class Wallet_2of3(Wallet_2of2):
         if not self.accounts:
             return 'create_accounts'
 
+class Wallet_MofN(Multisig_Wallet):
+    wallet_type = 'nofm'
+
+    def __init__(self, storage):
+        Multisig_Wallet.__init__(self, storage)
+        self.multisig_m = storage.get_above_chain('multisig_m')
+        self.multisig_n = storage.get_above_chain('multisig_n')
+
+    def create_main_account(self, password):
+        xpubs = self.master_public_keys.items()
+        acc_dict = {}
+        acc_xpubs = {}
+        for k, v in xpubs:
+            if k == "x1/":
+                acc_dict[ 'xpub' ] = bip32_public_derivation(v, "", "/{}".format(self.active_chain.chain_index))
+            else:
+                acc_xpubs[ "xpub{}".format(k[1]) ] = bip32_public_derivation(v, "", "/{}".format(self.active_chain.chain_index))
+        acc_dict['cosigner_xpubs'] = acc_xpubs
+        acc_dict['multisig-m'] = self.multisig_m
+        acc_dict['multisig-n'] = self.multisig_n
+        # acc_dict: {
+        # 'xpub': MY_XPUB,
+        # 'cosigner_xpubs': {
+        #   'xpub2': XPUB_NUMBER_2,
+        #   'xpub3': XPUB_NUMBER_3
+        #  }
+        # }
+        account = BIP32_Account_MofN(acc_dict)
+        self.add_account('0', account)
+
+    def get_master_public_keys(self):
+        d = {}
+        for k, v in self.master_public_keys.items():
+            d[ k[:-1] ] = v
+        return d
 
 class OldWallet(Deterministic_Wallet):
     wallet_type = 'old'
