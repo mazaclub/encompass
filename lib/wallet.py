@@ -1761,6 +1761,18 @@ class Wallet_MofN(Multisig_Wallet):
             d[ k[:-1] ] = v
         return d
 
+    def get_action(self):
+        xpubs = self.master_public_keys
+        if not self.multisig_m or not self.multisig_n:
+            return 'add_m_and_n'
+        missing_xpubs = self.multisig_n - len(xpubs.keys())
+        if xpubs.get("x1/") is None:
+            return 'create_seed'
+        if missing_xpubs > 0:
+            return 'add_x_cosigners:{}'.format(missing_xpubs)
+        if not self.accounts:
+            return 'create_accounts'
+
 class OldWallet(Deterministic_Wallet):
     wallet_type = 'old'
     gap_limit = 5

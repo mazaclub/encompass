@@ -4,7 +4,7 @@ import PyQt4.QtCore as QtCore
 
 import chainkey
 from chainkey.i18n import _
-from chainkey import Wallet, Wallet_2of2, Wallet_2of3
+from chainkey import Wallet, Wallet_2of2, Wallet_2of3, Wallet_MofN
 from chainkey import bitcoin
 from chainkey import util
 
@@ -12,6 +12,7 @@ import seed_dialog
 from network_dialog import NetworkDialog
 from util import *
 from amountedit import AmountEdit
+from mofn_dialog import run_select_mn_dialog
 
 import sys
 import threading
@@ -355,7 +356,7 @@ class InstallWizard(QDialog):
         if action == 'new':
             action, wallet_type = self.restore_or_create()
             if wallet_type == 'multisig':
-                wallet_type = self.choice(_("Multi Signature Wallet"), 'Select wallet type', [('2of2', _("2 of 2")),('2of3',_("2 of 3"))])
+                wallet_type = self.choice(_("Multi Signature Wallet"), 'Select wallet type', [('2of2', _("2 of 2")),('2of3',_("2 of 3")),('mofn',_("M of N"))])
                 if not wallet_type:
                     return
             elif wallet_type == 'hardware':
@@ -410,6 +411,13 @@ class InstallWizard(QDialog):
                     QMessageBox.warning(self, _('Error'), ('Password is incorrect'), _('OK'))
                     return
 
+            elif action == 'add_m_and_n':
+                m, n = run_select_mn_dialog()
+                if not m or not n:
+                    return
+                wallet.multisig_m = m
+                wallet.multisig_n = n
+
             elif action == 'add_cosigner':
                 xpub1 = wallet.master_public_keys.get("x1/")
                 r = self.multi_mpk_dialog(xpub1, 1)
@@ -426,6 +434,15 @@ class InstallWizard(QDialog):
                 xpub2, xpub3 = r
                 wallet.add_master_public_key("x2/", xpub2)
                 wallet.add_master_public_key("x3/", xpub3)
+
+            elif 'add_x_cosigners' in action:
+                xpub1 = wallet.master_public_keys.get("x1/")
+                cosigners_num = action.split(':')[-1]
+                r = self.multi_mpk_dialog(xpub1, int(cosigners_num))
+                if not r:
+                    return
+                for i, xpub in enumerate(r):
+                    wallet.add_master_public_key( "x{}/".format(i + 2), xpub )
 
             elif action == 'create_accounts':
                 try:

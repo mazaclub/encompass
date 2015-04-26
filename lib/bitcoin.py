@@ -43,6 +43,20 @@ MIN_RELAY_TX_FEE = 1000
 RECOMMENDED_FEE = 50000
 COINBASE_MATURITY = 100
 
+# checks if multisig M of N scripts would be standard according to <= Bitcoin 0.9 rules
+def is_standard_mofn(m, n):
+    if m * 73 + n * 34 <= 496:
+        return True
+    return False
+
+def get_max_n(m):
+    if m < 1 or m > 4: return None
+    n = 12
+    while not is_standard_mofn(m, n):
+        n -= 1
+    return n
+
+
 # AES encryption
 EncodeAES = lambda secret, s: base64.b64encode(aes.encryptData(secret,s))
 DecodeAES = lambda secret, e: aes.decryptData(secret, base64.b64decode(e))
