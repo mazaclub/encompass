@@ -40,12 +40,15 @@ class Select_MN_Dialog(QDialog):
         vb.addLayout(okc)
 
     def on_m_changed(self):
-        self.combobox_n.clear() # is this necessary? TODO
+        self.combobox_n.clear()
         m = self.combobox_m.currentText()
         m, ok = m.toInt()
         if not ok: return
         # create n list
         max_n = get_max_n(m)
+        # If m is 1, we can't have n being 1 because that's 1-of-1
+        # This only affects the range of the n_list, not the m_list
+        if m == 1: m = 2
         self.n_list = map(lambda x: QString(str(x)), range(m, max_n+1))
         self.combobox_n.addItems(self.n_list)
         self.combobox_n.setEnabled(True)
@@ -62,6 +65,7 @@ class Select_MN_Dialog(QDialog):
 
 def run_select_mn_dialog():
     self = Select_MN_Dialog()
+    self.combobox_m.currentIndexChanged.emit(0)
     if not self.exec_():
         return None, None
     m = self.combobox_m.currentText()
