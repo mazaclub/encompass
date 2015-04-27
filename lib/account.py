@@ -483,8 +483,7 @@ class BIP32_Account_MofN(BIP32_Account):
         return self.pubkeys_to_address(self.get_pubkeys(for_change, n))
 
     def get_master_pubkeys(self):
-        import operator
-        return sorted(self.xpubs.values(), key=operator.itemgetter(0))
+        return zip(*sorted(self.xpubs.items()))[1]
 
     def get_type(self):
         return _('Multisig M of N')

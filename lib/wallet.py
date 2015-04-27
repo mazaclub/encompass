@@ -1745,8 +1745,8 @@ class Wallet_MofN(Multisig_Wallet):
             else:
                 acc_xpubs[ "xpub{}".format(k[1]) ] = bip32_public_derivation(v, "", "/{}".format(self.active_chain.chain_index))
         acc_dict['cosigner_xpubs'] = acc_xpubs
-        acc_dict['multisig-m'] = self.multisig_m
-        acc_dict['multisig-n'] = self.multisig_n
+        acc_dict['multisig_m'] = self.multisig_m
+        acc_dict['multisig_n'] = self.multisig_n
         # acc_dict: {
         # 'xpub': MY_XPUB,
         # 'cosigner_xpubs': {
