@@ -449,9 +449,9 @@ class BIP32_Account_2of3(BIP32_Account_2of2):
 class BIP32_Account_MofN(BIP32_Account):
 
     def __init__(self, v):
+        self.multisig_m = v.get('multisig_m')
+        self.multisig_n = v.get('multisig_n')
         BIP32_Account.__init__(self, v)
-        self.multisig_m = v.get('multisig-m')
-        self.multisig_n = v.get('multisig-n')
         # Multisig accounts are passed a dict of xpubs
         self.xpubs = {'xpub': self.xpub}
         for k, v in v.get('cosigner_xpubs').items():
@@ -459,9 +459,9 @@ class BIP32_Account_MofN(BIP32_Account):
 
     def dump(self):
         d = BIP32_Account.dump(self)
-        d['multisig-m'] = self.multisig_m
-        d['multisig-n'] = self.multisig_n
-        d['cosigner-xpubs'] = self.xpubs
+        d['multisig_m'] = self.multisig_m
+        d['multisig_n'] = self.multisig_n
+        d['cosigner_xpubs'] = self.xpubs
         return d
 
     def get_pubkeys(self, for_change, n):

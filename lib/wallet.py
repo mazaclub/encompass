@@ -312,6 +312,8 @@ class Abstract_Wallet(object):
                 self.accounts[k] = OldAccount(v)
             elif v.get('imported'):
                 self.accounts[k] = ImportedAccount(v)
+            elif v.get('cosigner_xpubs'):
+                self.accounts[k] = BIP32_Account_MofN(v)
             elif v.get('xpub3'):
                 self.accounts[k] = BIP32_Account_2of3(v)
             elif v.get('xpub2'):
