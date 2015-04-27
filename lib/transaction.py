@@ -305,7 +305,6 @@ def match_decoded_multisig(decoded):
     declist = []
     for opc, vch, ib in decoded:
         declist.append( (opc, (vch.encode('hex') if vch is not None else None  ), ib) )
-    print('decoded: {}'.format(declist))
     for i in range(1, 12):
         for j in range(1, 12):
             op_m = 80 + i
@@ -421,12 +420,12 @@ def parse_scriptSig(d, bytes, active_chain=None):
     d['signatures'] = parse_sig(x_sig)
 
     dec2 = [ x for x in script_GetOp(decoded[-1][1]) ]
+    multis_m = multis_n = None
     multis_mn = match_decoded_multisig(dec2)
     if multis_mn:
         multis_m = multis_mn[0]
         multis_n = multis_mn[1]
         x_pubkeys = map(lambda x:x[1].encode('hex'), dec2[1:-2])
-        print("Transaction::parseScriptsig: x_pubkeys: {}\n".format(x_pubkeys))
         d['num_sig'] = multis_m
     else:
         print_error("cannot find address in input script", bytes.encode('hex'))
@@ -435,7 +434,7 @@ def parse_scriptSig(d, bytes, active_chain=None):
     d['x_pubkeys'] = x_pubkeys
     pubkeys = map(lambda x: parse_xpub(x)[0], x_pubkeys)
     d['pubkeys'] = pubkeys
-    redeemScript = Transaction.multisig_script(pubkeys,2)
+    redeemScript = Transaction.multisig_script(pubkeys,multis_m)
     d['redeemScript'] = redeemScript
     d['address'] = hash_160_to_bc_address(hash_160(redeemScript.decode('hex')), active_chain.p2sh_version)
 

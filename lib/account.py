@@ -505,7 +505,7 @@ class BIP32_Account_MofN(BIP32_Account):
 
         xpriv = wallet.get_master_private_key("x1/", password)
         _, _, _, c, k = deserialize_xkey(xpriv)
-        pk = bip32_private_key( sequence, k, c )
+        pk = bip32_private_key( sequence, k, c, addrtype=self.active_chain.wif_version )
         out.append(pk)
 
         return out
