@@ -28,6 +28,7 @@ rm -rf helpers/encompass-release
 rm -rf src Encompass-*.dmg 
 rm -rf Makefile
 rm -rf helpers/debian_installer.sh
+rm -rf helpers/trezorctl.py
 rm -rf cython-hidapi
 rm -rf python-trezor
 
