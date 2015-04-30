@@ -4,7 +4,7 @@ Encompass consolidates support for various currencies into one wallet. It is a B
 
 Homepage: https://maza.club/encompass
 
-1. ENCOMPASS ON UBUNTU
+1. ENCOMPASS ON LINUX
 ----------------------
 
  - Installer package is provided at https://maza.club/encompass
