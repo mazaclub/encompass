@@ -17,7 +17,9 @@ util = imp.load_source('util', 'lib/util.py')
 if sys.version_info[:3] < (2, 6, 0):
     sys.exit("Error: Encompass requires Python version >= 2.6.0...")
 usr_share = util.usr_share_dir()
-if (len(sys.argv) > 1 and (sys.argv[1] == "install")): 
+# presumes that user is competent if installing with additional options
+
+if (len(sys.argv) == 1 and (sys.argv[1] == "install")): 
    usr_share = util.usr_share_dir()
    if not os.access(usr_share, os.W_OK):
        try:
@@ -64,20 +66,24 @@ setup(
     name="Encompass",
     version=version.ELECTRUM_VERSION,
     install_requires=[
-        'slowaes',
-        'ecdsa>=0.9',
-        'pbkdf2',
-        'requests',
-        'pyasn1',
-        'pyasn1-modules',
-        'qrcode',
-        'SocksiPy-branch',
-        'tlslite',
-        'ltc_scrypt',
-        'darkcoin_hash'
+	'slowaes==0.1a1',
+	'ecdsa==0.13',
+	'pbkdf2==1.3',
+	'requests==2.5.1',
+	'pyasn1-modules==0.0.5',
+	'pyasn1==0.1.7',
+	'qrcode==5.1',
+	'SocksiPy-branch==1.01',
+	'protobuf==2.5.0',
+	'tlslite==0.4.8',
+	'dnspython',
+	'ltc_scrypt==1.0',
+	'darkcoin_hash==1.1',
+	'trezor==0.6.3'
     ],
     dependency_links=[
         "git+https://github.com/guruvan/darkcoin_hash#egg=darkcoin_hash"
+        "git+https://github.com/mazaclub/python-trezor#egg=trezor"
     ],
     package_dir={
         'chainkey': 'lib',

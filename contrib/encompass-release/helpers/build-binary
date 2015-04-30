@@ -27,3 +27,6 @@ xvfb-run wine c:\\"Program Files"\\NSIS\\makensis.exe -V1 c:/encompass/Encompass
 
 
 cleanup
+test -d /root/release-packages/Windows || mkdir -pv /root/release-packages/Windows
+mv /opt/wine-electrum/drive_c/encompass/Encompass-${VERSION}/dist/encompass-setup.exe /root/release-packages/Windows/Encompass-${VERSION}-Windows-setup.exe
+mv /opt/wine-electrum/drive_c/encompass/Encompass-${VERSION}/dist/encompass.exe /root/release-packages/Windows/Encompass-${VERSION}-Windows.exe

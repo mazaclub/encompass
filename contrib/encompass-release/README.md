@@ -1,19 +1,34 @@
-### Encompass Release builder
+## Encompass Release Packaging system
+ 
+ * Builds multiplatform release
+   - currently, builds all supported platforms in single run
+   - updates will include argument additions to support single-OS build, and building from develop branch
 
-BUILDS MULTIPLATFORM RELEASE - UNNECESSARY for SOURCE OPERATION!
- - if you just want to install Encompass from source:
- ```
- cd ../../
- pyrcc4 icons.qrc -o gui/qt/icons_qrc.py
- python setup.py install
- ```
+ * Requires either:
+   - Linux (Ubuntu 14.04) with Docker 1.5.0 installed
+   - OSX with boot2docker 1.5.0, and  macports, with python2.7, pyqt4, and pip installed
+     - Homebrew should also work, with some modifications (pathnames, etc) but is untested
+     - builds using default Apple python installation are discouraged. 
+
+ * OSX buildhosts will build all all packages, Linux hosts are limited to building 
+   Linux, Ubuntu, and Windows packages. 
 
 ### This contains the full and complete release process for Encompass as followed by mazaclub.
 
-QuickStart
-```
-./build version type
-```
+ * ** Mazaclub release packages are built via OSX in a single run with the following command: **
+    ```
+    ./build 0.5.0 SIGNED
+    ```
+    This clones https://github.com/mazaclub/encompass to
+    ```
+    contrib/encompass-release/repo
+    ```
+    and checks out the release tag specified, then runs the build scripts.
+
+## QuickStart
+   ```
+   ./build version type
+   ```
 Types supported are:
  * local
    - build from local source - copies your local repo to a build dir, and builds
@@ -29,18 +44,6 @@ Types supported are:
 
 Currently only local and SIGNED are well tested!
 
-
-As of Encompass-0.5.0 OSX builds are supported. 
-Intended use is on OSX, with boot2docker installed
-With a few modifications, operation on Ubuntu is supported, but will not create the OSX version.
-
-Alternate build should be done form Ubuntu host with docker 1.5.0 installed.
-
-
-
-
-
-Create (semi)unattended Encompass Package Release and  Linux, Android, OSX, and Windows builds on OSX using docker.
 
 All you need is docker to build a full release for Linux/OSX (native python) and Windows Setup.exe
 

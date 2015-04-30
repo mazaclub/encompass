@@ -111,7 +111,7 @@ class TestMultisigWallet(WalletTestCase):
         self.wallet = Wallet_2of2(self.storage)
 
         # set cosigner master privkey
-        cosigner_master_privkey = bip32_private_derivation(self.cosigner_root_privkey, "m/", "m/44'/0'")[0]
+        cosigner_master_privkey = bip32_private_derivation(self.cosigner_root_privkey, "m/", "m/1491'/0'")[0]
         self.cosigner_master_pubkey = xpub_from_xprv(cosigner_master_privkey)
 
         self.wallet.set_chain("BTC")
@@ -139,28 +139,28 @@ class TestMultisigWallet(WalletTestCase):
             self.actual_root_privkey)
 
     def test_master_pubkey_derivation(self):
-        self.assertEqual('xpub6Ar6Cfm9Ww2RJbvXDD6Xk4a5eztRTg1do1SKEDYgmd21mtmYYgeYbAp7uCKYMgVfezCLTpM2rn25Ma5Vhm5pRktzM1cspx9MQwMJNs21Tjm',
+        self.assertEqual('xpub6B48x5PF7WJ73D9TvyEWFJpPgXxp1qVS8RVGttATwxvAmsfShE7sCGTME3D5SDDQAQtVwDQFLSAXYqxHtFix1LufTs3uEJwTRxfL9wJNp3s',
             self.wallet.master_public_keys.get("x1/"))
-        self.assertEqual('xpub6AEE1YapfdwPEwJNWLm1gz7CLSiXXEWD58TqKf7vCk8ZrXmdVi1NuKjQvms34eYNFUdRhpP2TJuwPwvFv7BybfTfZwkKZ7k444ucyDTZfLS',
+        self.assertEqual('xpub6ASQmDxzepDJ5i7fQgURxGfgFDEcWPNrjkEqFWYhkUEjAmKpBgj1Kbtt1tSRfYBBU11SJLDhU5HSjZSKNeY3o7t85ESDJAgFcPsEfVCBrSF',
             self.wallet.master_public_keys.get("x2/"))
 
     def test_chain_pubkey_derivation(self):
         account_master_pubkeys = self.wallet.accounts["0"].get_master_pubkeys()
         x1_btc_pubkey = bip32_public_derivation(self.wallet.master_public_keys.get("x1/"), "", "/0")
-        self.assertEqual('xpub6C9nDygV6a7MK6XaEYWHEwPdFmy6MtqvYPgLVae2Pqns4X9bgQtEEBppTBbLotCgtSkBdauqRG4QCibdCsvScECZzmNQmH1M44s6XNWSntA',
+        self.assertEqual('xpub6CfssEAJDCoTHU922RJy8oyXkdPNP8sMFxorzG9ncAbZjZRKCq5NFdRVybzvqHSPntpRDfHtGErXPbk1Y9uAJGJLZFtscVCMZP7mnRFqyQX',
             account_master_pubkeys[0])
         x2_btc_pubkey = bip32_public_derivation(self.wallet.master_public_keys.get("x2/"), "", "/0")
-        self.assertEqual('xpub6BySj5mtu9kXBkahhpjjHjtxv2zWn87wWCL6zMJkshiBov9Drpzs54aNT1TuvMtgDtsfFapm6QiYmWw6R3CK2WAZo6NqCxWnsUWPApqmsv9',
+        self.assertEqual('xpub6Ckpjg1oUbAUwXAChU3eWAovMZTWmdMLFskZvRbVTbd8QNM5XG1WdBDubzFAkJjMMktsRRyyzhNKPuYaGNgroYuaz8R3fCGiLWBvmbXX1F2',
             account_master_pubkeys[1])
 
         # switch chains
         self._switch_chain("MZC")
         account_master_pubkeys = self.wallet.accounts["0"].get_master_pubkeys()
         x1_mzc_pubkey = bip32_public_derivation(self.wallet.master_public_keys.get("x2/"), "", "/13")
-        self.assertEqual('xpub6C9nDygV6a7MsNcyFHFPkCG744MxEpuW397D948jYaYTcssA5AABS8z4EX6qkvoo32eYujjMCPeaKPevYnWSrmiSdV3yiDdXDd9QNQqsULb',
+        self.assertEqual('xpub6CfssEAJDCoTrhLTgjvQU5PYkwT81bBvuBsnVJ1eP2XDxhNLfbVDHC8G9kxwcSpAtGFEoLqkUrz64nV59kV8fDqkFc3xjn6nUbtiwmQzrRe',
             account_master_pubkeys[0])
         x2_mzc_pubkey = bip32_public_derivation(self.wallet.master_public_keys.get("x2/"), "", "/13")
-        self.assertEqual('xpub6BySj5mtu9kXkB96DBREwNgZnqTMSKwfSKPeHtDHQsC5Tjf3QktFvbahyoXns7sxjUr5dvFdH8HjaaaXb75sT3iVwfdHDhX7Tsw4TnT549q',
+        self.assertEqual('xpub6Ckpjg1oUbAVWUPSbpbSkNEieqQyxnFCbJG2EnR6AnZUZWuxD6WCDwVQScUaLcUHmbBEuJfM8HCw912QXNGN9FHLQzzPgvsnxMt1YTzbeys',
             account_master_pubkeys[1])
 
     def test_p2sh_address_creation(self):
@@ -172,11 +172,11 @@ class TestMultisigWallet(WalletTestCase):
 
         # Compare redeem script to manually calculated one
         redeem_script = Transaction.multisig_script(sorted(pubkeys), 2)
-        self.assertEqual('52210378568d703b6c64c9f4e3bd90b3c79c7e174b733629ca83c2c1456c5ddfc229792103f1c2170673eda7023e16813f8dc2b459c18d17520cfab0603ed1695a8e15a79d52ae',
+        self.assertEqual('522102ee780aa224c9fe54caff984205077b7cca08ced3188a3f3c639d83deda6b9a592103124429ddbed55593d0abea0d0d3d283eca4546e40017b2945f4666c561b494ba52ae',
             redeem_script)
 
         p2sh_addr = hash_160_to_bc_address( hash_160(redeem_script.decode('hex')), self.wallet.active_chain.p2sh_version )
-        self.assertEqual('32GTArvFYGWdQXCTPZruE96qtmi6jCLh19', p2sh_addr)
+        self.assertEqual('3MqemPAHZDGLr537QBvU7i4dRFY3Xvad7X', p2sh_addr)
 
         # switch chains
         self._switch_chain("MZC")
@@ -188,9 +188,9 @@ class TestMultisigWallet(WalletTestCase):
 
         # Compare redeem script to manually calculated one
         redeem_script = Transaction.multisig_script(sorted(pubkeys), 2)
-        self.assertEqual('5221036bf599d52ff5b0e680e83b2f03884285829cfb7bf979869884103e7a5b52e1e32103b4cadb818f1bd76f79564496e0199335e25cebcf0d26b60d9d0f39721028e51a52ae',
+        self.assertEqual('5221027bdb7f5c42096580442e63235434bcc9ddf9689bbeb917705cd0edf9c6e264292102919725862f59a43274443ea11d7a8e25c15147213dcb6186c24d8629d37d6d8d52ae',
             redeem_script)
 
         p2sh_addr = hash_160_to_bc_address( hash_160(redeem_script.decode('hex')), self.wallet.active_chain.p2sh_version )
-        self.assertEqual('4s7Z2JSWS54Q9chXp8fDvifiXhxiwbX2oN', p2sh_addr)
+        self.assertEqual('4jjXnsGuWLH3YgnagWH12kK7HjDtsBv8SQ', p2sh_addr)
 

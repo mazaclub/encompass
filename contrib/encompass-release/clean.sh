@@ -17,6 +17,7 @@ rm -rf helpers/*.dylib
 rm -rf helpers/*.so
 rm -rf helpers/*.pyd
 rm -rf helpers/.??*
+rm -rf helpers/linux_installer.sh
 rm -rf 1.1.tar.gz*
 rm -rf darkcoin_hash*
 rm -rf groestlcoin*
@@ -27,6 +28,9 @@ rm -rf helpers/encompass-release
 rm -rf src Encompass-*.dmg 
 rm -rf Makefile
 rm -rf helpers/debian_installer.sh
+rm -rf helpers/trezorctl.py
+rm -rf cython-hidapi
+rm -rf python-trezor
 
 if [ "${1}" = all ]
 then 

@@ -1,0 +1,42 @@
+#!/bin/bash 
+set -xeo pipefail
+
+VERSION="${1}"
+test -z ${VERSION} && exit 1 
+
+test -d /root/encompass-release/helpers/release-packages/Linux \
+ && rm -rf /root/encompass-release/helpers/release-packages/Linux
+cd /root/repo
+rm -rf build dist packages
+test -f /root/linux_installer.sh && rm /root/linux_installer.sh
+find ./ -name '*.pyc' | xargs rm
+mkdir packages
+pip install --upgrade --target packages -r ../requirements.txt
+cp  /root/encompass-release/python-trezor/trezorctl packages/trezorctl.py
+cp -av /root/packages/google/__init__.py /root/repo/packages/google
+cp /root/encompass-release/source/linux.spec /root/repo
+su build -c 'pyinstaller --windowed linux.spec'
+cd dist
+#mv encompass Encompass-"${VERSION}"
+#put installer script in here
+mkdir /root/encompass-release/helpers/release-packages/Linux
+sed -e 's/ELECTRUM_VERSION/'${VERSION}'/g' /root/linux_installer.in > /tmp/linux_installer.sh
+cp /tmp/linux_installer.sh /root
+chmod 755 /root/linux_installer.sh
+mkdir Encompass-${VERSION}
+mv encompass Encompass-${VERSION}
+cp /root/repo/icons/encompass.png Encompass-${VERSION}
+cp /root/repo/README-Linux-x86_64.md Encompass-${VERSION}
+cp /root/repo/LICENSE Encompass-${VERSION}
+cp /root/repo/RELEASE-NOTES Encompass-${VERSION}
+cp /root/repo/AUTHORS Encompass-${VERSION}
+cp /root/90-trezor.rules Encompass-${VERSION}
+cp /root/encompass_linux_startup.sh Encompass-${VERSION}/encompass.sh
+cp /root/repo/encompass.desktop Encompass-${VERSION}
+sed -e '/tail/d' /root/linux_installer.sh > Encompass-${VERSION}/linux_installer.sh
+tar -cpzvf Encompass-"${VERSION}"_Linux_x86_64.tgz Encompass-"${VERSION}"
+cat /root/linux_installer.sh Encompass-"${VERSION}"_Linux_x86_64.tgz > /root/encompass-release/helpers/release-packages/Linux/Encompass-"${VERSION}"_Linux_x86_64-Installer.bin
+chmod 555 /root/encompass-release/helpers/release-packages/Linux/Encompass-"${VERSION}"_Linux_x86_64-Installer.bin
+
+#mv Encompass-"${VERSION}"_Linux-x86_64.tgz /root/encompass-release/helpers/release-packages/Linux
+

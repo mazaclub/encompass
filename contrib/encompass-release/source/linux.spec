@@ -2,11 +2,11 @@
 
 # We don't put these files in to actually include them in the script but to make the Analysis method scan them for imports
 a = Analysis(['encompass', 'gui/qt/main_window.py', 'gui/qt/lite_window.py', 'gui/text.py',
-              'lib/util.py', 'lib/wallet.py', 'lib/simple_config.py',
-              'lib/bitcoin.py','lib/interface.py','packages/trezorctl.py'
+              'lib/util.py', 'lib/wallet.py', 'lib/simple_config.py','gui/gtk.py',
+              'lib/bitcoin.py','lib/interface.py', 'packages/trezorctl.py',
               ],
-             hiddenimports=["lib","gui","plugins","hid"],
-             pathex=['lib','gui','plugins','packages','packages/requests'],
+             hiddenimports=["PyQt4","lib","gui","plugins","trezorlib","hid"],
+             pathex=['lib','gui','plugins','packages'],
              hookspath=None)
 
 ##### include mydir in distribution #######
@@ -39,7 +39,8 @@ a.datas += extra_datas('locale')
 a.datas += extra_datas('gui')
 a.datas += extra_datas('lib')
 a.datas += extra_datas('plugins')
-#a.datas += [ ('packages/requests/cacert.pem', 'packages/requests/cacert.pem', 'DATA') ]
+a.datas += [ ('packages/requests/cacert.pem', 'packages/requests/cacert.pem', 'DATA') ]
+a.datas += [ ('packages/trezorctl.py', 'packages/trezorctl.py', 'DATA') ]
 
 # Dependencies
 a.datas += extra_datas('packages')
@@ -49,7 +50,7 @@ exe = EXE(pyz,
           a.scripts,
           a.binaries,
           a.datas,
-          name=os.path.join('build\\pyi.win32\\encompass', 'encompass.exe'),
+          name=os.path.join('build/encompass/encompass', 'encompass-x86_64.bin'),
           debug=False,
           strip=None,
           upx=False,
