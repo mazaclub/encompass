@@ -1,10 +1,9 @@
 releases/*
 source/*.tar.gz
-source/tate-*
-source/Tate-*
+source/encompass-*
+source/Encompass-*
 .present
-repo
-repo/*
+contrib/encompass-release/repo/*
 *.pyc
 *.pyd
 *.swp
@@ -17,3 +16,5 @@ contrib/encompass-release/source/Encompas-*
 contrib/encompass-release/source/encompas-*
 contrib/encompass-release/ltc_scrypt-1.0/
 contrib/encompass-release/ltc_scrypt-1.0*
+*.pydev*
+1

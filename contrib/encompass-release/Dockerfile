@@ -56,6 +56,6 @@ RUN xvfb-run -a --server-num=4 wineboot && sleep 5 \
      && wget -q -O nsis.exe $NSIS_URL \
      && rm -rf /tmp/.wine-* && xvfb-run -a wine nsis.exe /S
 
-
+COPY ./python-trezor/dist/Python27 $WINEPREFIX/drive_c/Python27
 # Clean up stale wine processes
 RUN rm -rf /tmp/.wine-*

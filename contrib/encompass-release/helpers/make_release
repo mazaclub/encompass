@@ -34,8 +34,8 @@ check_ver () {
 
 install_pip () {
 ## install dependencies to build environment
-pip install --upgrade  --no-compile -t packages -r /root/requirements.txt
-pip install --upgrade -r /root/requirements.txt
+pip install  --upgrade  --no-compile -t packages -r /root/requirements.txt
+pip install  --upgrade -r /root/requirements.txt
 
 }
 
@@ -53,6 +53,12 @@ then
   test -f /root/repo/setup.py || die 3
   echo "Building from local sources as Version ${VERSION}"
   check_ver
+elif [ "${BUILDTYPE}" = "rc" ]
+then 
+   git clone https://github.com/mazaclub/encompass repo
+   cd /root/repo
+   git checkout release/v${VERSION} || die 2
+
 else "Building from Tagged Version: ${VERSION}"
   git clone https://github.com/mazaclub/encompass repo
   cd /root/repo
@@ -67,43 +73,47 @@ install_pip
 pyrcc4 icons.qrc -o gui/qt/icons_rc.py
 python setup.py install
 
-echo "Making Linux"
-cp -av /root/ltc_scrypt.so lib/
-cp -av /root/darkcoin_hash.so lib/
+echo "Making Source"
+#cp -av /root/ltc_scrypt.so lib/
+#cp -av /root/darkcoin_hash.so lib/
 cp -av /root/packages ./
 ./make_packages
-test -d /root/release-packages/Linux || mkdir -pv /root/release-packages/Linux
-cp -av dist/* /root/release-packages/Linux
+test -d /root/release-packages/Source || mkdir -pv /root/release-packages/Source
+cp -av dist/* /root/release-packages/Source
 rm -rf  dist/*
-echo "Linux Complete...."
+echo "Source Complete...."
 
-echo "Making Android" 
-cp -av /root/packages ./
-cp -av /root/ltc_scrypt.so lib/
-cp -av /root/darkcoin_hash.so lib/
+#echo "Making Android" 
+#cp -av /root/packages ./
+#cp -av /root/ltc_scrypt.so lib/
+#cp -av /root/darkcoin_hash.so lib/
 
-./make_android
-test -d /root/release-packages/Android || mkdir -pv /root/release-packages/Android
-cp -av dist/* /root/release-packages/Android
-rm -rf dist/*
-echo "Android complete...."
+#./make_android
+#test -d /root/release-packages/Android || mkdir -pv /root/release-packages/Android
+#cp -av dist/* /root/release-packages/Android
+#rm -rf dist/*
+#echo "Android complete...."
 
 echo "Making Windows"
 cp -av /root/packages ./
+cp -av /root/trezorctl.py ./packages/
 ./make_windows
 test -d /root/release-packages/Windows || mkdir -pv /root/release-packages/Windows
-cp -av dist/* /root/release-packages/Windows
-## rm just isn't that expensive to run without fancy bash expansions
-
 rm -rf /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION".*
 rm -rf /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION"/
 rm -rf /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION"*
-
 cp -v /root/repo/dist/Encompass-"$VERSION".zip /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION".zip
+cp -av dist/* /root/release-packages/Windows
+## FIXME put buildbinary here
+#mv /opt/wine-electrum/drive_c/encompass/Encompass-${VERSION}/dist/encompass-setup.exe /root/release-packages/Windows/Encompass-${VERSION}-Windows-setup.exe
+#mv /opt/wine-electrum/drive_c/encompass/Encompass-${VERSION}/dist/encompass.exe /root/release-packages/Windows/Encompass-${VERSION}-Windows.exe
+## rm just isn't that expensive to run without fancy bash expansions
 cd /opt/wine-electrum/drive_c/encompass
 unzip Encompass-"$VERSION".zip
 cp -av /root/darkcoin_hash.pyd /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION"/lib
 cp -av /root/ltc_scrypt.pyd /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION"/lib
+cp -av /root/hid.pyd /opt/wine-electrum/drive_c/encompass/Encompass-"${VERSION}"/lib
+cp -av /root/hid.pyd /opt/wine-electrum/drive_c/encompass/Encompass-"${VERSION}"
 echo "Windows Complete"
 
 

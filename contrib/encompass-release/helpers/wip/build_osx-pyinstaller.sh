@@ -13,8 +13,10 @@ if [ "$(uname)" = "Darwin" ];
   fi  
   VER="$1"
   sed 's/ELECTRUM_VERSION/'${VER}'/g' Makefile.in > Makefile
+  sed 's/ELECTRUM_VERSION/'${VER}'/g' cp ../source/osx.spec > repo/osx.spec
   cd repo
-  /opt/local/bin/python2.7 setup-release.py py2app
+  #/opt/local/bin/python2.7 setup-release.py py2app
+  pyinstaller --windowed osx.spec
   test -d ../src || mkdir ../src 
   mv dist/Encompass.app ../src/ 
   cd ..
@@ -23,8 +25,10 @@ if [ "$(uname)" = "Darwin" ];
   #mv Encompass-${VER}.dmg helpers/release-packages/OSX
   mv src/Encompass.app helpers/release-packages/OSX
   cp helpers/make_OSX-installer.sh helpers/release-packages/OSX
+  cp helpers/fix_OSX-pyinstaller.sh helpers/release-packages/OSX
   thisdir=$(pwd)
   cd helpers/release-packages/OSX
+  ./fix_OSX-pyinstaller.sh
   ./make_OSX-installer.sh $VERSION
   cd ${thisdir}
  else

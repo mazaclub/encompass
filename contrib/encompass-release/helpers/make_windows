@@ -25,9 +25,10 @@ if __name__ == '__main__':
     _zip="Encompass-%s.zip"%version
 
     os.chdir("dist")
-    password = getpass.getpass("Password:")
+    #password = getpass.getpass("Password:")
     for f in [_tgz,_zip]:
-        os.system( "gpg --sign --armor --detach --passphrase \"%s\" %s"%(password, f) )
+        os.system( "echo SUMS" ) 
+        #os.system( "gpg --sign --armor --detach --passphrase \"%s\" %s"%(password, f) )
 
     md5_tgz = hashlib.md5(file(_tgz, 'r').read()).digest().encode('hex')
     md5_zip = hashlib.md5(file(_zip, 'r').read()).digest().encode('hex')
