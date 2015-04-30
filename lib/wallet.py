@@ -1728,7 +1728,7 @@ class Wallet_2of3(Wallet_2of2):
             return 'create_accounts'
 
 class Wallet_MofN(Multisig_Wallet):
-    wallet_type = 'nofm'
+    wallet_type = 'mofn'
 
     def __init__(self, storage):
         Multisig_Wallet.__init__(self, storage)
