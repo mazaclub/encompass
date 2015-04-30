@@ -59,7 +59,9 @@ install_encompass() {
       && ${SUDO} cp /tmp/Encompass-ELECTRUM_VERSION/encompass.png ${SHAREDIR}/app-install/icons/encompass.png \
       && ${SUDO} mkdir -pv ${DIR}/encompass \
       && ${SUDO} cp -a /tmp/Encompass-ELECTRUM_VERSION/encompass ${DIR} \
-      && ${SUDO} sed -e 's/INSTALL_DIR/'${DIR}'/g' /tmp/Encompass-ELECTRUM_VERSION/encompass.sh > ${BINDIR}/encompass \
+      && seddir=$(echo "${DIR}" | sed 's/\//\\\//g') \
+      && sed -e 's/INSTALL_DIR/'${seddir}'/g' /tmp/Encompass-ELECTRUM_VERSION/encompass.sh /tmp/Encompass-ELECTRUM_VERSION/encompass-bindir.sh \
+      && ${SUDO} mv /tmp/Encompass-ELECTRUM_VERSION/encompass-bindir.sh ${BINDIR}/encompass \ 
       && ${SUDO} chmod 555 ${BINDIR}/encompass  \
       && ${SUDO} cp /tmp/Encompass-ELECTRUM_VERSION/encompass.desktop ${SHAREDIR}/applications/ \
       && error "Encompass-ELECTRUM_VERSION installation successful" \

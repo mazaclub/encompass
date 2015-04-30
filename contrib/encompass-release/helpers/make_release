@@ -99,17 +99,15 @@ cp -av /root/packages ./
 cp -av /root/trezorctl.py ./packages/
 ./make_windows
 test -d /root/release-packages/Windows || mkdir -pv /root/release-packages/Windows
-mv dist/* /root/release-packages/Windows
-mv /opt/wine-electrum/drive_c/encompass/Encompass-${VERSION}/dist/encompass-setup.exe /root/release-packages/Windows/Encompass-${VERSION}-Windows-setup.exe
-
-mv /opt/wine-electrum/drive_c/encompass/Encompass-${VERSION}/dist/encompass.exe /root/release-packages/Windows/Encompass-${VERSION}-Windows.exe
-## rm just isn't that expensive to run without fancy bash expansions
-
 rm -rf /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION".*
 rm -rf /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION"/
 rm -rf /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION"*
-
 cp -v /root/repo/dist/Encompass-"$VERSION".zip /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION".zip
+cp -av dist/* /root/release-packages/Windows
+## FIXME put buildbinary here
+#mv /opt/wine-electrum/drive_c/encompass/Encompass-${VERSION}/dist/encompass-setup.exe /root/release-packages/Windows/Encompass-${VERSION}-Windows-setup.exe
+#mv /opt/wine-electrum/drive_c/encompass/Encompass-${VERSION}/dist/encompass.exe /root/release-packages/Windows/Encompass-${VERSION}-Windows.exe
+## rm just isn't that expensive to run without fancy bash expansions
 cd /opt/wine-electrum/drive_c/encompass
 unzip Encompass-"$VERSION".zip
 cp -av /root/darkcoin_hash.pyd /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION"/lib

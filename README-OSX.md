@@ -14,6 +14,10 @@ Encompass will be installed by default to /Applications
 
 Your Wallets will be stored in /Users/YOUR_LOGIN_NAME/.encompass/wallets
 
+### KNOWN ISSUES
+1. Certain dialog boxes fail to open in the foreground
+   ** Click the Encompass Icon in the Dock to bring correct window to top **
+
 
 
 2. HOW OFFICIAL PACKAGES ARE CREATED

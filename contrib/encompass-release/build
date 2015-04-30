@@ -66,6 +66,7 @@ prepare_repo(){
     test -d repo || mkdir -pv repo
     sudo tar -C ../../ -cpv --exclude=contrib/* . |sudo  tar -C repo -xpf -
   fi
+  cp -av python-trezor/trezorctl helpers/trezorctl.py
 }
 buildBinary(){
   test -d releases || mkdir -pv $(pwd)/releases
@@ -75,7 +76,7 @@ buildBinary(){
   $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/releases:/releases -v $(pwd)/helpers:/root  -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-release:${VERSION} /root/make_release $VERSION $TYPE \
    && echo "Making Windows EXEs for $VERSION" \
    && $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/helpers:/root  -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-winbuild:${VERSION} /root/build-binary $VERSION \
-   && ls -la source/Encompass-"${VERSION}"/dist/encompass-setup.exe \
+   && ls -la $(pwd)/helpers/release-packages/Windows/Encompass-${VERSION}-Windows-setup.exe \
    && echo "Attempting OSX Build: Requires Darwin Buildhost" \
    && build_osx ${VERSION} \
    && echo "Linux Packaging" \
