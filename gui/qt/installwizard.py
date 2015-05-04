@@ -415,8 +415,7 @@ class InstallWizard(QDialog):
                 m, n = run_select_mn_dialog()
                 if not m or not n:
                     return
-                wallet.multisig_m = m
-                wallet.multisig_n = n
+                wallet.set_m_and_n(m, n)
 
             elif action == 'add_cosigner':
                 xpub1 = wallet.master_public_keys.get("x1/")

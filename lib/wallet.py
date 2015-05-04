@@ -829,18 +829,24 @@ class Abstract_Wallet(object):
         x_pubkeys = account.get_xpubkeys(*sequence)
         # sort pubkeys and x_pubkeys, using the order of pubkeys
         pubkeys, x_pubkeys = zip( *sorted(zip(pubkeys, x_pubkeys)))
+        print("add_input_info:\n  pubkeys: {}\n  x_pubkeys: {}\n".format(pubkeys, x_pubkeys))
         txin['pubkeys'] = list(pubkeys)
         txin['x_pubkeys'] = list(x_pubkeys)
         txin['signatures'] = [None] * len(pubkeys)
 
         if redeemScript:
             txin['redeemScript'] = redeemScript
-            txin['num_sig'] = account.multisig_m
+            m = 2
+            acc_type = str(account.get_type())
+            if 'M of N' in acc_type:
+                m = account.multisig_m
+            txin['num_sig'] = m
         else:
             txin['redeemPubkey'] = account.get_pubkey(*sequence)
             txin['num_sig'] = 1
 
     def sign_transaction(self, tx, password):
+        print('\nunsigned: {}'.format(tx))
         if self.is_watching_only():
             return
         # check that the password is correct. This will raise if it's not.
@@ -856,6 +862,7 @@ class Abstract_Wallet(object):
                 keypairs[ x ] = sec
         if keypairs:
             tx.sign(keypairs)
+        print('\nsigned: {}'.format(tx))
         run_hook('sign_transaction', tx, password)
 
     def sendtx(self, tx):
@@ -1093,6 +1100,7 @@ class Abstract_Wallet(object):
         if tx.is_complete():
             return False
         for x in tx.inputs_to_sign():
+            print("wallet:: can_sign: inputs: {}, can sign xpubkey? {}".format(x, self.can_sign_xpubkey(x)))
             if self.can_sign_xpubkey(x):
                 return True
         return False
@@ -1762,6 +1770,14 @@ class Wallet_MofN(Multisig_Wallet):
         for k, v in self.master_public_keys.items():
             d[ k[:-1] ] = v
         return d
+
+    def set_m_and_n(self, m, n):
+        if not is_standard_mofn(m, n):
+            return
+        self.multisig_m = m
+        self.multisig_n = n
+        self.storage.put_above_chain('multisig_m', self.multisig_m)
+        self.storage.put_above_chain('multisig_n', self.multisig_n)
 
     def get_action(self):
         xpubs = self.master_public_keys

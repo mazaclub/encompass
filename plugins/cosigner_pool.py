@@ -115,6 +115,7 @@ class Plugin(BasePlugin):
         for key, xpub in self.wallet.master_public_keys.items():
             xpub_chain = bitcoin.bip32_public_derivation(xpub, "", "/{}".format(self.wallet.active_chain.chain_index))
             K = bitcoin.deserialize_xkey(xpub_chain)[-1].encode('hex')
+            print('  load_wallet: xpub: {}\n  key -- {}'.format(xpub_chain, K))
             _hash = bitcoin.Hash(K).encode('hex')
             if self.wallet.master_private_keys.get(key):
                 self.listener.set_key(key, _hash)
@@ -181,6 +182,7 @@ class Plugin(BasePlugin):
             return
         try:
             k = bitcoin.deserialize_xkey(xprv_chain)[-1].encode('hex')
+            print('receive:: k -- {}'.format(k))
             EC = bitcoin.EC_KEY(k.decode('hex'))
             message = EC.decrypt_message(message)
         except Exception as e:
@@ -190,6 +192,7 @@ class Plugin(BasePlugin):
 
         self.listener.clear()
         tx = transaction.Transaction.deserialize(message)
+        print("\n{}\n".format(str(tx)))
         self.win.show_transaction(tx)
 
 
