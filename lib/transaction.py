@@ -679,8 +679,7 @@ class Transaction:
                     script = '00'                                    # op_0
                     script += sig_list
                     redeem_script = self.multisig_script(pubkeys,num_sig)
-                    #script += push_script(redeem_script)
-                    script += push_script(txin['redeemScript'])
+                    script += push_script(redeem_script)
 
             elif for_sig==i:
                 script = txin['redeemScript'] if p2sh else self.pay_script('address', address)
