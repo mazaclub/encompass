@@ -30,6 +30,7 @@ class WaitingDialog(QThread):
         self.on_complete = on_complete
         self.d.connect(self.d, SIGNAL('done'), self.close)
         self.d.show()
+        self.d.raise_()
 
     def run(self):
         self.error = None
