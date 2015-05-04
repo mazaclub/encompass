@@ -305,11 +305,13 @@ def b58decode(v, length):
 
 
 def EncodeBase58Check(vchIn):
+    """Encodes a string of bytes in Base58 encoding with a checksum."""
     hash = Hash(vchIn)
     return b58encode(vchIn + hash[0:4])
 
 
 def DecodeBase58Check(psz):
+    """Decodes a Base58-encoded string and verifies its checksum."""
     vchRet = b58decode(psz, None)
     key = vchRet[0:-4]
     csum = vchRet[-4:]
@@ -321,16 +323,38 @@ def DecodeBase58Check(psz):
         return key
 
 
+# This isn't used anywhere (?)
 def PrivKeyToSecret(privkey):
     return privkey[9:9+32]
 
 
 def SecretToASecret(secret, compressed=False, addrtype=128):
+    """Converts private key bytes to WIF.
+
+    Args:
+        secret (str): Private key bytes.
+        compressed (bool): Whether to attach the 'compressed' flag to the encoded WIF key.
+        addrtype (int): Blockchain-specific base58 version byte for private keys in WIF.
+
+    Returns:
+        WIF key (base58-encoded).
+
+    """
     vchIn = chr(addrtype) + secret
     if compressed: vchIn += '\01'
     return EncodeBase58Check(vchIn)
 
 def ASecretToSecret(key, addrtype=128):
+    """Converts a WIF key to private key bytes.
+
+    Args:
+        key (str): WIF key (base58-encoded).
+        addrtype (int): Blockchain-specific base58 version byte for private keys in WIF.
+
+    Returns:
+        String of private key bytes.
+
+    """
     vch = DecodeBase58Check(key)
     if vch and vch[0] == chr(addrtype):
         return vch[1:]
@@ -358,11 +382,13 @@ def GetSecret(pkey):
 
 
 def is_compressed(sec, addrtype=128):
+    """Returns whether a WIF private key represents a compressed key."""
     b = ASecretToSecret(sec, addrtype)
     return len(b) == 33
 
 
 def public_key_from_private_key(sec, addrtype=128):
+    """Gets the public key of a WIF private key."""
     # rebuild public key from private key, compressed or uncompressed
     pkey = regenerate_key(sec, addrtype)
     assert pkey
@@ -372,6 +398,7 @@ def public_key_from_private_key(sec, addrtype=128):
 
 
 def address_from_private_key(sec, addrtype=0, wif_version=128):
+    """Gets the address for a WIF private key."""
     public_key = public_key_from_private_key(sec, wif_version)
     address = public_key_to_bc_address(public_key.decode('hex'), addrtype)
     return address
@@ -397,6 +424,7 @@ def is_address(addr, active_chain=None):
 
 
 def is_private_key(key, addrtype=128):
+    """Returns whether a WIF private key is valid."""
     try:
         k = ASecretToSecret(key, addrtype)
         return k is not False
@@ -619,6 +647,15 @@ BIP32_PRIME = 0x80000000
 
 
 def get_pubkeys_from_secret(secret):
+    """Gets the compressed and uncompressed public keys of a private key.
+
+    Args:
+        secret (str): Private key bytes.
+
+    Returns:
+        List of public key bytes: [uncompressed, compressed]
+
+    """
     # public key
     private_key = ecdsa.SigningKey.from_string( secret, curve = SECP256k1 )
     public_key = private_key.get_verifying_key()
@@ -694,6 +731,13 @@ def _get_headers(testnet):
 
 
 def deserialize_xkey(xkey):
+    """Deserializes a base58-encoded extended key.
+
+    Returns:
+        Tuple containing depth, key fingerprint, child number, chain code bytes,
+        and public/private key bytes.
+
+    """
 
     xkey = DecodeBase58Check(xkey)
     assert len(xkey) == 78
@@ -718,6 +762,7 @@ def deserialize_xkey(xkey):
     return depth, fingerprint, child_number, c, K_or_k
 
 
+# This isn't used anywhere (?)
 def get_xkey_name(xkey, testnet=False):
     depth, fingerprint, child_number, c, K = deserialize_xkey(xkey)
     n = int(child_number.encode('hex'), 16)
@@ -742,6 +787,7 @@ def xpub_from_xprv(xprv, testnet=False):
 
 
 def bip32_root(seed, testnet=False):
+    """Gets the root extended private and public keys in base58 encoding for a seed."""
     import hmac
     header_pub, header_priv = _get_headers(testnet)
     I = hmac.new("Bitcoin seed", seed, hashlib.sha512).digest()
@@ -754,6 +800,19 @@ def bip32_root(seed, testnet=False):
 
 
 def bip32_private_derivation(xprv, branch, sequence, testnet=False):
+    """Derives the private/public child keys, at a given sequence, of an extended private key.
+
+    Args:
+        xrpv (str): Base58-encoded extended key.
+        branch (str): First branch in the sequence.
+        sequence (str): Sequence of child keys. Branches are delimited by forward slashes.
+            Hardened children are denoted by an apostrophe following the index.
+        testnet (bool): Whether to use testnet extended key headers.
+
+    Returns:
+        Tuple containing the base58-encoded extended private and public child keys at the given sequence.
+
+    """
     header_pub, header_priv = _get_headers(testnet)
     depth, fingerprint, child_number, c, k = deserialize_xkey(xprv)
     assert sequence.startswith(branch)
@@ -775,6 +834,19 @@ def bip32_private_derivation(xprv, branch, sequence, testnet=False):
 
 
 def bip32_public_derivation(xpub, branch, sequence, testnet=False):
+    """Derives the public child key, at a given sequence, of an extended public key.
+
+    Args:
+        xpub (str): Base58-encoded extended public key.
+        branch (str): First branch in the sequence.
+        sequence (str): Sequence of child keys. Branches are delimited by forward slashes.
+            Hardened children are denoted by an apostrophe following the index.
+        testnet (bool): Whether to use testnet extended key headers.
+
+    Returns:
+        Base58-encoded extended public child key at the given sequence.
+
+    """
     header_pub, _ = _get_headers(testnet)
     depth, fingerprint, child_number, c, cK = deserialize_xkey(xpub)
     assert sequence.startswith(branch)
@@ -793,6 +865,18 @@ def bip32_public_derivation(xpub, branch, sequence, testnet=False):
 
 
 def bip32_private_key(sequence, k, chain, addrtype=128):
+    """Derives the private child key at a given sequence and returns it in WIF.
+
+    Args:
+        sequence (iterable): Sequence of child key indices.
+        k (str): Private key bytes.
+        chain (str): Chain code bytes.
+        addrtype (int): Blockchain-specific base58 version byte for private keys in WIF.
+
+    Returns:
+        WIF key (base58-encoded).
+
+    """
     for i in sequence:
         k, chain = CKD_priv(k, chain, i)
     return SecretToASecret(k, True, addrtype)
