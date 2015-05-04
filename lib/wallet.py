@@ -829,7 +829,6 @@ class Abstract_Wallet(object):
         x_pubkeys = account.get_xpubkeys(*sequence)
         # sort pubkeys and x_pubkeys, using the order of pubkeys
         pubkeys, x_pubkeys = zip( *sorted(zip(pubkeys, x_pubkeys)))
-        print("add_input_info:\n  pubkeys: {}\n  x_pubkeys: {}\n".format(pubkeys, x_pubkeys))
         txin['pubkeys'] = list(pubkeys)
         txin['x_pubkeys'] = list(x_pubkeys)
         txin['signatures'] = [None] * len(pubkeys)
@@ -846,7 +845,6 @@ class Abstract_Wallet(object):
             txin['num_sig'] = 1
 
     def sign_transaction(self, tx, password):
-        print('\nunsigned: {}'.format(tx))
         if self.is_watching_only():
             return
         # check that the password is correct. This will raise if it's not.
@@ -862,7 +860,6 @@ class Abstract_Wallet(object):
                 keypairs[ x ] = sec
         if keypairs:
             tx.sign(keypairs)
-        print('\nsigned: {}'.format(tx))
         run_hook('sign_transaction', tx, password)
 
     def sendtx(self, tx):
@@ -1100,7 +1097,6 @@ class Abstract_Wallet(object):
         if tx.is_complete():
             return False
         for x in tx.inputs_to_sign():
-            print("wallet:: can_sign: inputs: {}, can sign xpubkey? {}".format(x, self.can_sign_xpubkey(x)))
             if self.can_sign_xpubkey(x):
                 return True
         return False
