@@ -512,6 +512,32 @@ class Transaction:
         return self.raw
 
     def __init__(self, inputs, outputs, locktime=0, active_chain=None):
+        """Create a new transaction.
+
+        Args:
+            inputs (list): List of dicts. An input is a dict with the following items:
+
+                - coinbase (bool): Whether this is a coinbase input.
+                - prevout_hash (str): TxID containing the output that this input spends.
+                - prevout_n (int): Index of the output that this input spends.
+                - value (int): Value of the output that this input spends, in satoshis.
+                - address (str): Address of key(s) in this input's scriptSig.
+                - num_sig (int): Number of signatures this input requires.
+                - pubkeys (list): Strings of public keys in hex.
+                - x_pubkeys (list): Strings of extended public keys in hex.
+                - signatures (list): Strings of signatures in hex.
+
+                P2PKH inputs have a 'redeemPubkey' key; P2SH inputs have a 'redeemScript' key.
+
+            outputs (list): List of tuples. Output format:
+                (type, address, value)
+
+                - type is 'address' for P2PKH outputs, 'pubkey' for P2PK outputs,
+                or 'op_return' for null data outputs.
+                - address is an address for P2PKH outputs, a pubkey for P2PK outputs,
+                or raw bytes for null data outputs.
+
+        """
         self.inputs = inputs
         self.outputs = outputs
         self.locktime = locktime
@@ -745,6 +771,12 @@ class Transaction:
         return out
 
     def sign(self, keypairs):
+        """Signs inputs that keypairs can sign.
+
+        Args:
+            keypairs (dict): {public key in hex : private key in WIF, ...}
+
+        """
         print_error("tx.sign(), keypairs:", keypairs)
         for i, txin in enumerate(self.inputs):
             signatures = filter(lambda x: x is not None, txin['signatures'])

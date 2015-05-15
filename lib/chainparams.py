@@ -1,19 +1,19 @@
 from collections import namedtuple
 import importlib
 import chains
-#
-# Supported blockchains are organized in named tuples.
-# A ChainParams tuple contains:
-#   chain_index: The index (BIP-0044) used in child key derivation
-#       This is just for organization, the class of the actual
-#       cryptocur has the chain index as well.
-#   coin_name: Full name of the cryptocurrency
-#   code: Abbreviated form of the cryptocurrency
-#   module_name: Name of the module containing specifics on the cryptocur
 
 active_chain = None
 
 ChainParams = namedtuple('ChainParams', ('chain_index', 'coin_name', 'code', 'module_name'))
+"""Named tuple holding data about a supported blockchain.
+
+Attributes:
+    chain_index (int): BIP-0044 chain index of the blockchain. This is just for organization.
+    coin_name (str): Full name of the blockchain.
+    code (str): Abbreviated name of the blockchain.
+    module_name (str): Name of the module in lib/chains/ where the relevant class is defined.
+
+"""
 
 _known_chains = (
     # Bitcoin
@@ -73,7 +73,6 @@ def get_code_from_index(index):
     return None
 
 def get_server_trust(code):
-    '''Retrieve the relative amount of trust in this chain's servers'''
     instance = get_chain_instance(code)
     if instance is None: return None
     # Proof of work
@@ -87,6 +86,17 @@ def get_server_trust(code):
     }
 
 def get_chain_instance(code):
+    """Gets an instance of the given chain's class.
+
+    Args:
+        code (str): ChainParams code of the blockchain.
+
+    Returns:
+        An instance of the blockchain's class. All blockchain
+        classes derive from CryptoCur, the base class defined
+        in lib/chains/cryptocur.py
+
+    """
     code = code.upper()
     if not is_known_chain(code): return None
     params = get_params(code)
