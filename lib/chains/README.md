@@ -3,7 +3,8 @@ ChainKey Modules
 
 This folder contains ChainKey modules for use by Encompass. A chainkey module for a coin allows Encompass to support using that coin.
 
-Basically, a chainkey module for a coin contains some code from its corresponding Electrum fork. The specific code needed is documented here, and in the abstract class CryptoCur in the file cryptocur.py.
+Basically, a chainkey module for a coin contains some code from its corresponding Electrum fork. The specific code needed is documented here, and in the base class CryptoCur in the file cryptocur.py.
+The class for a chainkey module must derive from the CryptoCur class.
 
 ## Writing a chainkey module
 
@@ -42,10 +43,16 @@ Lastly, after the currency class definition, it is required to define a variable
 
 All functions for verifying headers are required in a chainkey module. Most importantly, `get_target()`, `verify_chain()`, and `verify_chunk()`, but also any functions they rely on, including `header_to_string()`, `header_from_string()`, `hash_header()`, `save_chunk()`, `save_header()`, and `read_header()`.
 
-Note that commonly in Electrum forks, the functions `save_chunk()` and `save_header()` make a call to a function `set_local_height()`. This call must be removed in the chainkey module, as `set_local_height()` is called elsewhere. Also note that any calls to `print_error()` may be removed, as importing that function is not required.
+The base class CryptoCur implements some of these functions, since they're unlikely to differ from blockchain to blockchain. They can be re-implemented in a chainkey module's class if necessary.
+The functions CryptoCur implements are: `header_to_string()`, `header_from_string()`, `save_chunk()`, `save_header()`, and `read_header()`.
 
-If an electrum fork has a custom method to call when a chain reorg occurs, it should be included in the chainkey module class as `reorg_handler()`.
+Note that commonly in Electrum forks, the functions `save_chunk()` and `save_header()` make a call to a function `set_local_height()`.
+This call must be removed in the chainkey module, as `set_local_height()` is called elsewhere. Also note that any calls to `print_error()` may be removed, as importing that function is not required.
+
+If an electrum fork has a custom method to call when a chain reorg occurs, it should be included in the chainkey module class as `reorg_handler()`. Otherwise, `reorg_handler()` should **not** be defined.
 
 ## Implementation
 
 To implement a new chain after writing a chainkey module, place the coin's module in lib/chains with the others. Then edit lib/chainparams.py, adding a ChainParams named-tuple for that coin in `_known_chains`. When a chain is in `_known_chains`, Encompass will be able to use it as long as its metadata is correct.
+
+For installation purposes, also add the module to the `py_modules` list in setup.py, as Bitcoin is done [here](https://github.com/mazaclub/encompass/blob/master/setup.py#L117).

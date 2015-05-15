@@ -1,4 +1,4 @@
-'''The abstract class for a cryptocurrency.'''
+'''The base class for a cryptocurrency.'''
 
 import os, hashlib
 
@@ -16,6 +16,7 @@ def int_to_hex(i, length=1):
 def sha256(x):
     return hashlib.sha256(x).digest()
 
+# Double sha256
 def Hash(x):
     if type(x) is unicode: x=x.encode('utf-8')
     return sha256(sha256(x))
@@ -58,8 +59,6 @@ class CryptoCur(object):
     block_explorers = {
         'Blockchain.info': 'https://blockchain.info/tx/',
         'Blockr.io': 'https://blockr.io/tx/info/',
-        'Insight.is': 'http://live.insight.is/tx/',
-        'Blocktrail.com': 'https://www.blocktrail.com/tx/'
     }
 
     # Currency units {name : decimal point}
@@ -86,29 +85,69 @@ class CryptoCur(object):
     def path(self):
         return self.headers_path
 
+    # Called from blockchain.py when a chain of headers (arbitrary number of headers that's less than a chunk) needs verification.
     def verify_chain(self, chain):
         pass
 
+    # Called from blockchain.py when a chunk of headers needs verification.
     def verify_chunk(self, index, hexdata):
         pass
 
+    # Most common header format. Reimplement in a derived class if header format differs.
     def header_to_string(self, res):
-        pass
+        s = int_to_hex(res.get('version'),4) \
+            + rev_hex(res.get('prev_block_hash')) \
+            + rev_hex(res.get('merkle_root')) \
+            + int_to_hex(int(res.get('timestamp')),4) \
+            + int_to_hex(int(res.get('bits')),4) \
+            + int_to_hex(int(res.get('nonce')),4)
+        return s
 
+    # Most common header format. Reimplement in a derived class if header format differs.
     def header_from_string(self, s):
-        pass
+        hex_to_int = lambda s: int('0x' + s[::-1].encode('hex'), 16)
+        h = {}
+        h['version'] = hex_to_int(s[0:4])
+        h['prev_block_hash'] = hash_encode(s[4:36])
+        h['merkle_root'] = hash_encode(s[36:68])
+        h['timestamp'] = hex_to_int(s[68:72])
+        h['bits'] = hex_to_int(s[72:76])
+        h['nonce'] = hex_to_int(s[76:80])
+        return h
 
     def hash_header(self, header):
         pass
 
+    # save a chunk of headers to the binary file. Should not need to be reimplemented but can be.
     def save_chunk(self, index, chunk):
-        pass
+        filename = self.path()
+        f = open(filename,'rb+')
+        f.seek(index * self.chunk_size * 80)
+        h = f.write(chunk)
+        f.close()
 
+    # save a single header to the binary file. Should not need to be reimplemented but can be.
     def save_header(self, header):
-        pass
+        data = self.header_to_string(header).decode('hex')
+        assert len(data) == 80
+        height = header.get('block_height')
+        filename = self.path()
+        f = open(filename,'rb+')
+        f.seek(height*80)
+        h = f.write(data)
+        f.close()
 
+    # read a header from the binary file. Should not need to be reimplemented but can be.
     def read_header(self, block_height):
-        pass
+        name = self.path()
+        if os.path.exists(name):
+            f = open(name,'rb')
+            f.seek(block_height*80)
+            h = f.read(80)
+            f.close()
+            if len(h) == 80:
+                h = self.header_from_string(h)
+                return h
 
     # Calculate the difficulty target
     def get_target(self, index, chain=None):
