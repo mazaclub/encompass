@@ -296,7 +296,7 @@ class Abstract_Wallet(object):
         for k, v in self.imported_keys.items():
             sec = pw_decode(v, password)
             pubkey = public_key_from_private_key(sec, self.active_chain.wif_version)
-            address = public_key_to_bc_address(pubkey.decode('hex'))
+            address = public_key_to_bc_address(pubkey.decode('hex'), addrtype=self.active_chain.p2pkh_version)
             assert address == k
             self.import_key(sec, password)
             self.imported_keys.pop(k)
@@ -354,7 +354,7 @@ class Abstract_Wallet(object):
     def import_key(self, sec, password):
         try:
             pubkey = public_key_from_private_key(sec, self.active_chain.wif_version)
-            address = public_key_to_bc_address(pubkey.decode('hex'))
+            address = public_key_to_bc_address(pubkey.decode('hex'), addrtype=self.active_chain.p2pkh_version)
         except Exception:
             raise Exception('Invalid private key')
 
