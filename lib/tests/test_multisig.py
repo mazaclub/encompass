@@ -117,13 +117,13 @@ class TestMultisigMofN(WalletTestCase):
         self.wallet = Wallet_MofN(self.storage)
 
         # set cosigner master privkey
-        cosigner1_master_privkey = bip32_private_derivation(self.cosigner1_root_privkey, "m/", "m/44'/0'")[0]
+        cosigner1_master_privkey = bip32_private_derivation(self.cosigner1_root_privkey, "m/", "m/1491'/0'")[0]
         self.cosigner1_master_pubkey = xpub_from_xprv(cosigner1_master_privkey)
 
-        cosigner2_master_privkey = bip32_private_derivation(self.cosigner2_root_privkey, "m/", "m/44'/0'")[0]
+        cosigner2_master_privkey = bip32_private_derivation(self.cosigner2_root_privkey, "m/", "m/1491'/0'")[0]
         self.cosigner2_master_pubkey = xpub_from_xprv(cosigner2_master_privkey)
 
-        cosigner3_master_privkey = bip32_private_derivation(self.cosigner3_root_privkey, "m/", "m/44'/0'")[0]
+        cosigner3_master_privkey = bip32_private_derivation(self.cosigner3_root_privkey, "m/", "m/1491'/0'")[0]
         self.cosigner3_master_pubkey = xpub_from_xprv(cosigner3_master_privkey)
 
 
@@ -146,22 +146,22 @@ class TestMultisigMofN(WalletTestCase):
             action = self.wallet.get_action()
 
     def test_master_pubkey_derivation(self):
-        self.assertEqual('xpub6Ar6Cfm9Ww2RJbvXDD6Xk4a5eztRTg1do1SKEDYgmd21mtmYYgeYbAp7uCKYMgVfezCLTpM2rn25Ma5Vhm5pRktzM1cspx9MQwMJNs21Tjm',
+        self.assertEqual('xpub6B48x5PF7WJ73D9TvyEWFJpPgXxp1qVS8RVGttATwxvAmsfShE7sCGTME3D5SDDQAQtVwDQFLSAXYqxHtFix1LufTs3uEJwTRxfL9wJNp3s',
             self.wallet.master_public_keys.get("x1/"))
-        self.assertEqual('xpub6AEE1YapfdwPEwJNWLm1gz7CLSiXXEWD58TqKf7vCk8ZrXmdVi1NuKjQvms34eYNFUdRhpP2TJuwPwvFv7BybfTfZwkKZ7k444ucyDTZfLS',
+        self.assertEqual('xpub6ASQmDxzepDJ5i7fQgURxGfgFDEcWPNrjkEqFWYhkUEjAmKpBgj1Kbtt1tSRfYBBU11SJLDhU5HSjZSKNeY3o7t85ESDJAgFcPsEfVCBrSF',
             self.wallet.master_public_keys.get("x2/"))
-        self.assertEqual('xpub6BHS4GK2qnTck8CHgg8dfBgLb4xyenXZHyhK9Wuf7Syr86CMTvXZ81JMwQbSVA1zGcBMtjqZpaLhVS3j8JM82V9DqSwmnYoMWTFNhyULpXQ',
+        self.assertEqual('xpub6AQJU728LNY7LTxym8J1NDeaFzxsbZ3sLnwmteqRdhuzWWajkndMycDvQKGqmpdLNuYfDbs2x9FwHjVsVptHk7Ecdu9NSbbzFkQPogCStVM',
             self.wallet.master_public_keys.get("x3/"))
-        self.assertEqual('xpub6Ayb2onGrr2be263MzJSXsVHgBZJYUYZDuaA2JJbsKafQEnXpegWC4dJY7tELcJm1tWWv4AhwJaC2jGQU6aMELtGDw6QEwK1UhiyHjyFQnx',
+        self.assertEqual('xpub6AG4Qa384vkLrL9kcXZvbYRPbJAYBwmoidwErALZRkrQ796tiktqzUr9cQs69Kuj8ypuVs5mJtrb7SEokCokSZZKvsujpkD982W5RBbhRnC',
             self.wallet.master_public_keys.get("x4/"))
 
     def test_account(self):
         acc = self.wallet.accounts["0"]
         pubkeys = acc.get_master_pubkeys()
-        self.assertIn('xpub6C9nDygV6a7MK6XaEYWHEwPdFmy6MtqvYPgLVae2Pqns4X9bgQtEEBppTBbLotCgtSkBdauqRG4QCibdCsvScECZzmNQmH1M44s6XNWSntA', pubkeys)
-        self.assertIn('xpub6BySj5mtu9kXBkahhpjjHjtxv2zWn87wWCL6zMJkshiBov9Drpzs54aNT1TuvMtgDtsfFapm6QiYmWw6R3CK2WAZo6NqCxWnsUWPApqmsv9', pubkeys)
-        self.assertIn('xpub6DVbRUbTRwQmSNa9eLtKMWuP5dbHBVvtkuWzWENYKHp33Vsvuu2KZ5EQjdToEzvWYfHj6k5JCoeeMv1gzjc8VZc2TePXGV9m1N3bYM6VdPa', pubkeys)
-        self.assertIn('xpub6DVMDNati9BXsp3B4XFakHn2p9SoAjZGhYYYiRXAwJkNypy5fPseuG1g7BHC7s4myjL4XRPi5xKmQHH9UnQYt1x3tSxVQEAJFB8G69mDW4X', pubkeys)
+        self.assertIn('xpub6CfssEAJDCoTHU922RJy8oyXkdPNP8sMFxorzG9ncAbZjZRKCq5NFdRVybzvqHSPntpRDfHtGErXPbk1Y9uAJGJLZFtscVCMZP7mnRFqyQX', pubkeys)
+        self.assertIn('xpub6Ckpjg1oUbAUwXAChU3eWAovMZTWmdMLFskZvRbVTbd8QNM5XG1WdBDubzFAkJjMMktsRRyyzhNKPuYaGNgroYuaz8R3fCGiLWBvmbXX1F2', pubkeys)
+        self.assertIn('xpub6CWwK7DCdsCdi73o2KBwktuAWtXjzjMfDKcwgt9tYDZA8Es6SiXPbvaex96ZXhrQ1gxNRDfQFKkEBqeoLtB2biPypYRykpxmjbhYqXm7tEK', pubkeys)
+        self.assertIn('xpub6DVpttCNu8vwewtVNMHFptokPeXSWEYUabg3bPFSeFQAWNmRtGBjgfnAFKvAPEvF6r1ym2rEbKVWvYY9dRyR1ZWA45uRkW5EzZxQNFhn5Mj', pubkeys)
 
         self.assertEqual(3, acc.multisig_m)
         self.assertEqual(4, acc.multisig_n)
@@ -179,21 +179,21 @@ class TestMultisigMofN(WalletTestCase):
 
         # Compare redeem script to manually calculated one
         redeem_script = Transaction.multisig_script(sorted(pubkeys), acc.multisig_m)
-        self.assertEqual('5321032cc19685978bba02960adca60eec2f564126a4d4582f16b0b50a6e6cf17168a02103646ea928844710efcdba31b616aa9e97c6bcdac15a40d96a98cb7833e1848286210378568d703b6c64c9f4e3bd90b3c79c7e174b733629ca83c2c1456c5ddfc229792103f1c2170673eda7023e16813f8dc2b459c18d17520cfab0603ed1695a8e15a79d54ae', redeem_script)
+        self.assertEqual('53210278a1a7de63493a8c8e0e7f4ebb13fd2a8144db25bb3bc2e5f44127a851a389332102ee780aa224c9fe54caff984205077b7cca08ced3188a3f3c639d83deda6b9a592103124429ddbed55593d0abea0d0d3d283eca4546e40017b2945f4666c561b494ba210312872f0aa80fa1a9bc7df77fa5be310f5441f7bfec798fe19209b04954dec8da54ae', redeem_script)
         p2sh_addr = hash_160_to_bc_address( hash_160(redeem_script.decode('hex')), self.wallet.active_chain.p2sh_version )
-        self.assertEqual("32SbQbBthcMzRSpCw1ifAXqWviJGH5HKUk", p2sh_addr)
+        self.assertEqual("32Ktuh5jGEAAJyNXQE7f1LUAcMXSfvdSzE", p2sh_addr)
 
     def test_transaction(self):
 
         wallet_keys = {
-            'xpub6Gyz3Cuftr7dDPqWN54hcVjV4GuNzpWoAbPsUr493ReaaoAuFHk6A19MHgtuRnwEMPBhWFhGf9vMPX956n9zzgqRfS3oYzM9MFUSq7K3Dsv': 'L4g1Lj4jGLTpb2Zmbs23sMmvMmNaAySYEoaYpjopzzx2rMc48Why',
-            'xpub6FYJARMLJMUwitvXrJThC9yCxhFpuMcFTCkrcnLvww98UrZSNjLsK9RcsDt7qGW8rXmBjr2VFGYth3TTPRvefszUGfmbeWiJBX6wLtgPtzZ': 'L4NeeK7GB8iepbsSvR9edFgKRM6kpbATaoH8JVD3uVMdaicEAYb3',
-            'xpub6GfJ2THHDLsQTwzhjmUfmYyKj7CELnfbXuzZdbwCtC8h7NNHnHmdSrPWRP6fW12kQFo71k4qr2E9urmVk95WCT2oRg9CrCHT49CAsB6MAoR': 'KwJQLb8Qem1QTbgpcUBCVGchqi71RBG5TeJXjHNNW5XEDqeJY1wk'
+            'xpub6GDQf5vZmrpQvD4ixNdqHmgSZ76Uo2Cg5isBupnvZpnNbhdRhgdhq9hkfCSKRE31rGfYuXNfZ5gTamFkj1GXt6k87MD1hUn28tuvLHY71Bk': 'L2FQCaHPwgS4CmAf6bKtbjVWDbcHv42c72by1zLEyLuDrUG22CwM',
+            'xpub6GLs33TeHkrLSTJ2uxiMLnuqxCHG9iBFCwjTwyg4EvzyxUi78U1sXxxRPUQfLGNEZRT3yYKEwR39ZbUtofEgcmTLtJdSetnFiQPEwTZRW5y': 'L1aD1WSA3UGU56sAmjfYVj1rK3fnSzWKj2wTsDTN1DpgUgPVwQCa',
+            'xpub6Fc64k9RTc79yD7xErF2yKSdUraGBhGWDt1FomUFVCFg52165LZvvoGL59hebJBGtauFqNL5zMeRgPGV29sfQp6XqoiiD9E53UDatBhFZuk': 'L25eCRYrDNVNrTZV1XZhmaZti3dVsZz3egm1R7LsPHRdpYuyLYKE'
 #            'xpub6GiSmJrVQC5q2m5cRcZvUgnGUsfeEqi3eEfUTgacnA33G8PAQnJeeMzpNAGUA9JL3goUui7BY52rVPwhmxMALkmFh5ZuwJDKrPv8ERkG3CK': 'L3jUPoR7fUwB9mwfuqqF79mHDpj5rpygQhdWntJ9ShZ9nbyRab5h'
         }
 
         acc = self.wallet.accounts["0"]
-        redeem_script = '5321032cc19685978bba02960adca60eec2f564126a4d4582f16b0b50a6e6cf17168a02103646ea928844710efcdba31b616aa9e97c6bcdac15a40d96a98cb7833e1848286210378568d703b6c64c9f4e3bd90b3c79c7e174b733629ca83c2c1456c5ddfc229792103f1c2170673eda7023e16813f8dc2b459c18d17520cfab0603ed1695a8e15a79d54ae'
+        redeem_script = '53210278a1a7de63493a8c8e0e7f4ebb13fd2a8144db25bb3bc2e5f44127a851a389332102ee780aa224c9fe54caff984205077b7cca08ced3188a3f3c639d83deda6b9a592103124429ddbed55593d0abea0d0d3d283eca4546e40017b2945f4666c561b494ba210312872f0aa80fa1a9bc7df77fa5be310f5441f7bfec798fe19209b04954dec8da54ae'
 
         coins = [ {'address': '32SbQbBthcMzRSpCw1ifAXqWviJGH5HKUk',
             'value': 600000,
@@ -247,7 +247,7 @@ class TestMultisigMofN(WalletTestCase):
 
         if keypairs:
             tx.sign(keypairs)
-        self.assertEqual('0100000001111111111111111111111111111111111111111111111111111111111111111100000000fd6801004730440220597dd6ff2d2eebc4699529404e06512204ca9e8074a252bc2746c9d1059888b902207d4ce0ae33b1d5762dbe74a1bbfd6282443277206f1ed35286c7b8eb0e1001230148304502207d036628f6af1d4fcb21bc743d3a3c9d05a9999ee767a9ce4f4eb0cce7c2ac74022100c7bda5b1e7b7767ce80fedeabcfb09460dbbfa28197016ac9ac8e5bf0c2333fe01483045022100bc99a007249424b2296f72c5de82f5205fe0331d68d39599ad0ab7d2356926bc0220227c4a0016b6a6cd7bf544666f88bafc4a3112e8905571e19720d1883927f756014c8b5321032cc19685978bba02960adca60eec2f564126a4d4582f16b0b50a6e6cf17168a02103646ea928844710efcdba31b616aa9e97c6bcdac15a40d96a98cb7833e1848286210378568d703b6c64c9f4e3bd90b3c79c7e174b733629ca83c2c1456c5ddfc229792103f1c2170673eda7023e16813f8dc2b459c18d17520cfab0603ed1695a8e15a79d54aeffffffff0120a10700000000001976a914fc03ab7c28d17349f084f7cadde4dafc356918d388ac00000000', str(tx))
+        self.assertEqual('0100000001111111111111111111111111111111111111111111111111111111111111111100000000fd6901004830450220774e80fda89895d8bf3ac39c38f39456d31c1e857dc1c77c000f4de6c3de15fe0221008492ec4a45e8152149f80c35a9096c5e0337020046f0534bd3c94de413a5baa70148304502205e80562254972f873b5b59b1cdc81e422c7a2959d8868e5a54238fbfdf6f1070022100fdfb110a6c7edbac51d3ddccb3bf605fc859b917192f669d0cfe9c436901fd6501483045022100a81e69796aa5e5ae0d8924047e3c81a8dd64dfbc791caba6728ac7820aa114da022060b85875fd58223b7c61ef45fac2567a9f76934f947e4d03d927f5b078e1fb45014c8b53210278a1a7de63493a8c8e0e7f4ebb13fd2a8144db25bb3bc2e5f44127a851a389332102ee780aa224c9fe54caff984205077b7cca08ced3188a3f3c639d83deda6b9a592103124429ddbed55593d0abea0d0d3d283eca4546e40017b2945f4666c561b494ba210312872f0aa80fa1a9bc7df77fa5be310f5441f7bfec798fe19209b04954dec8da54aeffffffff0120a10700000000001976a914fc03ab7c28d17349f084f7cadde4dafc356918d388ac00000000', str(tx))
 
         ###########
         #
