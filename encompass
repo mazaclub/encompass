@@ -26,12 +26,27 @@ import sys
 import time
 import traceback
 
-
+#if getattr( sys , 'frozen' , None ):  # keyword 'frozen' is for setting basedir while in onefile mode
+#    basedir = sys._MEIPASS
+#    sys.path.append('packages')
+#else:
+#    basedir = os.path.dirname( __file__ )
+#    basedir = os.path.normpath( basedir )
+#
 is_local = os.path.dirname(os.path.realpath(__file__)) == os.getcwd()
 is_android = 'ANDROID_DATA' in os.environ
 
 if is_local:
     sys.path.append('packages')
+#script_dir = os.path.dirname(os.path.realpath(__file__))
+#is_bundle = getattr(sys, 'frozen', False)
+#is_local = not is_bundle and script_dir == os.getcwd()
+#is_android = 'ANDROID_DATA' in os.environ
+
+#if is_local or is_android:
+#    sys.path.insert(0, os.path.join(script_dir, 'packages'))
+#elif is_bundle and sys.platform=='darwin':
+#    sys.path.insert(0, os.getcwd() + "/lib/python2.7/packages")
 
 import __builtin__
 __builtin__.use_local_modules = is_local or is_android
@@ -42,6 +57,28 @@ if __builtin__.use_local_modules:
     imp.load_module('chainkey', *imp.find_module('lib'))
     imp.load_module('chainkey_gui', *imp.find_module('gui'))
 
+try:
+    import aes
+    import ecdsa
+    import requests
+    import six
+    import tlslite
+    import pbkdf2
+    import hid
+    import mnemonic
+    import google.protobuf
+    import trezorlib
+    from trezorlib import client                                                
+    from trezorlib.client import types, proto, BaseClient, ProtocolMixin
+    from trezorlib import qt
+    from trezorlib.qt import pinmatrix
+    from trezorlib.qt.pinmatrix import PinMatrixWidget
+    from trezorlib import transport
+    from trezorlib.transport import ConnectionError
+    from trezorlib import transport_hid
+    from trezorlib.transport_hid import HidTransport
+except ImportError as e:
+    sys.exit("Error: %s. Please use pip to install the missing modules"%e.message)
 
 from chainkey import util
 from chainkey import SimpleConfig, Network, Wallet, WalletStorage, NetworkProxy, Commands, known_commands, pick_random_server

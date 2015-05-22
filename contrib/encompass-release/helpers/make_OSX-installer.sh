@@ -13,8 +13,8 @@ TMP3_ARCHIVE="${BUILT_PRODUCTS_DIR}/$PACKAGE_NAME-tmp3.pkg"
 ARCHIVE_FILENAME="${BUILT_PRODUCTS_DIR}/${PACKAGE_NAME}.pkg"
 
 test -d Resources/en.lproj || mkdir -pv Resources/en.lproj
-cp -av ${BUILD_REPO}/README Resources/en.lproj/Readme
-cp -av ${BUILD_REPO}/LICENCE Resources/en.lproj/Readme
+cp -av ${BUILD_REPO}/README-OSX.md Resources/en.lproj/Readme
+cp -av ${BUILD_REPO}/LICENSE Resources/en.lproj/License
 cp -av ${BUILD_REPO}/icons/encompass-logo.jpg Resources/en.lproj/background
 
 
@@ -32,7 +32,6 @@ productbuild --synthesize \
     --package ${PRODUCT_NAME}-pre.pkg \
         Distribution.in
 cat Distribution.in
-sleep 20
 
 #echo "sed"
 sed -e '$ i\

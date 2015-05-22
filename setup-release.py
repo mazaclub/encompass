@@ -18,6 +18,8 @@ from lib.util import print_error
 from lib.version import ELECTRUM_VERSION as version
 
 
+print_error("setup-release.py is deprecated after Encompass-0.5.0")
+print_error("see contrib/encompass-release/build")
 name = "Encompass"
 mainscript = 'encompass'
 

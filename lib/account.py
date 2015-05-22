@@ -422,7 +422,7 @@ class BIP32_Account_2of2(BIP32_Account):
 
         xpriv = wallet.get_master_private_key("x1/", password)
         _, _, _, c, k = deserialize_xkey(xpriv)
-        pk = bip32_private_key( sequence, k, c, self.active_chain.wif_version )
+        pk = bip32_private_key( sequence, k, c, addrtype=self.active_chain.wif_version )
         out.append(pk)
 
         return out
