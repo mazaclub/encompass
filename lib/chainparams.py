@@ -27,6 +27,9 @@ _known_chains = (
 
     # Dash
     ChainParams(5, 'Dash', 'DASH', 'dash'),
+
+    # Peercoin
+    ChainParams(6, 'Peercoin', 'PPC', 'peercoin'),
     
     # Mazacoin
     ChainParams(13, 'Mazacoin', 'MZC', 'mazacoin'),
