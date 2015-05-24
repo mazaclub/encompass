@@ -127,6 +127,7 @@ setup(
         'chainkey.chains.litecoin',
         'chainkey.chains.viacoin',
         'chainkey.chains.dash',
+        'chainkey.chains.peercoin',
         'chainkey_gui.gtk',
         'chainkey_gui.qt.__init__',
         'chainkey_gui.qt.amountedit',
