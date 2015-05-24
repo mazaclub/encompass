@@ -617,28 +617,29 @@ class Transaction:
     def multisig_script(klass, public_keys, num=None):
         n = len(public_keys)
         if num is None: num = n
+        s = []
 
         assert num <= n and n in [2,3] , 'Only "2 of 2", and "2 of 3" transactions are supported'
 
         if num==2:
-            s = '52'
+            s.append('52')
         elif num == 3:
-            s = '53'
+            s.append('53')
         else:
             raise
 
         for k in public_keys:
-            s += op_push(len(k)/2)
-            s += k
+            s.append(op_push(len(k)/2))
+            s.append(k)
         if n==2:
-            s += '52'
+            s.append('52')
         elif n==3:
-            s += '53'
+            s.append('53')
         else:
             raise
-        s += 'ae'
+        s.append('ae')
 
-        return s
+        return ''.join(s)
 
 
     @classmethod
@@ -651,18 +652,19 @@ class Transaction:
             return '6a' + push_script(h)
         else:
             assert type == 'address'
+        script = []
         addrtype, hash_160 = bc_address_to_hash_160(addr)
         if addrtype == self.active_chain.p2pkh_version:
-            script = '76a9'                                      # op_dup, op_hash_160
-            script += push_script(hash_160.encode('hex'))
-            script += '88ac'                                     # op_equalverify, op_checksig
+            script.append('76a9')                               # op_dup, op_hash_160
+            script.append(push_script(hash_160.encode('hex')))
+            script.append('88ac')                               # op_equalverify, op_checksig
         elif addrtype == self.active_chain.p2sh_version:
-            script = 'a9'                                        # op_hash_160
-            script += push_script(hash_160.encode('hex'))
-            script += '87'                                       # op_equal
+            script.append('a9')                                 # op_hash_160
+            script.append(push_script(hash_160.encode('hex')))
+            script.append('87')                                 # op_equal
         else:
             raise
-        return script
+        return ''.join(script)
 
     def serialize_input(self, i, for_sig=None):
         txin = self.inputs[i]
