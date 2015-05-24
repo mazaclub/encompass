@@ -130,6 +130,7 @@ setup(
         'chainkey.chains.peercoin',
         'chainkey.chains.dogecoin',
         'chainkey.chains.blackcoin',
+        'chainkey.chains.feathercoin',
         'chainkey_gui.gtk',
         'chainkey_gui.qt.__init__',
         'chainkey_gui.qt.amountedit',
