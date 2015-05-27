@@ -67,6 +67,10 @@ try:
     import hid
     import mnemonic
     import google.protobuf
+except ImportError as e:
+    sys.exit("Error: %s. Please use pip to install the missing modules"%e.message)
+
+try:
     import trezorlib
     from trezorlib import client                                                
     from trezorlib.client import types, proto, BaseClient, ProtocolMixin
@@ -78,7 +82,7 @@ try:
     from trezorlib import transport_hid
     from trezorlib.transport_hid import HidTransport
 except ImportError as e:
-    sys.exit("Error: %s. Please use pip to install the missing modules"%e.message)
+    print("Trezor functionality disabled. To enable, please use pip to install trezor.")
 
 from chainkey import util
 from chainkey import SimpleConfig, Network, Wallet, WalletStorage, NetworkProxy, Commands, known_commands, pick_random_server
