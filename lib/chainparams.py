@@ -52,6 +52,9 @@ known_chains = (
 
     # Groestlcoin
     ChainParams(17, 'Groestlcoin', 'GRS', 'groestlcoin'),
+
+    # Clam
+    ChainParams(23, 'Clam', 'CLAMS', 'clam'),
 )
 
 known_chain_dict = dict((i.code, i) for i in known_chains)

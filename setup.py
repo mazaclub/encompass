@@ -123,6 +123,7 @@ setup(
         'chainkey.x509',
         'chainkey.chains.__init__',
         'chainkey.chains.bitcoin',
+        'chainkey.chains.clam',
         'chainkey.chains.cryptocur',
         'chainkey.chains.mazacoin',
         'chainkey.chains.scrypt',
