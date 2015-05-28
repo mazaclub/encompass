@@ -64,9 +64,6 @@ class TestTransaction(unittest.TestCase):
         tx = Transaction.deserialize(rawtx, chainparams.get_active_chain())
         self.assertEqual(str(tx), rawtx)
 
-    # This test may not pass if the system running it is too slow,
-    # therefore it (test_peercoin_serialize) is commented out.
-
     def test_peercoin_serialize(self):
         chainparams.set_active_chain('PPC')
         rawtx = '0100000058e4615501a367e883a383167e64c84e9c068ba5c091672e434784982f877eede589cb7e53000000006a473044022043b9aee9187effd7e6c7bc444b09162570f17e36b4a9c02cf722126cc0efa3d502200b3ba14c809fa9a6f7f835cbdbbb70f2f43f6b30beaf91eec6b8b5981c80cea50121025edf500f18f9f2b3f175f823fa996fbb2ec52982a9aeb1dc2e388a651054fb0fffffffff0257be0100000000001976a91495efca2c6a6f0e0f0ce9530219b48607a962e77788ac45702000000000001976a914f28abfb465126d6772dcb4403b9e1ad2ea28a03488ac00000000'
