@@ -83,18 +83,34 @@ class TestChainParams(ChainParamsTestCase):
             self.assertEqual(params.code, chain.code)
 
             ##  sanity-test chainkey module data ##
-            # constants
+            # constants should be non-negative
             self.assertGreaterEqual(chain.chain_index, 0)
-            self.assertGreaterEqual(chain.p2pkh_version, 0)
-            self.assertGreaterEqual(chain.p2sh_version, 0)
-            self.assertGreaterEqual(chain.wif_version, 0)
             self.assertGreaterEqual(chain.DUST_THRESHOLD, 0)
             self.assertGreaterEqual(chain.MIN_RELAY_TX_FEE, 0)
             self.assertGreaterEqual(chain.RECOMMENDED_FEE, 0)
             self.assertGreaterEqual(chain.COINBASE_MATURITY, 0)
+            # version bytes should be between 0 and 255, inclusive
+            self.assertGreaterEqual(chain.p2pkh_version, 0)
+            self.assertLessEqual(chain.p2pkh_version, 255)
+            self.assertGreaterEqual(chain.p2sh_version, 0)
+            self.assertLessEqual(chain.p2sh_version, 255)
+            self.assertGreaterEqual(chain.wif_version, 0)
+            self.assertLessEqual(chain.wif_version, 255)
             # collections
             self.assertGreaterEqual(len(chain.block_explorers), 1)
+            # block explorers should be a dict of {Website: URL}
+            for k, v in chain.block_explorers.items():
+                self.assertTrue(isinstance(k, str), "Block explorer website is not a string.")
+                self.assertTrue(isinstance(v, str), "Block explorer URL is not a string.")
             self.assertGreaterEqual(len(chain.DEFAULT_SERVERS), 1)
+            # default servers should be a dict of {Server: Ports}
+            for k, v in chain.DEFAULT_SERVERS.items():
+                self.assertTrue(isinstance(k, str), "Server name is not a string.")
+                self.assertTrue(isinstance(v, dict), "Server ports are not a dictionary.")
             # there must be a unit with 8 decimal places since that's the default
             self.assertGreaterEqual(len(chain.base_units), 1)
             self.assertIn(8, chain.base_units.values())
+            # base units should be a dict of {Unit: DecimalPlaces}
+            for k, v in chain.base_units.items():
+                self.assertTrue(isinstance(k, str), "Base unit is not a string.")
+                self.assertTrue(isinstance(v, int), "Base unit decimal point is not an int.")
