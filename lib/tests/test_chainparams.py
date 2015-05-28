@@ -73,3 +73,28 @@ class TestChainParams(ChainParamsTestCase):
         code = chainparams.get_code_from_index(0)
         self.assertEqual('BTC', code)
 
+    def test_all_chainkey_modules(self):
+        all_chains = chainparams._known_chains
+        for params in all_chains:
+            chain = chainparams.get_chain_instance(params.code)
+            # ensure params data is correct
+            self.assertEqual(params.chain_index, chain.chain_index)
+            self.assertEqual(params.coin_name, chain.coin_name)
+            self.assertEqual(params.code, chain.code)
+
+            ##  sanity-test chainkey module data ##
+            # constants
+            self.assertGreaterEqual(chain.chain_index, 0)
+            self.assertGreaterEqual(chain.p2pkh_version, 0)
+            self.assertGreaterEqual(chain.p2sh_version, 0)
+            self.assertGreaterEqual(chain.wif_version, 0)
+            self.assertGreaterEqual(chain.DUST_THRESHOLD, 0)
+            self.assertGreaterEqual(chain.MIN_RELAY_TX_FEE, 0)
+            self.assertGreaterEqual(chain.RECOMMENDED_FEE, 0)
+            self.assertGreaterEqual(chain.COINBASE_MATURITY, 0)
+            # collections
+            self.assertGreaterEqual(len(chain.block_explorers), 1)
+            self.assertGreaterEqual(len(chain.DEFAULT_SERVERS), 1)
+            # there must be a unit with 8 decimal places since that's the default
+            self.assertGreaterEqual(len(chain.base_units), 1)
+            self.assertIn(8, chain.base_units.values())
