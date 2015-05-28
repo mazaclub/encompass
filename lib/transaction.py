@@ -579,6 +579,9 @@ class Transaction:
         self.inputs = d['inputs']
         self.outputs = map(lambda x: (x['type'], x['address'], x['value']), d['outputs'])
         self.locktime = d['lockTime']
+        for k, v in d.items():
+            if not k in ['inputs', 'outputs', 'lockTime']:
+                setattr(self, k, v)
 
     @classmethod
     def sweep(klass, privkeys, network, to_address, fee, active_chain=None):

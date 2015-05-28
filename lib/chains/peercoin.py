@@ -147,12 +147,14 @@ class Peercoin(CryptoCur):
 
     @chainhook
     def transaction_deserialize_tx_fields(self, vds, fields):
-        timestamp = ('timestamp', vds.read_int32, False)
+        timestamp = ('timestamp', vds.read_int32, True)
         fields.insert(1, timestamp)
 
     @chainhook
     def transaction_serialize(self, tx, for_sig, fields):
-        unix_time = int(time.time())
+        unix_time = getattr(tx, 'timestamp', None)
+        if unix_time is None:
+            unix_time = int(time.time())
         timestamp = ('timestamp', int_to_hex(unix_time, 4))
         fields.insert(1, timestamp)
 
