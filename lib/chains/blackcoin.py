@@ -3,6 +3,8 @@ from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, 
 import os
 import time
 
+from ltc_scrypt import getPoWHash
+
 class Blackcoin(CryptoCur):
     PoW = False
     chain_index = 10
@@ -111,7 +113,10 @@ class Blackcoin(CryptoCur):
         self.save_chunk(index, data)
 
     def hash_header(self, header):
-        return rev_hex(Hash(self.header_to_string(header).decode('hex')).encode('hex'))
+        if header.get('version', 0) > 6:
+            return rev_hex(Hash(self.header_to_string(header).decode('hex')).encode('hex'))
+        else:
+            return rev_hex(getPoWHash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def get_target(self, index, chain=None):
         if chain is None:
