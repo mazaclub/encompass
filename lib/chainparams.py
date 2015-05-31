@@ -1,6 +1,9 @@
 from collections import namedtuple
+from util import print_error
 import importlib
+import traceback, sys
 import chains
+import chains.cryptocur
 
 active_chain = None
 
@@ -24,6 +27,9 @@ _known_chains = (
 
     # Dash
     ChainParams(5, 'Dash', 'DASH', 'dash'),
+
+    # Peercoin
+    ChainParams(6, 'Peercoin', 'PPC', 'peercoin'),
     
     # Mazacoin
     ChainParams(13, 'Mazacoin', 'MZC', 'mazacoin'),
@@ -109,3 +115,26 @@ def get_chain_instance(code):
         classmodule = importlib.import_module(''.join(['lib.chains.', module_name]))
     classInst = getattr(classmodule, 'Currency')
     return classInst()
+
+def run_chainhook(name, *args):
+    """Runs any chainhooks that the active chain has."""
+    results = []
+    f_list = chains.cryptocur.chainhooks.get(name,[])
+    active_chain = get_active_chain()
+    # if the chain's class matches the active chain's class, call the hook
+    for cls in f_list:
+        if not cls == active_chain.__class__:
+            continue
+        try:
+            f = getattr(active_chain, name)
+            r = f(*args)
+        except Exception:
+            print_error("Chainhook error")
+            traceback.print_exc(file=sys.stdout)
+            r = False
+        if r:
+            results.append(r)
+
+    if results:
+        assert len(results) == 1, results
+        return results[0]

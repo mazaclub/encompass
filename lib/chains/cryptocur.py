@@ -20,7 +20,21 @@ def sha256(x):
 def Hash(x):
     if type(x) is unicode: x=x.encode('utf-8')
     return sha256(sha256(x))
-    
+
+# Chain hook system
+#
+# This allows the active blockchain to hook into arbitrary functions
+# in the same way that plugins do.
+chainhook_names = set()
+chainhooks = {}
+
+def chainhook(func):
+    """As a decorator, this allows blockchains to hook into functions
+    that call run_chainhook."""
+    n = func.func_name
+    if not n in chainhook_names:
+        chainhook_names.add(n)
+    return func
 
 
 class CryptoCur(object):
@@ -77,6 +91,13 @@ class CryptoCur(object):
 
     ### Methods ###
 
+    def __init__(self):
+        for k in dir(self):
+            if k in chainhook_names:
+                l = chainhooks.get(k, [])
+                if not self.__class__ in l:
+                    l.append( self.__class__ )
+                chainhooks[k] = l
 
     # Tell us where our blockchain_headers file is
     def set_headers_path(self, path):
