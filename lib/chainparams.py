@@ -30,6 +30,9 @@ _known_chains = (
 
     # Peercoin
     ChainParams(6, 'Peercoin', 'PPC', 'peercoin'),
+
+    # Blackcoin
+    ChainParams(10, 'Blackcoin', 'BLK', 'blackcoin'),
     
     # Mazacoin
     ChainParams(13, 'Mazacoin', 'MZC', 'mazacoin'),

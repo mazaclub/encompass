@@ -128,6 +128,7 @@ setup(
         'chainkey.chains.viacoin',
         'chainkey.chains.dash',
         'chainkey.chains.peercoin',
+        'chainkey.chains.blackcoin',
         'chainkey_gui.gtk',
         'chainkey_gui.qt.__init__',
         'chainkey_gui.qt.amountedit',
