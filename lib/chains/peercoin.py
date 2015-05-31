@@ -44,6 +44,12 @@ class Peercoin(CryptoCur):
         prev_header = self.read_header(first_header.get('block_height') -1)
 
         if not self.PoW:
+            for header in chain:
+                prev_hash = self.hash_header(prev_header)
+                try:
+                    assert prev_hash == header.get('prev_block_hash')
+                except Exception:
+                    return False
             return True
 
         for header in chain:
@@ -70,16 +76,23 @@ class Peercoin(CryptoCur):
         height = index*2016
         num = len(data)/80
 
-        if not self.PoW:
-            self.save_chunk(index, data)
-            return
-
         if index == 0:
             previous_hash = ("0"*64)
         else:
             prev_header = self.read_header(index*2016-1)
             if prev_header is None: raise
             previous_hash = self.hash_header(prev_header)
+
+        if not self.PoW:
+            for i in range(num):
+                raw_header = data[i*80:(i+1)*80]
+                header = self.header_from_string(raw_header)
+                _hash = self.hash_header(header)
+                assert previous_hash == header.get('prev_block_hash')
+                previous_header = header
+                previous_hash = _hash
+            self.save_chunk(index, data)
+            return
 
         bits, target = self.get_target(index)
 
