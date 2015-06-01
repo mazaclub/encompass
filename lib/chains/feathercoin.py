@@ -8,6 +8,9 @@ import ltc_scrypt
 HashNeoscrypt = lambda x: neoscrypt.getPoWHash(x)
 HashScrypt = lambda x: ltc_scrypt.getPoWHash(x)
 
+switch_v2_time = 1413936000
+neoscrypt_height = 432000
+
 class Feathercoin(CryptoCur):
     PoW = False
     chain_index = 8
@@ -36,12 +39,18 @@ class Feathercoin(CryptoCur):
     }
 
     def verify_chain(self, chain):
-
-        # for now, assume true
-        return True
-
         first_header = chain[0]
         prev_header = self.read_header(first_header.get('block_height') -1)
+
+        if not self.PoW:
+            for header in chain:
+                prev_hash = self.hash_header(prev_header)
+                try:
+                    assert prev_hash = header.get('prev_block_hash')
+                except Exception:
+                    return False
+                prev_header = header
+            return True
 
         for header in chain:
 
@@ -49,7 +58,7 @@ class Feathercoin(CryptoCur):
 
             prev_hash = self.hash_header(prev_header)
             bits, target = self.get_target(height/2016, chain)
-            _hash = self.pow_hash_header(header)
+            _hash = self.pow_hash_header(header, height)
             try:
                 assert prev_hash == header.get('prev_block_hash')
                 assert bits == header.get('bits')
@@ -66,10 +75,6 @@ class Feathercoin(CryptoCur):
         height = index*2016
         num = len(data)/80
 
-        # for now, assume true
-        self.save_chunk(index, data)
-        return
-
         if index == 0:  
             previous_hash = ("0"*64)
         else:
@@ -79,11 +84,21 @@ class Feathercoin(CryptoCur):
 
         bits, target = self.get_target(index)
 
+        if not self.PoW:
+            for i in range(num):
+                raw_header = data[i*80:(i+1)*80]
+                header = self.header_from_string(raw_header)
+                assert previous_hash == header.get('prev_block_hash')
+                previous_header = header
+                previous_hash = self.hash_header(header)
+            self.save_chunk(index, data)
+            return
+
         for i in range(num):
             height = index*2016 + i
             raw_header = data[i*80:(i+1)*80]
             header = self.header_from_string(raw_header)
-            _hash = self.pow_hash_header(header)
+            _hash = self.pow_hash_header(header, height)
             assert previous_hash == header.get('prev_block_hash')
             assert bits == header.get('bits')
             assert int('0x'+_hash,16) < target
@@ -96,9 +111,21 @@ class Feathercoin(CryptoCur):
     def hash_header(self, header):
         return rev_hex(Hash(self.header_to_string(header).decode('hex')).encode('hex'))
 
-    def pow_hash_header(self, header):
+    def pow_hash_header(self, header, height):
         # TODO
-        return rev_hex(getPoWHash(self.header_to_string(header).decode('hex')).encode('hex'))
+        HASH_SCRYPT = 1
+        HASH_NEOSCRYPT = 2
+        HASH_ALGO = HASH_NEOSCRYPT
+        if header.get('timestamp') < switch_v2_time:
+            HASH_ALGO = HASH_SCRYPT
+        else:
+            if height < neoscrypt_height:
+                HASH_ALGO = HASH_SCRYPT
+
+        if HASH_ALGO == HASH_SCRYPT:
+            return rev_hex(HashScrypt(self.header_to_string(header).decode('hex')).encode('hex'))
+        else:
+            return rev_hex(HashNeoscrypt(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def get_target(self, index, chain=[]):
 
