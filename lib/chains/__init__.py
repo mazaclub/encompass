@@ -7,4 +7,4 @@ import litecoin
 import viacoin
 import dash
 import peercoin
-#__all__ = ['cryptocur, bitcoin, mazacoin']
+import dogecoin

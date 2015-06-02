@@ -474,7 +474,8 @@ class ElectrumWindow(QMainWindow):
 
 
     def base_unit(self):
-        assert self.decimal_point in self.base_units.values()
+        if not self.decimal_point in self.base_units.values():
+            self.decimal_point = 8
         for k, v in self.base_units.iteritems():
             if v == self.decimal_point:
                 return k
