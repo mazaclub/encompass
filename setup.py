@@ -129,6 +129,7 @@ setup(
         'chainkey.chains.dash',
         'chainkey.chains.peercoin',
         'chainkey.chains.dogecoin',
+        'chainkey.chains.blackcoin',
         'chainkey_gui.gtk',
         'chainkey_gui.qt.__init__',
         'chainkey_gui.qt.amountedit',

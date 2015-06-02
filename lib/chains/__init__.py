@@ -8,3 +8,4 @@ import viacoin
 import dash
 import peercoin
 import dogecoin
+import blackcoin
