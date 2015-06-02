@@ -409,7 +409,11 @@ class BIP32_Account_2of2(BIP32_Account):
     def get_private_key(self, sequence, wallet, password):
         out = []
         if len(sequence) == 2:
-            sequence.insert(0, self.active_chain.chain_index)
+            # if sequence is a tuple, add the chain index to it as a tuple
+            if isinstance(sequence, tuple):
+                sequence = (self.active_chain.chain_index, ) + sequence
+            else:
+                sequence.insert(0, self.active_chain.chain_index)
 #        xpubs = self.get_master_pubkeys()
 #        roots = [k for k, v in wallet.master_public_keys.iteritems() if v in xpubs]
 #        for root in roots:
