@@ -221,6 +221,10 @@ if __name__ == '__main__':
     if config.get_active_chain_code() == 'DRK':
         config.set_active_chain_code('DASH')
 
+    # if the last active chain is no longer present, default to mzc
+    if not chainparams.is_known_chain(config.get_active_chain_code()):
+        config.set_active_chain_code('mzc')
+
     # URI scheme for active chain
     uri_scheme = ''.join(['^', chainparams.get_active_chain().coin_name.lower(), ':'])
     if len(args) == 0:
