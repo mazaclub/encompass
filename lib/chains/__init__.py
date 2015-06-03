@@ -9,3 +9,4 @@ import dash
 import peercoin
 import dogecoin
 import blackcoin
+import feathercoin

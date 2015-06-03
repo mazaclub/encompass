@@ -8,4 +8,9 @@ install:
   - git checkout 1.1
   - python setup.py install
   - cd ..
+  - git clone https://github.com/kefkius/neoscrypt
+  - cd neoscrypt
+  - git checkout 1.0
+  - python setup.py install
+  - cd ..
 script: nosetests -e gui

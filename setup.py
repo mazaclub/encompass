@@ -79,11 +79,13 @@ setup(
 	'dnspython',
 	'ltc_scrypt==1.0',
 	'darkcoin_hash==1.1',
-	'trezor==0.6.3'
+	'trezor==0.6.3',
+        'neoscrypt==1.0'
     ],
     dependency_links=[
-        "git+https://github.com/guruvan/darkcoin_hash#egg=darkcoin_hash"
-        "git+https://github.com/mazaclub/python-trezor#egg=trezor"
+        "git+https://github.com/guruvan/darkcoin_hash#egg=darkcoin_hash",
+        "git+https://github.com/mazaclub/python-trezor#egg=trezor",
+        "git+https://github.com/kefkius/neoscrypt#egg=neoscrypt"
     ],
     package_dir={
         'chainkey': 'lib',
@@ -130,6 +132,7 @@ setup(
         'chainkey.chains.peercoin',
         'chainkey.chains.dogecoin',
         'chainkey.chains.blackcoin',
+        'chainkey.chains.feathercoin',
         'chainkey_gui.gtk',
         'chainkey_gui.qt.__init__',
         'chainkey_gui.qt.amountedit',
