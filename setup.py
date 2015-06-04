@@ -138,6 +138,7 @@ setup(
         'chainkey_gui.qt.__init__',
         'chainkey_gui.qt.amountedit',
         'chainkey_gui.qt.console',
+        'chainkey_gui.qt.currency_dialog',
         'chainkey_gui.qt.history_widget',
         'chainkey_gui.qt.icons_rc',
         'chainkey_gui.qt.installwizard',

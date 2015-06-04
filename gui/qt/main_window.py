@@ -47,6 +47,7 @@ from amountedit import AmountEdit, BTCAmountEdit, MyLineEdit
 from network_dialog import NetworkDialog
 from qrcodewidget import QRCodeWidget, QRDialog
 from qrtextedit import ScanQRTextEdit, ShowQRTextEdit
+from currency_dialog import ChangeCurrencyDialog
 
 from decimal import Decimal
 
@@ -1779,47 +1780,14 @@ class ElectrumWindow(QMainWindow):
         self.update_lock_icon()
 
     def change_currency_dialog(self):
-        import operator
-        self.change_currency_window = d = QDialog(self)
-        d.setWindowTitle(_('Change Currency'))
-        main_layout = QVBoxLayout()
-        change_info = QLabel( _("Note that you will need to enter your password the first time you use a new currency.\n") )
-        change_info.setWordWrap(True)
-        main_layout.addWidget(change_info)
-
-        key_info = QLabel( _("PoW: Whether this wallet verifies proof-of-work.\nServers: Number of default servers to get data from.") )
-        key_info.setWordWrap(True)
-        main_layout.addWidget(key_info)
-
-        self.chains_view = chains_view = QTreeWidget()
-        chains_view.setColumnCount(4)
-        chains_view.setHeaderLabels([ _('Code'), _('Currency'), _('PoW'), _('Servers') ])
-        chains_view.setColumnWidth(0, 75)
-        chains_view.setColumnWidth(1, 125)
-        chains_view.setColumnWidth(2, 60)
-        chains_view.setColumnWidth(3, 50)
-        chains_view.setMinimumWidth(325)
-        chains_view.itemActivated.connect(self.on_currency_select)
-        chains = chainkey.chainparams.known_chains
-        # Yes or No
-        y_or_n = lambda x: 'Yes' if x==True else 'No'
-        for ch in sorted(chains, key=operator.attrgetter('code')):
-            server_trust = chainkey.chainparams.get_server_trust(ch.code)
-            uses_pow = server_trust['pow']
-            num_servers = server_trust['servers']
-            item = QTreeWidgetItem([ch.code, ch.coin_name, y_or_n(uses_pow), str(num_servers)])
-            chains_view.addTopLevelItem(item)
-        chains_view.setCurrentItem(chains_view.topLevelItem(0))
-        main_layout.addWidget(chains_view)
-
-        main_layout.addLayout(ok_cancel_buttons(d))
-        d.setLayout(main_layout)
+        self.change_currency_window = d = ChangeCurrencyDialog(self)
+        d.chains_view.itemActivated.connect(self.on_currency_select)
 
         if not d.exec_(): return
         self.on_currency_select()
 
     def on_currency_select(self):
-        chaincode = str(self.chains_view.currentItem().text(0))
+        chaincode = str(self.change_currency_window.chains_view.currentItem().text(0))
         self.change_currency_window.close()
         self.emit(QtCore.SIGNAL('change_currency'), chaincode)
 
