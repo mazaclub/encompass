@@ -1784,6 +1784,8 @@ class ElectrumWindow(QMainWindow):
         if self.change_currency_window is None:
             self.change_currency_window = ChangeCurrencyDialog(self)
             self.change_currency_window.chains_view.itemActivated.connect(self.on_currency_select)
+        else:
+            self.change_currency_window.refresh_chains()
 
         if not self.change_currency_window.exec_(): return
         self.on_currency_select()
