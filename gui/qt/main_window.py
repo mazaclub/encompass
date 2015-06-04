@@ -189,6 +189,7 @@ class ElectrumWindow(QMainWindow):
         self.payment_request = None
         self.qr_window = None
         self.not_enough_funds = False
+        self.change_currency_window = None
 
     def update_account_selector(self):
         # account selector
@@ -1780,10 +1781,11 @@ class ElectrumWindow(QMainWindow):
         self.update_lock_icon()
 
     def change_currency_dialog(self):
-        self.change_currency_window = d = ChangeCurrencyDialog(self)
-        d.chains_view.itemActivated.connect(self.on_currency_select)
+        if self.change_currency_window is None:
+            self.change_currency_window = ChangeCurrencyDialog(self)
+            self.change_currency_window.chains_view.itemActivated.connect(self.on_currency_select)
 
-        if not d.exec_(): return
+        if not self.change_currency_window.exec_(): return
         self.on_currency_select()
 
     def on_currency_select(self):
