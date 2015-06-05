@@ -3,10 +3,12 @@ import sys
 from ecdsa.util import number_to_string
 
 from lib.bitcoin import (
-    generator_secp256k1, point_to_ser, public_key_to_bc_address, EC_KEY,
-    bip32_root, bip32_public_derivation, bip32_private_derivation, pw_encode,
-    pw_decode, Hash, public_key_from_private_key, address_from_private_key,
+    public_key_to_bc_address,
+    bip32_root, bip32_public_derivation, bip32_private_derivation,
+    Hash, public_key_from_private_key, address_from_private_key,
     is_valid, is_private_key, xpub_from_xprv)
+from lib.eckey import (
+    generator_secp256k1, point_to_ser, EC_KEY, pw_encode, pw_decode)
 
 try:
     import ecdsa

@@ -4,7 +4,6 @@ import shutil
 from datetime import datetime
 is_verbose = False
 
-
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
         from transaction import Transaction
