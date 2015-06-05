@@ -105,10 +105,12 @@ def pw_decode(s, password):
 
 
 def rev_hex(s):
+    """Reverses the bytes of a hex-encoded string."""
     return s.decode('hex')[::-1].encode('hex')
 
 
 def int_to_hex(i, length=1):
+    """Hex-encodes an int as a little-endian string of the given length."""
     s = hex(i)[2:].rstrip('L')
     s = "0"*(2*length - len(s)) + s
     return rev_hex(s)
@@ -367,6 +369,16 @@ def wif_to_secret(key, addrtype=128):
         return False
 
 def regenerate_key(sec, addrtype=128):
+    """Returns the EC key behind a given WIF key.
+
+    Args:
+        sec (str): WIF key (base58-encoded).
+        addrtype (int): Blockchain-specific base58 version byte for private keys in WIF.
+
+    Returns:
+        An EC_KEY instance.
+
+    """
     b = wif_to_secret(sec, addrtype)
     if not b:
         return False
@@ -375,6 +387,7 @@ def regenerate_key(sec, addrtype=128):
 
 
 def GetPubKey(pubkey, compressed=False):
+    """Gets the public key bytes of an ECDSA verifying key."""
     return i2o_ECPublicKey(pubkey, compressed)
 
 
