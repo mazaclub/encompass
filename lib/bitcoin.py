@@ -327,8 +327,10 @@ def DecodeBase58Check(psz):
 def PrivKeyToSecret(privkey):
     return privkey[9:9+32]
 
-
 def SecretToASecret(secret, compressed=False, addrtype=128):
+    """Deprecated. Use secret_to_wif."""
+
+def secret_to_wif(secret, compressed=False, addrtype=128):
     """Converts private key bytes to WIF.
 
     Args:
@@ -345,6 +347,9 @@ def SecretToASecret(secret, compressed=False, addrtype=128):
     return EncodeBase58Check(vchIn)
 
 def ASecretToSecret(key, addrtype=128):
+    """Deprecated. Use wif_to_secret."""
+
+def wif_to_secret(key, addrtype=128):
     """Converts a WIF key to private key bytes.
 
     Args:
@@ -362,7 +367,7 @@ def ASecretToSecret(key, addrtype=128):
         return False
 
 def regenerate_key(sec, addrtype=128):
-    b = ASecretToSecret(sec, addrtype)
+    b = wif_to_secret(sec, addrtype)
     if not b:
         return False
     b = b[0:32]
@@ -383,7 +388,7 @@ def GetSecret(pkey):
 
 def is_compressed(sec, addrtype=128):
     """Returns whether a WIF private key represents a compressed key."""
-    b = ASecretToSecret(sec, addrtype)
+    b = wif_to_secret(sec, addrtype)
     return len(b) == 33
 
 
@@ -426,7 +431,7 @@ def is_address(addr, active_chain=None):
 def is_private_key(key, addrtype=128):
     """Returns whether a WIF private key is valid."""
     try:
-        k = ASecretToSecret(key, addrtype)
+        k = wif_to_secret(key, addrtype)
         return k is not False
     except:
         return False
@@ -879,4 +884,4 @@ def bip32_private_key(sequence, k, chain, addrtype=128):
     """
     for i in sequence:
         k, chain = CKD_priv(k, chain, i)
-    return SecretToASecret(k, True, addrtype)
+    return secret_to_wif(k, True, addrtype)
