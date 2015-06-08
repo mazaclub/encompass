@@ -1,5 +1,5 @@
 '''Chain-specific Dash code'''
-from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256
+from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex
 import os
 
 from coinhash import X11Hash

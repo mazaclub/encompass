@@ -1,8 +1,8 @@
 '''Chain-specific Litecoin code'''
-from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256, Hash
+from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex
 import os
 
-from coinhash import ScryptHash
+from coinhash import SHA256dHash, ScryptHash
 
 class Litecoin(CryptoCur):
     PoW = True
@@ -100,7 +100,7 @@ class Litecoin(CryptoCur):
         self.save_chunk(index, data)
 
     def hash_header(self, header):
-        return rev_hex(Hash(self.header_to_string(header).decode('hex')).encode('hex'))
+        return rev_hex(SHA256dHash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def pow_hash_header(self, header):
         return rev_hex(ScryptHash(self.header_to_string(header).decode('hex')).encode('hex'))

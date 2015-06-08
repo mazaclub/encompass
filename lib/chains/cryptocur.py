@@ -13,14 +13,6 @@ def int_to_hex(i, length=1):
     s = "0"*(2*length - len(s)) + s
     return rev_hex(s)
 
-def sha256(x):
-    return hashlib.sha256(x).digest()
-
-# Double sha256
-def Hash(x):
-    if type(x) is unicode: x=x.encode('utf-8')
-    return sha256(sha256(x))
-
 # Chain hook system
 #
 # This allows the active blockchain to hook into arbitrary functions
