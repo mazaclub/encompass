@@ -2,11 +2,7 @@
 from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256, Hash
 import os
 
-import neoscrypt
-import ltc_scrypt
-
-HashNeoscrypt = lambda x: neoscrypt.getPoWHash(x)
-HashScrypt = lambda x: ltc_scrypt.getPoWHash(x)
+from coinhash import NeoscryptHash, ScryptHash
 
 switch_v2_time = 1413936000
 fork_one = 33000
@@ -162,9 +158,9 @@ class Feathercoin(CryptoCur):
                 HASH_ALGO = HASH_SCRYPT
 
         if HASH_ALGO == HASH_SCRYPT:
-            return rev_hex(HashScrypt(self.header_to_string(header).decode('hex')).encode('hex'))
+            return rev_hex(ScryptHash(self.header_to_string(header).decode('hex')).encode('hex'))
         else:
-            return rev_hex(HashNeoscrypt(self.header_to_string(header).decode('hex')).encode('hex'))
+            return rev_hex(NeoscryptHash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def get_target(self, height, chain=None):
         if chain is None:

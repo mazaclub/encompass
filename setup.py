@@ -80,13 +80,11 @@ setup(
 	'ltc_scrypt==1.0',
 	'darkcoin_hash==1.1',
 	'trezor==0.6.3',
-        'neoscrypt==1.0',
         'coinhash==1.0'
     ],
     dependency_links=[
         "git+https://github.com/guruvan/darkcoin_hash#egg=darkcoin_hash",
         "git+https://github.com/mazaclub/python-trezor#egg=trezor",
-        "git+https://github.com/kefkius/neoscrypt#egg=neoscrypt",
         "git+https://github.com/kefkius/coinhash#egg=coinhash"
     ],
     package_dir={
