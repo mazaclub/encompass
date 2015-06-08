@@ -38,6 +38,9 @@ known_chains = (
     # Peercoin
     ChainParams(6, 'Peercoin', 'PPC', 'peercoin'),
 
+    # Namecoin
+    ChainParams(7, 'Namecoin', 'NMC', 'namecoin'),
+
     # Feathercoin
     ChainParams(8, 'Feathercoin', 'FTC', 'feathercoin'),
 
