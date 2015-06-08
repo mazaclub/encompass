@@ -1,11 +1,8 @@
 '''Chain-specific Dogecoin code'''
 from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256, Hash
 import os
-try:
-    from ltc_scrypt import getPoWHash
-except ImportError:
-    print("cannot import ltc_scrypt, using fallback")
-    from scrypt import scrypt_1024_1_1_80 as getPoWHash
+
+from coinhash import ScryptHash
 
 class Dogecoin(CryptoCur):
     PoW = False
@@ -115,7 +112,7 @@ class Dogecoin(CryptoCur):
         return rev_hex(Hash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def pow_hash_header(self, header):
-        return rev_hex(getPoWHash(self.header_to_string(header).decode('hex')).encode('hex'))
+        return rev_hex(ScryptHash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def get_target(self, index, chain=[]):
 

@@ -77,7 +77,6 @@ setup(
 	'protobuf==2.5.0',
 	'tlslite==0.4.8',
 	'dnspython',
-	'ltc_scrypt==1.0',
 	'trezor==0.6.3',
         'coinhash==1.0'
     ],

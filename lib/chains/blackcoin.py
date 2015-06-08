@@ -3,7 +3,7 @@ from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, 
 import os
 import time
 
-from ltc_scrypt import getPoWHash
+from coinhash import ScryptHash
 
 class Blackcoin(CryptoCur):
     PoW = False
@@ -116,7 +116,7 @@ class Blackcoin(CryptoCur):
         if header.get('version', 0) > 6:
             return rev_hex(Hash(self.header_to_string(header).decode('hex')).encode('hex'))
         else:
-            return rev_hex(getPoWHash(self.header_to_string(header).decode('hex')).encode('hex'))
+            return rev_hex(ScryptHash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def get_target(self, index, chain=None):
         if chain is None:
