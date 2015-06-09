@@ -23,7 +23,7 @@
 import bitcoin
 from bitcoin import *
 from util import print_error
-from util_coin import var_int
+from util_coin import var_int, int_to_hex, op_push
 import time
 import struct
 import chainparams

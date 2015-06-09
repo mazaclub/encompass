@@ -18,7 +18,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import hashlib
-import re
 import sys
 import hmac
 
@@ -220,7 +219,7 @@ def get_pubkeys_from_secret(secret):
 #  public key can be determined without the master private key.
 def CKD_priv(k, c, n):
     is_prime = n & BIP32_PRIME
-    return _CKD_priv(k, c, rev_hex(int_to_hex(n,4)).decode('hex'), is_prime)
+    return _CKD_priv(k, c, util_coin.rev_hex(util_coin.int_to_hex(n,4)).decode('hex'), is_prime)
 
 def _CKD_priv(k, c, s, is_prime):
     import hmac
@@ -242,7 +241,7 @@ def _CKD_priv(k, c, s, is_prime):
 #  non-negative. If n is negative, we need the master private key to find it.
 def CKD_pub(cK, c, n):
     if n & BIP32_PRIME: raise
-    return _CKD_pub(cK, c, rev_hex(int_to_hex(n,4)).decode('hex'))
+    return _CKD_pub(cK, c, util_coin.rev_hex(util_coin.int_to_hex(n,4)).decode('hex'))
 
 # helper function, callable with arbitrary string
 def _CKD_pub(cK, c, s):

@@ -1,6 +1,6 @@
 import unittest
 
-from lib.bitcoin import rev_hex, Hash
+from lib.util_coin import rev_hex, Hash
 import ltc_scrypt
 import neoscrypt
 

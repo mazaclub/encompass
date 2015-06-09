@@ -5,7 +5,7 @@ import lib.chains
 import lib.transaction
 from lib.transaction import Transaction, deserialize
 import lib.bitcoin
-from lib.bitcoin import int_to_hex
+from lib.util_coin import int_to_hex
 
 class TestTransaction(unittest.TestCase):
     def setUp(self):

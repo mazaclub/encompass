@@ -6,14 +6,17 @@ def sha256(x):
     return hashlib.sha256(x).digest()
 
 def Hash(x):
+    """SHA256d."""
     if type(x) is unicode: x=x.encode('utf-8')
     return hashlib.sha256( hashlib.sha256(x).digest() ).digest()
 
 def rev_hex(s):
+    """Reverses the bytes of a hex string."""
     return s.decode('hex')[::-1].encode('hex')
 
 
 def int_to_hex(i, length=1):
+    """Encodes an integer as a little-endian hex string of the given length."""
     s = hex(i)[2:].rstrip('L')
     s = "0"*(2*length - len(s)) + s
     return rev_hex(s)
