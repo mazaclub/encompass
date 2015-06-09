@@ -139,15 +139,33 @@ def GetSecret(pkey):
 
 ################### end code from pywallet ########################
 
+from ecdsa.curves import SECP256k1
+from ecdsa.ellipticcurve import Point
+from ecdsa.util import string_to_number, number_to_string
+
+def get_pubkeys_from_secret(secret):
+    """Gets the compressed and uncompressed public keys of a private key.
+
+    Args:
+        secret (str): Private key bytes.
+
+    Returns:
+        List of public key bytes: [uncompressed, compressed]
+
+    """
+    # public key
+    private_key = ecdsa.SigningKey.from_string( secret, curve = SECP256k1 )
+    public_key = private_key.get_verifying_key()
+    K = public_key.to_string()
+    K_compressed = GetPubKey(public_key.pubkey,True)
+    return K, K_compressed
+
 try:
     from ecdsa.ecdsa import curve_secp256k1, generator_secp256k1
 except Exception:
     print "cannot import ecdsa.curve_secp256k1. You probably need to upgrade ecdsa.\nTry: sudo pip install --upgrade ecdsa"
     exit()
 
-from ecdsa.curves import SECP256k1
-from ecdsa.ellipticcurve import Point
-from ecdsa.util import string_to_number, number_to_string
 
 def msg_magic(message):
     varint = var_int(len(message))

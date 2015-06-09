@@ -34,6 +34,7 @@ except ImportError:
 from ecdsa.curves import SECP256k1
 from ecdsa.ecdsa import generator_secp256k1
 
+import eckey
 from eckey import EC_KEY, ser_to_point, GetPubKey, GetPrivKey
 
 ################################## transactions
@@ -129,7 +130,6 @@ def EncodeBase58Check(vchIn):
     """Deprecated."""
     return base58.EncodeBase58Check(vchIn)
 
-
 def DecodeBase58Check(psz):
     """Deprecated."""
     return base58.DecodeBase58Check(psz)
@@ -172,11 +172,9 @@ def is_valid(addr, active_chain=None):
     """Deprecated."""
     return base58.is_valid(addr, active_chain)
 
-
 def is_address(addr, active_chain=None):
     """Deprecated."""
     return base58.is_address(addr, active_chain)
-
 
 def is_private_key(key, addrtype=128):
     """Deprecated."""
@@ -184,30 +182,14 @@ def is_private_key(key, addrtype=128):
 
 
 ########### end pywallet functions #######################
+def get_pubkeys_from_secret(secret):
+    """Deprecated."""
+    return eckey.get_pubkeys_from_secret(secret)
 
 ###################################### BIP32 ##############################
 
 random_seed = lambda n: "%032x"%ecdsa.util.randrange( pow(2,n) )
 BIP32_PRIME = 0x80000000
-
-
-def get_pubkeys_from_secret(secret):
-    """Gets the compressed and uncompressed public keys of a private key.
-
-    Args:
-        secret (str): Private key bytes.
-
-    Returns:
-        List of public key bytes: [uncompressed, compressed]
-
-    """
-    # public key
-    private_key = ecdsa.SigningKey.from_string( secret, curve = SECP256k1 )
-    public_key = private_key.get_verifying_key()
-    K = public_key.to_string()
-    K_compressed = GetPubKey(public_key.pubkey,True)
-    return K, K_compressed
-
 
 # Child private key derivation function (from master private key)
 # k = master private key (32 bytes)
