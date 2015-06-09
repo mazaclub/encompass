@@ -115,6 +115,7 @@ setup(
         'chainkey.paymentrequest_pb2',
         'chainkey.plugins',
         'chainkey.qrscanner',
+        'chainkey.script',
         'chainkey.simple_config',
         'chainkey.synchronizer',
         'chainkey.transaction',
