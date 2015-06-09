@@ -7,7 +7,10 @@ from network import Network, DEFAULT_SERVERS, DEFAULT_PORTS, pick_random_server
 from interface import Interface
 from simple_config import SimpleConfig, get_config, set_config
 import bitcoin
+import base58
+import eckey
 import account
+import script
 import transaction
 from transaction import Transaction
 from plugins import BasePlugin
