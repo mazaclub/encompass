@@ -326,6 +326,8 @@ class Abstract_Wallet(object):
                 self.accounts[k] = OldAccount(v)
             elif v.get('imported'):
                 self.accounts[k] = ImportedAccount(v)
+            elif v.get('cosigner_xpubs'):
+                self.accounts[k] = BIP32_Account_MofN(v)
             elif v.get('xpub3'):
                 self.accounts[k] = BIP32_Account_2of3(v)
             elif v.get('xpub2'):
@@ -847,7 +849,11 @@ class Abstract_Wallet(object):
 
         if redeemScript:
             txin['redeemScript'] = redeemScript
-            txin['num_sig'] = 2
+            m = 2
+            acc_type = str(account.get_type())
+            if 'M of N' in acc_type:
+                m = account.multisig_m
+            txin['num_sig'] = m
         else:
             txin['redeemPubkey'] = account.get_pubkey(*sequence)
             txin['num_sig'] = 1
@@ -1756,6 +1762,61 @@ class Wallet_2of3(Wallet_2of2):
         if not self.accounts:
             return 'create_accounts'
 
+class Wallet_MofN(Multisig_Wallet):
+    wallet_type = 'mofn'
+
+    def __init__(self, storage):
+        Multisig_Wallet.__init__(self, storage)
+        self.multisig_m = storage.get_above_chain('multisig_m')
+        self.multisig_n = storage.get_above_chain('multisig_n')
+
+    def create_main_account(self, password):
+        xpubs = self.master_public_keys.items()
+        acc_dict = {}
+        acc_xpubs = {}
+        for k, v in xpubs:
+            if k == "x1/":
+                acc_dict[ 'xpub' ] = bip32_public_derivation(v, "", "/{}".format(self.active_chain.chain_index))
+            else:
+                acc_xpubs[ "xpub{}".format(k[1]) ] = bip32_public_derivation(v, "", "/{}".format(self.active_chain.chain_index))
+        acc_dict['cosigner_xpubs'] = acc_xpubs
+        acc_dict['multisig_m'] = self.multisig_m
+        acc_dict['multisig_n'] = self.multisig_n
+        # acc_dict: {
+        # 'xpub': MY_XPUB,
+        # 'cosigner_xpubs': {
+        #   'xpub2': XPUB_NUMBER_2,
+        #   'xpub3': XPUB_NUMBER_3
+        #  }
+        # }
+        account = BIP32_Account_MofN(acc_dict)
+        self.add_account('0', account)
+
+    def get_master_public_keys(self):
+        d = {}
+        for k, v in self.master_public_keys.items():
+            d[ k[:-1] ] = v
+        return d
+
+    def set_m_and_n(self, m, n):
+        if not is_standard_mofn(m, n):
+            return
+        self.multisig_m = m
+        self.multisig_n = n
+        self.storage.put_above_chain('multisig_m', self.multisig_m)
+        self.storage.put_above_chain('multisig_n', self.multisig_n)
+
+    def get_action(self):
+        xpubs = self.master_public_keys
+        if not self.multisig_m or not self.multisig_n:
+            return 'add_m_and_n'
+        missing_xpubs = self.multisig_n - len(xpubs.keys())
+        if xpubs.get("x1/") is None:
+            return 'create_seed'
+        if missing_xpubs > 0:
+            return 'add_x_cosigners:{}'.format(missing_xpubs)
+        if not self.accounts:
+            return 'create_accounts'
 
 class OldWallet(Deterministic_Wallet):
     wallet_type = 'old'
@@ -1836,7 +1897,8 @@ wallet_types = [
     ('standard', 'standard', ("Standard wallet"),          NewWallet),
     ('standard', 'imported', ("Imported wallet"),          Imported_Wallet),
     ('multisig', '2of2',     ("Multisig wallet (2 of 2)"), Wallet_2of2),
-    ('multisig', '2of3',     ("Multisig wallet (2 of 3)"), Wallet_2of3)
+    ('multisig', '2of3',     ("Multisig wallet (2 of 3)"), Wallet_2of3),
+    ('multisig', 'mofn',     ("Multisig wallet (M of N)"), Wallet_MofN)
 ]
 
 # former WalletFactory

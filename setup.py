@@ -146,6 +146,7 @@ setup(
         'chainkey_gui.qt.installwizard',
         'chainkey_gui.qt.lite_window',
         'chainkey_gui.qt.main_window',
+        'chainkey_gui.qt.mofn_dialog',
         'chainkey_gui.qt.network_dialog',
         'chainkey_gui.qt.password_dialog',
         'chainkey_gui.qt.paytoedit',

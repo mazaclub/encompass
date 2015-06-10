@@ -251,3 +251,21 @@ def match_decoded(decoded, to_match):
             return False
     return True
 
+# match all the possible multisig scripts, return m and n
+def match_decoded_multisig(decoded):
+    declist = []
+    for opc, vch, ib in decoded:
+        declist.append( (opc, (vch.encode('hex') if vch is not None else None  ), ib) )
+    for i in range(1, 12):
+        for j in range(1, 12):
+            op_m = 80 + i
+            op_n = 80 + j
+            match = [ op_m ]
+            for ii in range(j):
+                match.append(opcodes.OP_PUSHDATA4)
+            match.append(op_n)
+            match.append(opcodes.OP_CHECKMULTISIG)
+            if match_decoded(decoded, match):
+                return (i, j)
+    return False
+

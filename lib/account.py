@@ -450,3 +450,66 @@ class BIP32_Account_2of3(BIP32_Account_2of2):
 
     def get_type(self):
         return _('Multisig 2 of 3')
+
+class BIP32_Account_MofN(BIP32_Account):
+
+    def __init__(self, v):
+        self.multisig_m = v.get('multisig_m')
+        self.multisig_n = v.get('multisig_n')
+        BIP32_Account.__init__(self, v)
+        # Multisig accounts are passed a dict of xpubs
+        self.xpubs = {'xpub': self.xpub}
+        for k, v in v.get('cosigner_xpubs').items():
+            self.xpubs[k] = v
+
+    def dump(self):
+        d = BIP32_Account.dump(self)
+        d['multisig_m'] = self.multisig_m
+        d['multisig_n'] = self.multisig_n
+        d['cosigner_xpubs'] = self.xpubs
+        return d
+
+    def get_pubkeys(self, for_change, n):
+        return self.get_pubkey(for_change, n)
+
+    def derive_pubkeys(self, for_change, n):
+        return map(lambda x: self.derive_pubkey_from_xpub(x, for_change, n), self.get_master_pubkeys())
+
+    def redeem_script(self, for_change, n):
+        pubkeys = self.get_pubkeys(for_change, n)
+        return Transaction.multisig_script(sorted(pubkeys), self.multisig_m)
+
+    def pubkeys_to_address(self, pubkeys):
+        redeem_script = Transaction.multisig_script(sorted(pubkeys), self.multisig_m)
+        address = hash_160_to_bc_address(hash_160(redeem_script.decode('hex')), self.active_chain.p2sh_version)
+        return address
+
+    def get_address(self, for_change, n):
+        return self.pubkeys_to_address(self.get_pubkeys(for_change, n))
+
+    def get_master_pubkeys(self):
+        return zip(*sorted(self.xpubs.items()))[1]
+
+    def get_type(self):
+        return _('Multisig M of N')
+
+    def get_private_key(self, sequence, wallet, password):
+        out = []
+        if len(sequence) == 2:
+            sequence.insert(0, self.active_chain.chain_index)
+#        xpubs = self.get_master_pubkeys()
+#        roots = [k for k, v in wallet.master_public_keys.iteritems() if v in xpubs]
+#        for root in roots:
+#            xpriv = wallet.get_master_private_key(root, password)
+#            if not xpriv:
+#                continue
+#            _, _, _, c, k = deserialize_xkey(xpriv)
+#            pk = bip32_private_key( sequence, k, c )
+#            out.append(pk)
+
+        xpriv = wallet.get_master_private_key("x1/", password)
+        _, _, _, c, k = deserialize_xkey(xpriv)
+        pk = bip32_private_key( sequence, k, c, addrtype=self.active_chain.wif_version )
+        out.append(pk)
+
+        return out

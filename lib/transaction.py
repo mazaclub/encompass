@@ -135,7 +135,7 @@ def parse_scriptSig(d, bytes, active_chain=None):
         d['address'] = address
         return
 
-    # p2sh transaction, 2 of n
+    # p2sh transaction, m of n
     match = [ opcodes.OP_0 ]
     while len(match) < len(decoded):
         match.append(opcodes.OP_PUSHDATA4)
@@ -146,15 +146,15 @@ def parse_scriptSig(d, bytes, active_chain=None):
 
     x_sig = map(lambda x:x[1].encode('hex'), decoded[1:-1])
     d['signatures'] = parse_sig(x_sig)
-    d['num_sig'] = 2
 
     dec2 = [ x for x in script_GetOp(decoded[-1][1]) ]
-    match_2of2 = [ opcodes.OP_2, opcodes.OP_PUSHDATA4, opcodes.OP_PUSHDATA4, opcodes.OP_2, opcodes.OP_CHECKMULTISIG ]
-    match_2of3 = [ opcodes.OP_2, opcodes.OP_PUSHDATA4, opcodes.OP_PUSHDATA4, opcodes.OP_PUSHDATA4, opcodes.OP_3, opcodes.OP_CHECKMULTISIG ]
-    if match_decoded(dec2, match_2of2):
-        x_pubkeys = [ dec2[1][1].encode('hex'), dec2[2][1].encode('hex') ]
-    elif match_decoded(dec2, match_2of3):
-        x_pubkeys = [ dec2[1][1].encode('hex'), dec2[2][1].encode('hex'), dec2[3][1].encode('hex') ]
+    multis_m = multis_n = None
+    multis_mn = match_decoded_multisig(dec2)
+    if multis_mn:
+        multis_m = multis_mn[0]
+        multis_n = multis_mn[1]
+        x_pubkeys = map(lambda x:x[1].encode('hex'), dec2[1:-2])
+        d['num_sig'] = multis_m
     else:
         print_error("cannot find address in input script", bytes.encode('hex'))
         return
@@ -162,7 +162,7 @@ def parse_scriptSig(d, bytes, active_chain=None):
     d['x_pubkeys'] = x_pubkeys
     pubkeys = map(lambda x: parse_xpub(x)[0], x_pubkeys)
     d['pubkeys'] = pubkeys
-    redeemScript = Transaction.multisig_script(pubkeys,2)
+    redeemScript = Transaction.multisig_script(pubkeys,multis_m)
     d['redeemScript'] = redeemScript
     d['address'] = hash_160_to_bc_address(hash_160(redeemScript.decode('hex')), active_chain.p2sh_version)
 
@@ -366,24 +366,14 @@ class Transaction:
         if num is None: num = n
         s = []
 
-        assert num <= n and n in [2,3] , 'Only "2 of 2", and "2 of 3" transactions are supported'
-
-        if num==2:
-            s.append('52')
-        elif num == 3:
-            s.append('53')
-        else:
-            raise
+        # 0x50 + m
+        s.append(''.join([ '5', hex(num)[-1] ]))
 
         for k in public_keys:
             s.append(op_push(len(k)/2))
             s.append(k)
-        if n==2:
-            s.append('52')
-        elif n==3:
-            s.append('53')
-        else:
-            raise
+        s.append(''.join([ '5', hex(n)[-1] ]))
+
         s.append('ae')
 
         return ''.join(s)
@@ -457,7 +447,7 @@ class Transaction:
             else:
                 script = '00'                                       # op_0
                 script += sig_list
-                redeem_script = self.multisig_script(pubkeys,2)
+                redeem_script = self.multisig_script(pubkeys,num_sig)
                 script += push_script(redeem_script)
 
         elif for_sig==i:
