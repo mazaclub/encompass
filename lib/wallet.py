@@ -142,6 +142,19 @@ class WalletStorage(object):
             data = None
         return data
 
+    def set_chain_value(self, code, key, value):
+        """Shortcut for setting info within a certain chain"""
+        try:
+            json.dumps(key)
+            json.dumps(value)
+            chain = self.get_above_chain(code)
+        except:
+            return
+        with self.lock:
+            if value is not None and chain is not None:
+                self.data[code][key] = copy.deepcopy(value)
+                self.write()
+
     def get(self, key, default=None):
         active_chain_code = self.config.get_active_chain_code()
         if active_chain_code is None:
@@ -1146,6 +1159,23 @@ class Abstract_Wallet(object):
 
     def can_change_password(self):
         return not self.is_watching_only()
+
+    def get_all_labels(self):
+        chaincodes = chainparams._known_chain_codes
+        labels = {}
+        for code in sorted(chaincodes):
+            d = self.storage.get_chain_value(code, 'labels', {})
+            labels[code] = d
+        return labels
+
+    def set_all_labels(self, new_labels):
+        chaincodes = chainparams._known_chain_codes
+        for code, d in new_labels.items():
+            if not chainparams.is_known_chain(code):
+                continue
+            # is_known_chain does code.upper(), so we need to do this
+            # as well to make sure it's really upper case
+            self.storage.set_chain_value(code.upper(), 'labels', d)
 
 class Imported_Wallet(Abstract_Wallet):
     wallet_type = 'imported'
