@@ -31,6 +31,7 @@ import chainparams
 from util import print_msg, print_error
 
 from bitcoin import *
+from eckey import pw_encode, pw_decode
 from account import *
 from version import *
 
