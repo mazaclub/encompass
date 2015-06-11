@@ -577,6 +577,19 @@ class Commands:
         """Remove a payment request"""
         return self.wallet.remove_payment_request(key, self.config)
 
+    @command('w')
+    def getchain(self):
+        """Get the chain that your wallet is currently using."""
+        return self.wallet.active_chain_code
+
+    @command('w')
+    def setchain(self, chaincode):
+        """Set the chain that your wallet is currently using."""
+        if not chainparams.is_known_chain(chaincode):
+            return 'Invalid chain: "{}"'.format(chaincode)
+        self.wallet.set_chain(chaincode)
+        return 'Active chain is now {}'.format(self.wallet.active_chain_code)
+
 
 
 param_descriptions = {
