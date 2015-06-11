@@ -60,7 +60,7 @@ class WalletStorage(object):
         self.dormant = config.dormant
         self.data = {}
         self.file_exists = False
-        self.path = self.init_path(config)
+        self.path = config.get_wallet_path()
         print_error( "wallet path", self.path )
         if self.path:
             self.read(self.path)
@@ -71,37 +71,6 @@ class WalletStorage(object):
         for code in chainparams._known_chain_codes:
             if self.get_above_chain(code, None) is None:
                 self.put_above_chain(code, {})
-
-    def init_path(self, config):
-        """Set the path of the wallet."""
-
-        # command line -w option
-        path = config.get('wallet_path')
-        if path:
-            return path
-
-        # path in config file
-        path = config.get('default_wallet_path')
-        if path:
-            return path
-
-        # default path
-        dirpath = os.path.join(config.path, "wallets")
-        if not os.path.exists(dirpath):
-            os.mkdir(dirpath)
-
-        if config.get_above_chain('use_default_wallet', True):
-            current_wallet = 'default_wallet'
-        else:
-            current_wallet = config.get_above_chain('current_wallet', 'default_wallet')
-        new_path = os.path.join(config.path, "wallets", current_wallet)
-
-        # default path in pre 1.9 versions
-        old_path = os.path.join(config.path, "electrum.dat")
-        if os.path.exists(old_path) and not os.path.exists(new_path):
-            os.rename(old_path, new_path)
-
-        return new_path
 
     def read(self, path):
         """Read the contents of the wallet file."""
