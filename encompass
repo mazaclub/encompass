@@ -502,6 +502,12 @@ if __name__ == '__main__':
             else:
                 print_msg("Action canceled.")
 
+    elif cmd.name == 'listchains':
+        out = []
+        for index, name, code, module_name in chainparams._known_chains:
+            out.append('{} ({})'.format(name, code))
+        print_msg('\n'.join(out))
+
     elif cmd.name == 'dumpconfig':
         out = None
         if options.above_chain:

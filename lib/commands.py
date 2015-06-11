@@ -116,6 +116,7 @@ register_command('check_seed',           1,-1, False, False, False, 'Check that 
 
 register_command('getchain',             0, 0, False, True, False, 'Return the code of the active blockchain')
 register_command('setchain',             1, 1, False, True, False, 'Set the code of the new active blockchain', setchain_syntax)
+register_command('listchains',           0, 0, False, False, False, 'List the blockchains that Encompass supports')
 
 class Commands:
 
