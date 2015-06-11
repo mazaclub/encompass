@@ -53,8 +53,11 @@ class WalletStorage(object):
     def __init__(self, config):
         self.lock = threading.RLock()
         if not isinstance(config, SimpleConfig):
-            config = SimpleConfig(config)
+            dormant = config.get('dormant')
+            if dormant is None: dormant = False
+            config = SimpleConfig(config, dormant=dormant)
         self.config = config
+        self.dormant = config.dormant
         self.data = {}
         self.file_exists = False
         self.path = self.init_path(config)
@@ -202,6 +205,7 @@ class WalletStorage(object):
                 self.write()
 
     def write(self):
+        if self.dormant: return
         s = json.dumps(self.data, indent=4, sort_keys=True)
         f = open(self.path,"w")
         f.write(s)
