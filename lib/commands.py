@@ -627,6 +627,9 @@ command_options = {
     'chain':       ("-n", "--chain",       "Act as if this is the active chain"),
 }
 
+arg_choices = {
+    'chain': chainparams._known_chain_codes,
+}
 
 arg_types = {
     'num':int,
@@ -718,7 +721,11 @@ def get_parser(run_gui, run_daemon, run_cmdline):
             args = (a, b) if a else (b,)
             if action == 'store':
                 _type = arg_types.get(optname, str)
-                p.add_argument(*args, dest=optname, action=action, default=default, help=help, type=_type)
+                _choices = arg_choices.get(optname, None)
+                if _choices is not None:
+                    p.add_argument(*args, dest=optname, action=action, default=default, help=help, type=_type, choices=_choices)
+                else:
+                    p.add_argument(*args, dest=optname, action=action, default=default, help=help, type=_type)
             else:
                 p.add_argument(*args, dest=optname, action=action, default=default, help=help)
 
