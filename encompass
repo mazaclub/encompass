@@ -289,6 +289,7 @@ if __name__ == '__main__':
             network.start()
             if arg == 'status':
                 print_json({
+                    'chain': chainparams.get_active_chain().code,
                     'server': network.get_parameters()[0],
                     'blockchain_height': network.get_local_height(),
                     'server_height': network.get_server_height(),
@@ -309,6 +310,10 @@ if __name__ == '__main__':
 
     cmd = known_commands[cmd]
 
+    if options.chain and options.chain != chainparams.get_active_chain().code:
+        config = SimpleConfig(config_options, dormant=True)
+        config.set_active_chain_code(options.chain)
+        chainparams.set_active_chain(options.chain)
     # instanciate wallet for command-line
     storage = WalletStorage(config)
 
