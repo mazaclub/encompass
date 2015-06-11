@@ -30,7 +30,7 @@ from util import print_msg, format_satoshis, print_stderr
 from bitcoin import is_valid, hash_160_to_bc_address, hash_160
 from decimal import Decimal
 import bitcoin
-from transaction import Transaction
+from transaction import deserialize, Transaction
 import paymentrequest
 import chainparams
 
@@ -212,7 +212,7 @@ class Commands:
             else:
                 raise BaseException('Transaction output not in wallet', prevout_hash+":%d"%prevout_n)
         outputs = map(lambda x: ('address', x[0], int(COIN*x[1])), outputs.items())
-        tx = Transaction.from_io(tx_inputs, outputs)
+        tx = Transaction(tx_inputs, outputs)
         if not unsigned:
             self.wallet.sign_transaction(tx, self.password)
         return tx
@@ -220,7 +220,7 @@ class Commands:
     @command('wp')
     def signtransaction(self, tx, privkey=None):
         """Sign a transaction. The wallet keys will be used unless a private key is provided."""
-        t = Transaction(tx)
+        t = Transaction.deserialize(tx)
         t.deserialize()
         if privkey:
             pubkey = bitcoin.public_key_from_private_key(sec)
@@ -231,14 +231,13 @@ class Commands:
 
     @command('')
     def deserialize(self, tx):
-        """Deserialize a serialized transaction"""
-        t = Transaction(tx)
-        return t.deserialize()
+        """Deserialize a serialized transaction."""
+        return deserialize(tx)
 
     @command('n')
     def broadcast(self, tx):
         """Broadcast a transaction to the network. """
-        t = Transaction(tx)
+        t = Transaction.deserialize(tx)
         return self.network.synchronous_get([('blockchain.transaction.broadcast', [str(t)])])[0]
 
     @command('')
@@ -398,7 +397,7 @@ class Commands:
                     for i in inputs:
                         self.wallet.add_input_info(i)
                     output = ('address', address, amount)
-                    dummy_tx = Transaction.from_io(inputs, [output])
+                    dummy_tx = Transaction(inputs, [output])
                     fee = self.wallet.estimated_fee(dummy_tx)
                 amount -= fee
             else:
@@ -517,7 +516,7 @@ class Commands:
         if tx is None and self.network:
             raw = self.network.synchronous_get([('blockchain.transaction.get', [txid])])[0]
             if raw:
-                tx = Transaction(raw)
+                tx = Transaction.deserialize(raw)
             else:
                 raise BaseException("Unknown transaction")
         return tx.deserialize() if deserialized else tx
