@@ -589,6 +589,11 @@ class Commands:
         self.wallet.set_chain(chaincode)
         return 'Active chain is now {}'.format(self.wallet.active_chain_code)
 
+    @command('')
+    def listchains(self):
+        """List the chains that Encompass supports."""
+        return chainparams._known_chain_codes
+
 
 
 param_descriptions = {
