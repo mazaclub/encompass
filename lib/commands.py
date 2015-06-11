@@ -32,6 +32,7 @@ from decimal import Decimal
 import bitcoin
 from transaction import Transaction
 import paymentrequest
+import chainparams
 
 known_commands = {}
 
@@ -111,18 +112,45 @@ class Commands:
         """Change wallet password. """
 
     @command('')
-    def getconfig(self, key):
+    def getconfig(self, key, chain=None):
         """Return a configuration variable. """
-        return self.config.get(key)
+        if chain is not None:
+            chain_config = self.config.get_chain_config(chain)
+            if chain_config is not None:
+                return chain_config.get(key)
+            else:
+                return 'Error: No configuration section for chain "{}"'.format(chain)
+        else:
+            return self.config.get(key)
+
     @command('')
-    def setconfig(self, key, value):
+    def setconfig(self, key, value, chain=None):
         """Set a configuration variable. 'value' may be a string or a Python expression."""
         try:
             value = ast.literal_eval(value)
         except:
             pass
-        self.config.set_key(key, value)
+        if chain is not None:
+            chain_config = self.config.get_chain_config(chain)
+            if chain_config is not None:
+                chain_config[key] = value
+                self.config.set_chain_config(chain, chain_config)
+            else:
+                return 'Error: No configuration section for chain "{}"'.format(chain)
+        else:
+            self.config.set_key(key, value)
         return True
+
+    @command('')
+    def dumpconfig(self, chain=None):
+        """Dump the contents of your configuration file."""
+        if chain is None:
+            chain = chainparams.get_active_chain().code
+        chain_config = self.config.get_chain_config(chain)
+        if chain_config is not None:
+            return chain_config
+        else:
+            return 'Error: No configuration section for chain "{}"'.format(chain)
 
     @command('')
     def make_seed(self, nbits=128, entropy=1, language=None):
@@ -558,7 +586,7 @@ param_descriptions = {
     'seed': 'Seed phrase',
     'txid': 'Transaction ID',
     'pos': 'Position',
-    'heigh': 'Block height',
+    'height': 'Block height',
     'tx': 'Serialized transaction (hexadecimal)',
     'key': 'Variable name',
     'pubkey': 'Public key',
@@ -596,6 +624,7 @@ command_options = {
     'memo':        ("-m", "--memo",        "Description of the request"),
     'expiration':  (None, "--expiration",  "Time in seconds"),
     'status':      (None, "--status",      "Show status"),
+    'chain':       ("-n", "--chain",       "Act as if this is the active chain"),
 }
 
 
