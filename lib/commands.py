@@ -553,8 +553,8 @@ class Commands:
 
 param_descriptions = {
     'privkey': 'Private key. Type \'?\' to get a prompt.',
-    'destination': 'Bitcoin address, contact or alias',
-    'address': 'Bitcoin address',
+    'destination': 'Coin address or contact',
+    'address': 'Coin address',
     'seed': 'Seed phrase',
     'txid': 'Transaction ID',
     'pos': 'Position',
@@ -570,7 +570,7 @@ param_descriptions = {
 }
 
 command_options = {
-    'broadcast':   (None, "--broadcast",   "Broadcast the transaction to the Bitcoin network"),
+    'broadcast':   (None, "--broadcast",   "Broadcast the transaction to the Coin network"),
     'password':    ("-W", "--password",    "Password"),
     'concealed':   ("-C", "--concealed",   "Don't echo seed to console when restoring"),
     'show_all':    ("-a", "--all",         "Include change addresses"),

@@ -165,6 +165,7 @@ setup(
         'chainkey_plugins.exchange_rate',
         'chainkey_plugins.greenaddress_instant',
         'chainkey_plugins.labels',
+        'chainkey_plugins.openalias',
         'chainkey_plugins.trezor',
         'chainkey_plugins.virtualkeyboard',
         'chainkey_plugins.plot',

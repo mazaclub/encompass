@@ -409,5 +409,5 @@ class Contacts(StoreDict):
             if not nocheck and out.get('validated') is False:
                 raise Exception("cannot validate alias")
             return out
-        raise Exception("invalid Bitcoin address", k)
+        raise Exception("invalid coin address", k)
 
