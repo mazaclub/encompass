@@ -27,6 +27,7 @@ import ast
 from functools import wraps
 import util
 from util import print_msg, format_satoshis, print_stderr
+from util_coin import COIN
 from bitcoin import is_valid, hash_160_to_bc_address, hash_160
 from decimal import Decimal
 import bitcoin
@@ -156,7 +157,7 @@ class Commands:
     def make_seed(self, nbits=128, entropy=1, language=None):
         """Create a seed"""
         from mnemonic import Mnemonic
-        s = Mnemonic(language).make_seed(nbits, custom_entropy=custom_entropy)
+        s = Mnemonic(language).make_seed(nbits, custom_entropy=entropy)
         return s.encode('utf8')
 
     @command('')
@@ -176,7 +177,7 @@ class Commands:
     def listunspent(self):
         """List unspent outputs. Returns the list of unspent transaction
         outputs in your wallet."""
-        l = copy.deepcopy(self.wallet.get_spendable_coins(exclude_frozen = False))
+        l = copy.deepcopy(self.wallet.get_unspent_coins())
         for i in l: i["value"] = str(Decimal(i["value"])/COIN)
         return l
 
@@ -199,7 +200,7 @@ class Commands:
     @command('wp')
     def createrawtx(self, inputs, outputs, unsigned=False):
         """Create a transaction from json inputs. The syntax is similar to bitcoind."""
-        coins = self.wallet.get_spendable_coins(exclude_frozen = False)
+        coins = self.wallet.get_unspent_coins()
         tx_inputs = []
         for i in inputs:
             prevout_hash = i['txid']
@@ -221,7 +222,6 @@ class Commands:
     def signtransaction(self, tx, privkey=None):
         """Sign a transaction. The wallet keys will be used unless a private key is provided."""
         t = Transaction.deserialize(tx)
-        t.deserialize()
         if privkey:
             pubkey = bitcoin.public_key_from_private_key(sec)
             t.sign({pubkey:sec})
@@ -245,18 +245,18 @@ class Commands:
         """Create multisig address"""
         assert isinstance(pubkeys, list), (type(num), type(pubkeys))
         redeem_script = Transaction.multisig_script(pubkeys, num)
-        address = hash_160_to_bc_address(hash_160(redeem_script.decode('hex')), 5)
+        address = hash_160_to_bc_address(hash_160(redeem_script.decode('hex')), chainparams.get_active_chain().p2sh_version)
         return {'address':address, 'redeemScript':redeem_script}
 
     @command('w')
     def freeze(self, address):
         """Freeze address. Freeze the funds at one of your wallet\'s addresses"""
-        return self.wallet.set_frozen_state([address], True)
+        return self.wallet.freeze(address)
 
     @command('w')
     def unfreeze(self, address):
         """Unfreeze address. Unfreeze the funds at one of your wallet\'s address"""
-        return self.wallet.set_frozen_state([address], False)
+        return self.wallet.unfreeze(address)
 
     @command('wp')
     def getprivatekeys(self, address):
@@ -391,7 +391,7 @@ class Commands:
             #assert self.wallet.is_mine(address)
             if amount == '!':
                 assert len(outputs) == 1
-                inputs = self.wallet.get_spendable_coins(domain)
+                inputs = self.wallet.get_unspent_coins(domain)
                 amount = sum(map(lambda x:x['value'], inputs))
                 if fee is None:
                     for i in inputs:
@@ -404,7 +404,7 @@ class Commands:
                 amount = int(COIN*Decimal(amount))
             final_outputs.append(('address', address, amount))
 
-        coins = self.wallet.get_spendable_coins(domain)
+        coins = self.wallet.get_unspent_coins(domain)
         tx = self.wallet.make_unsigned_transaction(coins, final_outputs, fee, change_addr)
         str(tx) #this serializes
         if not unsigned:
@@ -432,7 +432,7 @@ class Commands:
             r, h = self.wallet.sendtx(tx)
             return h
         else:
-            return tx.deserialize() if deserialized else tx
+            return deserialize(tx) if deserialized else tx
 
     @command('wp')
     def paytomany(self, csv_file, tx_fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, deserialized=False, broadcast=False):
@@ -444,7 +444,7 @@ class Commands:
             r, h = self.wallet.sendtx(tx)
             return h
         else:
-            return tx.deserialize() if deserialized else tx
+            return deserialize(tx) if deserialized else tx
 
     @command('wn')
     def history(self):
@@ -465,7 +465,7 @@ class Commands:
 
     @command('w')
     def setlabel(self, key, label):
-        """Assign a label to an item. Item may be a bitcoin address or a
+        """Assign a label to an item. Item may be a coin address or a
         transaction ID"""
         self.wallet.set_label(key, label)
 
@@ -493,7 +493,7 @@ class Commands:
         """List wallet addresses. Returns your list of addresses."""
         out = []
         for addr in self.wallet.addresses(True):
-            if frozen and not self.wallet.is_frozen(addr):
+            if frozen and not addr in self.wallet.frozen_addresses:
                 continue
             if not show_all and self.wallet.is_change(addr):
                 continue
@@ -519,7 +519,7 @@ class Commands:
                 tx = Transaction.deserialize(raw)
             else:
                 raise BaseException("Unknown transaction")
-        return tx.deserialize() if deserialized else tx
+        return deserialize(tx) if deserialized else tx
 
     @command('')
     def encrypt(self, pubkey, message):
@@ -539,7 +539,7 @@ class Commands:
             PR_PAID: 'Paid',
             PR_EXPIRED: 'Expired',
         }
-        out['amount'] = format_satoshis(out.get('amount')) + ' BTC'
+        out['amount'] = format_satoshis(out.get('amount')) + ' {}'.format(chainparams.get_active_chain().code)
         out['status'] = pr_str[out.get('status', PR_UNKNOWN)]
         return out
 
@@ -609,8 +609,8 @@ param_descriptions = {
     'pubkey': 'Public key',
     'message': 'Clear text message. Use quotes if it contains spaces.',
     'encrypted': 'Encrypted message',
-    'amount': 'Amount to be sent (in BTC). Type \'!\' to send the maximum available.',
-    'requested_amount': 'Requested amount (in BTC).',
+    'amount': 'Amount to be sent (in COIN units). Type \'!\' to send the maximum available.',
+    'requested_amount': 'Requested amount (in COIN units).',
     'csv_file': 'CSV file of recipient, amount',
 }
 
@@ -625,7 +625,7 @@ command_options = {
     'show_balance':("-b", "--balance",     "Show the balances of listed addresses"),
     'show_labels': ("-l", "--labels",      "Show the labels of listed addresses"),
     'nocheck':     (None, "--nocheck",     "Do not verify aliases"),
-    'tx_fee':      ("-f", "--fee",         "Transaction fee (in BTC)"),
+    'tx_fee':      ("-f", "--fee",         "Transaction fee (in COIN units)"),
     'from_addr':   ("-F", "--from",        "Source address. If it isn't in the wallet, it will ask for the private key unless supplied in the format public_key:private_key. It's not saved in the wallet."),
     'change_addr': ("-c", "--change",      "Change address. Default is a spare address, or the source address if it's not in the wallet"),
     'nbits':       (None, "--nbits",       "Number of bits of entropy"),
@@ -665,10 +665,10 @@ config_variables = {
         'requests_dir': 'directory where a bip70 file will be written.',
         'ssl_privkey': 'Path to your SSL private key, needed to sign the request.',
         'ssl_chain': 'Chain of SSL certificates, needed for signed requests. Put your certificate at the top and the root CA at the end',
-        'url_rewrite': 'Parameters passed to str.replace(), in order to create the r= part of bitcoin: URIs. Example: \"(\'file:///var/www/\',\'https://electrum.org/\')\"',
+        'url_rewrite': 'Parameters passed to str.replace(), in order to create the r= part of coin: URIs. Example: \"(\'file:///var/www/\',\'https://electrum.org/\')\"',
     },
     'listrequests':{
-        'url_rewrite': 'Parameters passed to str.replace(), in order to create the r= part of bitcoin: URIs. Example: \"(\'file:///var/www/\',\'https://electrum.org/\')\"',
+        'url_rewrite': 'Parameters passed to str.replace(), in order to create the r= part of coin: URIs. Example: \"(\'file:///var/www/\',\'https://electrum.org/\')\"',
     }
 }
 

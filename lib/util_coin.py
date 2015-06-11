@@ -2,6 +2,8 @@
 
 import hashlib
 
+COIN = 100000000
+
 def sha256(x):
     return hashlib.sha256(x).digest()
 
