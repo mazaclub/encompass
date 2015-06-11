@@ -140,11 +140,11 @@ class SimpleConfig(object):
         '''Convenience method for getting a chain's config dict'''
         return self.get_above_chain(chaincode)
 
-    def set_chain_config(self, chaincode, value):
+    def set_chain_config(self, chaincode, value, save=True):
         '''Convenience method for setting a chain's config dict'''
         if not chainparams.is_known_chain(chaincode):
             return False
-        return self.set_key_above_chain(chaincode, value)
+        return self.set_key_above_chain(chaincode, value, save)
 
     def set_key(self, key, value, save = True):
         if not self.is_modifiable(key):

@@ -83,6 +83,7 @@ register_command('getpubkeys',           1, 1, False, True,  False, 'Return the 
 register_command('getrawtransaction',    1, 1, True,  False, False, 'Retrieve a transaction', 'getrawtransaction <txhash>')
 register_command('getseed',              0, 0, False, True,  True,  'Print the generation seed of your wallet.')
 register_command('getmpk',               0, 0, False, True,  False, 'Return your wallet\'s master public key', 'getmpk')
+register_command('dumpconfig',           0, 0, False, False, False, 'Dump the contents of your configuration file')
 register_command('help',                 0, 1, False, False, False, 'Prints this help')
 register_command('history',              0, 0, True,  True,  False, 'Returns the transaction history of your wallet')
 register_command('importprivkey',        1, 1, False, True,  True,  'Import a private key', 'importprivkey <privatekey>')

@@ -115,6 +115,8 @@ def arg_parser():
     parser.add_option("-d", "--daemon", action="store_true", dest="daemon", default=False, help="use daemon")
     parser.add_option("-C", "--concealed", action="store_true", dest="concealed", default=False, help="don't echo seed to console when restoring")
     parser.add_option("-a", "--all", action="store_true", dest="show_all", default=False, help="show all addresses")
+    parser.add_option("-A", "--above-chain", action="store_true", dest="above_chain", default=False, help="do the action above all chains; affect all chains")
+    parser.add_option("-u", "--use-chain", "--chain", dest="chain", default=None, help="do the action for a specific chain")
     parser.add_option("-l", "--labels", action="store_true", dest="show_labels", default=False, help="show the labels of listed addresses")
     parser.add_option("-f", "--fee", dest="tx_fee", default=None, help="set tx fee")
     parser.add_option("-F", "--fromaddr", dest="from_addr", default=None, help="set source address for payto/mktx. if it isn't in the wallet, it will ask for the private key unless supplied in the format public_key:private_key. It's not saved in the wallet.")
@@ -500,9 +502,30 @@ if __name__ == '__main__':
             else:
                 print_msg("Action canceled.")
 
+    elif cmd.name == 'dumpconfig':
+        out = None
+        if options.above_chain:
+            out = config.user_config
+        elif options.chain:
+            out = config.get_chain_config(options.chain)
+            if out is None:
+                print_msg("Error: No configuration section for chain '{}'".format(options.chain))
+        else:
+            out = config.get_chain_config(chainparams.get_active_chain().code)
+        print_json(out)
+
     elif cmd.name == 'getconfig':
         key = args[1]
-        out = config.get(key)
+        if options.above_chain:
+            out = config.get_above_chain(key)
+        elif options.chain:
+            chainconf = config.get_chain_config(options.chain)
+            if chainconf is not None:
+                out = chainconf.get(key)
+            else:
+                out = "Error: No configuration section for chain '{}'".format(options.chain)
+        else:
+            out = config.get(key)
         print_msg(out)
 
     elif cmd.name == 'setconfig':
@@ -511,7 +534,17 @@ if __name__ == '__main__':
             value = ast.literal_eval(value)
         except:
             pass
-        config.set_key(key, value, True)
+        if options.above_chain:
+            config.set_key_above_chain(key, value, True)
+        elif options.chain:
+            chainconf = config.get_chain_config(options.chain)
+            if chainconf is not None:
+                chainconf[key] = value
+                config.set_chain_config(options.chain, chainconf, True)
+            else:
+                print_msg("Error: No configuration section for chain '{}'".format(options.chain))
+        else:
+            config.set_key(key, value, True)
         print_msg(True)
 
     elif cmd.name == 'password':
