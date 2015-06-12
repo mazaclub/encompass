@@ -21,7 +21,8 @@ import threading
 import time
 import Queue
 
-import bitcoin
+import util_coin
+import hashes
 from util import print_error
 from transaction import Transaction
 
@@ -179,7 +180,7 @@ class WalletSynchronizer(threading.Thread):
             elif method == 'blockchain.transaction.get':
                 tx_hash = params[0]
                 tx_height = params[1]
-                assert tx_hash == bitcoin.hash_encode(bitcoin.Hash(result.decode('hex')))
+                assert tx_hash == util_coin.hash_encode(hashes.transaction_hash(result.decode('hex')))
                 tx = Transaction.deserialize(result)
                 self.wallet.receive_tx_callback(tx_hash, tx, tx_height)
                 self.was_updated = True
