@@ -78,11 +78,11 @@ setup(
 	'tlslite==0.4.8',
 	'dnspython',
 	'trezor==0.6.3',
-        'coinhash==1.0'
+        'coinhash==1.1'
     ],
     dependency_links=[
         "git+https://github.com/mazaclub/python-trezor#egg=trezor",
-        "git+https://github.com/kefkius/coinhash#egg=coinhash"
+        "git+https://github.com/kefkius/coinhash#egg=coinhash-1.1"
     ],
     package_dir={
         'chainkey': 'lib',
@@ -135,6 +135,7 @@ setup(
         'chainkey.chains.dogecoin',
         'chainkey.chains.blackcoin',
         'chainkey.chains.feathercoin',
+        'chainkey.chains.groestlcoin',
         'chainkey_gui.gtk',
         'chainkey_gui.qt.__init__',
         'chainkey_gui.qt.amountedit',

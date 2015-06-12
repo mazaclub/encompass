@@ -8,3 +8,4 @@ import peercoin
 import dogecoin
 import blackcoin
 import feathercoin
+import groestlcoin

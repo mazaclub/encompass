@@ -46,6 +46,9 @@ _known_chains = (
 
     # Viacoin
     ChainParams(14, 'Viacoin', 'VIA', 'viacoin'),
+
+    # Groestlcoin
+    ChainParams(17, 'Groestlcoin', 'GRS', 'groestlcoin'),
 )
 
 _known_chain_dict = dict((i.code, i) for i in _known_chains)

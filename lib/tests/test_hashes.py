@@ -38,4 +38,4 @@ class Test_hashes(unittest.TestCase):
         block_header = '70000000f16294cc9ddf97d62ea373831410aef4118046ed4b8e176e05fd730e0000000009b85cf20e75305ed1b661ef17edb8ff510b352b08bdb5b2831193cd99076799ebf33b540272101c78a6eb00'
         actual_pow_hash = '0000000006578229b1483120424c209574fb8d5b7f900b52362b2627a716bf9f'
 
-        self.assertEqual(actual_pow_hash, rev_hex(coinhash.GroestlHash(block_header.decode('hex'), len(block_header.decode('hex'))).encode('hex')))
+        self.assertEqual(actual_pow_hash, rev_hex(coinhash.GroestlHash(block_header.decode('hex')).encode('hex')))

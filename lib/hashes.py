@@ -32,13 +32,9 @@ def set_transaction_hash(hash_algo):
 
 
 def do_hash(algo, x):
-    """Some hash algorithms require a different number of args."""
-    # Convert from a class method to a coinhash function
+    """Convert the algo from a class method to a coinhash function."""
     algo = getattr(coinhash, algo.__name__)
-    if algo is coinhash.GroestlHash:
-        return algo(x, len(x))
-    else:
-        return algo(x)
+    return algo(x)
 
 def base58_hash(x):
     return do_hash(hash_algos['base58'], x)
