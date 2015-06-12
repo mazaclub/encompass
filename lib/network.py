@@ -1,4 +1,4 @@
-import threading, time, Queue, os, sys, shutil, random
+import threading, time, Queue, os, sys, shutil, random, re
 from util import user_dir, appdata_dir, print_error, print_msg
 from bitcoin import *
 import interface
