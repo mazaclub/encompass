@@ -531,50 +531,50 @@ class Commands:
         """Decrypt a message encrypted with a public key."""
         return self.wallet.decrypt_message(pubkey, encrypted, self.password)
 
-    def _format_request(self, out):
-        from paymentrequest import PR_PAID, PR_UNPAID, PR_UNKNOWN, PR_EXPIRED
-        pr_str = {
-            PR_UNKNOWN: 'Unknown',
-            PR_UNPAID: 'Pending',
-            PR_PAID: 'Paid',
-            PR_EXPIRED: 'Expired',
-        }
-        out['amount'] = format_satoshis(out.get('amount')) + ' {}'.format(chainparams.get_active_chain().code)
-        out['status'] = pr_str[out.get('status', PR_UNKNOWN)]
-        return out
-
-    @command('wn')
-    def getrequest(self, key):
-        """Return a payment request"""
-        r = self.wallet.get_payment_request(key, self.config)
-        if not r:
-            raise BaseException("Request not found")
-        return self._format_request(r)
-
-    @command('w')
-    def ackrequest(self, serialized):
-        """<Not implemented>"""
-        pass
-
-    @command('w')
-    def listrequests(self):
-        """List the payment requests you made."""
-        return map(self._format_request, self.wallet.get_sorted_requests(self.config))
-
-    @command('w')
-    def addrequest(self, requested_amount, memo='', expiration=60*60):
-        """Create a payment request."""
-        addr = self.wallet.get_unused_address(None)
-        if addr is None:
-            return False
-        amount = int(Decimal(requested_amount)*COIN)
-        req = self.wallet.add_payment_request(addr, amount, memo, expiration, self.config)
-        return self._format_request(req)
-
-    @command('w')
-    def rmrequest(self, key):
-        """Remove a payment request"""
-        return self.wallet.remove_payment_request(key, self.config)
+#    def _format_request(self, out):
+#        from paymentrequest import PR_PAID, PR_UNPAID, PR_UNKNOWN, PR_EXPIRED
+#        pr_str = {
+#            PR_UNKNOWN: 'Unknown',
+#            PR_UNPAID: 'Pending',
+#            PR_PAID: 'Paid',
+#            PR_EXPIRED: 'Expired',
+#        }
+#        out['amount'] = format_satoshis(out.get('amount')) + ' {}'.format(chainparams.get_active_chain().code)
+#        out['status'] = pr_str[out.get('status', PR_UNKNOWN)]
+#        return out
+#
+#    @command('wn')
+#    def getrequest(self, key):
+#        """Return a payment request"""
+#        r = self.wallet.get_payment_request(key, self.config)
+#        if not r:
+#            raise BaseException("Request not found")
+#        return self._format_request(r)
+#
+#    @command('w')
+#    def ackrequest(self, serialized):
+#        """<Not implemented>"""
+#        pass
+#
+#    @command('w')
+#    def listrequests(self):
+#        """List the payment requests you made."""
+#        return map(self._format_request, self.wallet.get_sorted_requests(self.config))
+#
+#    @command('w')
+#    def addrequest(self, requested_amount, memo='', expiration=60*60):
+#        """Create a payment request."""
+#        addr = self.wallet.get_unused_address(None)
+#        if addr is None:
+#            return False
+#        amount = int(Decimal(requested_amount)*COIN)
+#        req = self.wallet.add_payment_request(addr, amount, memo, expiration, self.config)
+#        return self._format_request(req)
+#
+#    @command('w')
+#    def rmrequest(self, key):
+#        """Remove a payment request"""
+#        return self.wallet.remove_payment_request(key, self.config)
 
     @command('w')
     def getchain(self):
