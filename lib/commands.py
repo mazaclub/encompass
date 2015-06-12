@@ -451,8 +451,8 @@ class Commands:
         """Wallet history. Returns the transaction history of your wallet."""
         balance = 0
         out = []
-        for item in self.wallet.get_history():
-            tx_hash, conf, value, timestamp, balance = item
+        for item in self.wallet.get_tx_history():
+            tx_hash, conf, is_mine, value, fee, balance, timestamp = item
             try:
                 time_str = datetime.datetime.fromtimestamp( timestamp).isoformat(' ')[:-3]
             except Exception:
