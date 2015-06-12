@@ -4,6 +4,7 @@ from bitcoin import *
 import interface
 from blockchain import Blockchain
 import chainparams
+import re
 
 DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}
 

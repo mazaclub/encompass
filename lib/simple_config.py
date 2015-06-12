@@ -31,10 +31,13 @@ class SimpleConfig(object):
         3. System configuration (in /etc/)
     They are taken in order (1. overrides config options set in 2., that
     override config set in 3.)
+
+    If dormant is True, this SimpleConfig will not become global or save any changes.
     """
     def __init__(self, options=None, read_system_config_function=None,
-                 read_user_config_function=None, read_user_dir_function=None):
+                 read_user_config_function=None, read_user_dir_function=None, dormant=False):
 
+        self.dormant = dormant
         # This is the holder of actual options for the current user.
         self.read_only_options = {}
         # This lock needs to be acquired for updating and reading the config in
@@ -78,7 +81,7 @@ class SimpleConfig(object):
         # user config.
         self.user_config = read_user_config_function(self.path)
 
-        set_config(self)  # Make a singleton instance of 'self'
+        if not self.dormant: set_config(self)  # Make a singleton instance of 'self'
 
     def init_path(self):
         # Read electrum path in the command line configuration
@@ -101,7 +104,8 @@ class SimpleConfig(object):
             return False
         with self.lock:
             self.user_config['active_chain_code'] = value
-            chainparams.set_active_chain(value)
+            if not self.dormant:
+                chainparams.set_active_chain(value)
             # Make an empty dict if nothing is there
             if self.user_config.get(value, None) is None:
                 self.user_config[value] = {}
@@ -140,11 +144,11 @@ class SimpleConfig(object):
         '''Convenience method for getting a chain's config dict'''
         return self.get_above_chain(chaincode)
 
-    def set_chain_config(self, chaincode, value):
+    def set_chain_config(self, chaincode, value, save=True):
         '''Convenience method for setting a chain's config dict'''
         if not chainparams.is_known_chain(chaincode):
             return False
-        return self.set_key_above_chain(chaincode, value)
+        return self.set_key_above_chain(chaincode, value, save)
 
     def set_key(self, key, value, save = True):
         if not self.is_modifiable(key):
@@ -185,6 +189,7 @@ class SimpleConfig(object):
 
     def save_user_config(self):
         if not self.path: return
+        if self.dormant: return
 
         path = os.path.join(self.path, "config")
         s = repr(self.user_config)
@@ -194,6 +199,38 @@ class SimpleConfig(object):
         if self.get('gui') != 'android':
             import stat
             os.chmod(path, stat.S_IREAD | stat.S_IWRITE)
+
+    def get_wallet_path(self):
+        """Set the path of the wallet."""
+
+        # command line -w option
+        path = self.get('wallet_path')
+        if path:
+            return path
+
+        # path in config file
+        path = self.get('default_wallet_path')
+        if path and os.path.exists(path):
+            return path
+
+        # default path
+        dirpath = os.path.join(self.path, "wallets")
+        if not os.path.exists(dirpath):
+            os.mkdir(dirpath)
+
+        if self.get_above_chain('use_default_wallet', True):
+            current_wallet = 'default_wallet'
+        else:
+            current_wallet = self.get_above_chain('current_wallet', 'default_wallet')
+        new_path = os.path.join(self.path, "wallets", current_wallet)
+
+        # default path in pre 1.9 versions
+        old_path = os.path.join(self.path, "electrum.dat")
+        if os.path.exists(old_path) and not os.path.exists(new_path):
+            os.rename(old_path, new_path)
+
+        return new_path
+
 
 def read_system_config(path=SYSTEM_CONFIG_PATH):
     """Parse and return the system config settings in /etc/encompass.conf."""
@@ -215,8 +252,11 @@ def read_system_config(path=SYSTEM_CONFIG_PATH):
 
     return result
 
-def read_user_config(path):
-    """Parse and store the user config settings in encompass.conf into user_config[]."""
+def read_user_config(path, dormant=False):
+    """Parse and store the user config settings in encompass.conf into user_config[].
+
+    dormant: Whether the global active chain should be ignored.
+    """
     if not path: return {}  # Return a dict, since we will call update() on it.
 
     config_path = os.path.join(path, "config")
@@ -234,5 +274,6 @@ def read_user_config(path):
 
         if not type(result) is dict:
             return {}
-    chainparams.set_active_chain(result.get('active_chain_code', 'BTC'))
+    if not dormant:
+        chainparams.set_active_chain(result.get('active_chain_code', 'BTC'))
     return result

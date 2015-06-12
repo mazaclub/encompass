@@ -65,25 +65,6 @@ class WalletTestCase(unittest.TestCase):
 
 class TestWalletStorage(WalletTestCase):
 
-    def test_init_wallet_default_path(self):
-        storage = WalletStorage(self.fake_config)
-        expected = os.path.join(self.user_dir, "wallets", "default_wallet")
-        self.assertEqual(expected, storage.path)
-
-    def test_init_wallet_explicit_path(self):
-        path = os.path.join(self.user_dir, "somewallet")
-        self.fake_config.set("wallet_path", path)
-
-        storage = WalletStorage(self.fake_config)
-        self.assertEqual(path, storage.path)
-
-    def test_init_wallet_default_wallet_path(self):
-        path = os.path.join(self.user_dir, "somewallet")
-        self.fake_config.set("default_wallet_path", path)
-
-        storage = WalletStorage(self.fake_config)
-        self.assertEqual(path, storage.path)
-
     def test_read_dictionnary_from_file(self):
         path = os.path.join(self.user_dir, "somewallet")
         self.fake_config.set("wallet_path", path)
