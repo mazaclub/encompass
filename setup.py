@@ -101,6 +101,7 @@ setup(
         'chainkey.commands',
         'chainkey.daemon',
         'chainkey.eckey',
+        'chainkey.hashes',
         'chainkey.i18n',
         'chainkey.interface',
         'chainkey.mnemonic',
