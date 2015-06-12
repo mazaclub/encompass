@@ -2,6 +2,7 @@ from collections import namedtuple
 from util import print_error
 import importlib
 import traceback, sys
+import hashes
 import chains
 import chains.cryptocur
 
@@ -45,6 +46,9 @@ _known_chains = (
 
     # Viacoin
     ChainParams(14, 'Viacoin', 'VIA', 'viacoin'),
+
+    # Groestlcoin
+    ChainParams(17, 'Groestlcoin', 'GRS', 'groestlcoin'),
 )
 
 _known_chain_dict = dict((i.code, i) for i in _known_chains)
@@ -58,6 +62,8 @@ def get_active_chain():
 def set_active_chain(chaincode):
     global active_chain
     active_chain = get_chain_instance(chaincode)
+    hashes.set_base58_hash(active_chain.base58_hash)
+    hashes.set_transaction_hash(active_chain.transaction_hash)
 
 def is_known_chain(code):
     code = code.upper()
@@ -118,10 +124,10 @@ def get_chain_instance(code):
     module_name = params.module_name
     # If importing fails, try with a different path.
     try:
+        classmodule = importlib.import_module(''.join(['lib.chains.', module_name]))
+    except (AttributeError, ImportError):
         classmodule = importlib.import_module(''.join(['chainkey.chains.', module_name]))
         classInst = getattr(classmodule, 'Currency')
-    except (AttributeError, ImportError):
-        classmodule = importlib.import_module(''.join(['lib.chains.', module_name]))
     classInst = getattr(classmodule, 'Currency')
     return classInst()
 

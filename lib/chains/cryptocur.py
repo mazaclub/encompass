@@ -1,6 +1,7 @@
 '''The base class for a cryptocurrency.'''
 
 import os, hashlib
+import coinhash
 
 hash_encode = lambda x: x[::-1].encode('hex')
 hash_decode = lambda x: x.decode('hex')[::-1]
@@ -60,6 +61,9 @@ class CryptoCur(object):
     RECOMMENDED_FEE = 50000
     COINBASE_MATURITY = 100
 
+    ### Hash Algorithms ###
+    base58_hash = coinhash.SHA256dHash
+    transaction_hash = coinhash.SHA256dHash
 
     # Block explorers {name : URL}
     block_explorers = {

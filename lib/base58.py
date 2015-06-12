@@ -1,7 +1,8 @@
 import hashlib
 import re
 
-from util_coin import sha256, Hash
+from hashes import base58_hash
+from util_coin import sha256
 
 ############ functions from pywallet #####################
 
@@ -22,7 +23,7 @@ def public_key_to_bc_address(public_key, addrtype=0):
 
 def hash_160_to_bc_address(h160, addrtype = 0):
     vh160 = chr(addrtype) + h160
-    h = Hash(vh160)
+    h = base58_hash(vh160)
     addr = vh160 + h[0:4]
     return b58encode(addr)
 
@@ -84,7 +85,7 @@ def b58decode(v, length):
 
 def EncodeBase58Check(vchIn):
     """Encodes a string of bytes in Base58 encoding with a checksum."""
-    hash = Hash(vchIn)
+    hash = base58_hash(vchIn)
     return b58encode(vchIn + hash[0:4])
 
 
@@ -93,7 +94,7 @@ def DecodeBase58Check(psz):
     vchRet = b58decode(psz, None)
     key = vchRet[0:-4]
     csum = vchRet[-4:]
-    hash = Hash(key)
+    hash = base58_hash(key)
     cs32 = hash[0:4]
     if cs32 != csum:
         return None

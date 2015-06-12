@@ -8,7 +8,9 @@ The class for a chainkey module must derive from the CryptoCur class.
 
 ## Writing a chainkey module
 
-### Variables
+### Attributes
+
+#### Chain Params
 
 Chainkey modules require a set of constants for identifying the coin. These include:
 
@@ -27,6 +29,24 @@ The following constants are not yet fully implemented, but should be included:
 
 - `ext_pub_version`: Extended public key version bytes; "0488b21e" for Bitcoin.
 - `ext_priv_version`: Extended private key version bytes; "0488ade4" for Bitcoin.
+
+#### Hash Algorithms
+
+Most coins use SHA256d (two rounds of SHA256) for all cases where a hash algorithm is needed. Even coins that use alternative
+algorithms usually just use them for proof-of-work purposes only. If the coin uses an algorithm other than SHA256d for something,
+set the corresponding attribute below to the corresponding function in coinhash.
+
+**Note**: The `coinhash` package must be used for all coin-specific hashes. It's a collection of hash algorithms, and it makes
+things a lot easier to manage. Coinhash is located (here)[https://github.com/Kefkius/coinhash].
+
+##### Example of Alternative Hash Algorithms
+
+|Purpose             |Algorithm      |Example of chainkey module code       |
+|--------------------|---------------|--------------------------------------|
+|base58 encoding     |Skein          |`base58_hash = coinhash.SkeinHash`    |
+|transaction hashing |X11            |`transaction_hash = coinhash.X11Hash` |
+
+#### Info About the Chain
 
 In addition to those constants, some more modular information is required, including:
 
@@ -54,5 +74,6 @@ If an electrum fork has a custom method to call when a chain reorg occurs, it sh
 ## Implementation
 
 To implement a new chain after writing a chainkey module, place the coin's module in lib/chains with the others. Then edit lib/chainparams.py, adding a ChainParams named-tuple for that coin in `_known_chains`. When a chain is in `_known_chains`, Encompass will be able to use it as long as its metadata is correct.
+In the file `lib/chains/__init__.py`, a line that says `import yourcoin`, where `yourcoin` is the name of the new chainkey module, is required.
 
 For installation purposes, also add the module to the `py_modules` list in setup.py, as Bitcoin is done [here](https://github.com/mazaclub/encompass/blob/master/setup.py#L117).
