@@ -285,18 +285,17 @@ class Commands:
         """Return the public keys for a wallet address. """
         return self.wallet.get_public_keys(address)
 
+    # TODO support unmatured balance
     @command('nw')
     def getbalance(self, account=None):
         """Return the balance of your wallet"""
         if account is None:
-            c, u, x = self.wallet.get_balance()
+            c, u = self.wallet.get_balance()
         else:
-            c, u, x = self.wallet.get_account_balance(account)
+            c, u = self.wallet.get_account_balance(account)
         out = {"confirmed": str(Decimal(c)/COIN)}
         if u:
             out["unconfirmed"] = str(Decimal(u)/COIN)
-        if x:
-            out["unmatured"] = str(Decimal(x)/COIN)
         return out
 
     @command('n')
