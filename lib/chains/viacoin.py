@@ -5,12 +5,10 @@
 # https://github.com/vialectrum/vialectrum #
 ############################################
 
-from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256, Hash
+from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex
 import os
-try:
-    from ltc_scrypt import getPoWHash
-except ImportError:
-    from scrypt import scrypt_1024_1_1_80 as getPoWHash
+
+from coinhash import SHA256dHash, ScryptHash
 
 class Viacoin(CryptoCur):
     PoW = False
@@ -102,10 +100,10 @@ class Viacoin(CryptoCur):
         self.save_chunk(index, data)
 
     def hash_header(self, header):
-        return rev_hex(Hash(self.header_to_string(header).decode('hex')).encode('hex'))
+        return rev_hex(SHA256dHash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def pow_hash_header(self, header):
-        return rev_hex(getPoWHash(self.header_to_string(header).decode('hex')).encode('hex'))
+        return rev_hex(ScryptHash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def get_target(self, index, chain=None):
         if chain is None:

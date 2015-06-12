@@ -1,6 +1,8 @@
 '''Chain-specific Bitcoin code'''
-from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256, Hash
+from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex
 import os
+
+from coinhash import SHA256dHash
 
 class Bitcoin(CryptoCur):
     PoW = True
@@ -130,7 +132,7 @@ class Bitcoin(CryptoCur):
         return h
 
     def hash_header(self, header):
-        return rev_hex(Hash(self.header_to_string(header).decode('hex')).encode('hex'))
+        return rev_hex(SHA256dHash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def save_chunk(self, index, chunk):
         filename = self.path()

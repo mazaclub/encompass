@@ -1,6 +1,8 @@
 '''Chain-specific Mazacoin code'''
-from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256, Hash
+from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex
 import os
+
+from coinhash import SHA256dHash
 
 class Mazacoin(CryptoCur):
     PoW = True
@@ -101,7 +103,7 @@ class Mazacoin(CryptoCur):
 #        print_error("validated chunk %d"%height)
 
     def hash_header(self, header):
-        return rev_hex(Hash(self.header_to_string(header).decode('hex')).encode('hex'))
+        return rev_hex(SHA256dHash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def save_header(self, header, height=None):
         data = self.header_to_string(header).decode('hex')

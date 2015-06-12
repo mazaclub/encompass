@@ -1,9 +1,8 @@
 '''Chain-specific Dash code'''
-from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256
+from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex
 import os
-import darkcoin_hash as darkhash
 
-HashX11 = lambda x: darkhash.getPoWHash(x)
+from coinhash import X11Hash
 
 class Dash(CryptoCur):
     PoW = False
@@ -98,7 +97,7 @@ class Dash(CryptoCur):
 #        print_error("validated chunk %d"%height)
 
     def hash_header(self, header):
-        return rev_hex(HashX11(self.header_to_string(header).decode('hex')).encode('hex'))
+        return rev_hex(X11Hash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def get_target(self, index, chain=None):
         if chain is None:
