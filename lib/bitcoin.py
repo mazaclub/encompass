@@ -156,30 +156,20 @@ def ASecretToSecret(key, addrtype=128):
     return base58.ASecretToSecret(key, addrtype)
 
 def regenerate_key(sec, addrtype=128):
-    b = ASecretToSecret(sec, addrtype)
-    if not b:
-        return False
-    b = b[0:32]
-    return EC_KEY(b)
+    """Deprecated."""
+    return eckey.regenerate_key(sec, addrtype)
 
 def is_compressed(sec, addrtype=128):
     """Deprecated."""
     return base58.is_compressed(sec, addrtype)
 
 def public_key_from_private_key(sec, addrtype=128):
-    """Gets the public key of a WIF private key."""
-    # rebuild public key from private key, compressed or uncompressed
-    pkey = regenerate_key(sec, addrtype)
-    assert pkey
-    compressed = is_compressed(sec, addrtype)
-    public_key = GetPubKey(pkey.pubkey, compressed)
-    return public_key.encode('hex')
+    """Deprecated."""
+    return eckey.public_key_from_private_key(sec, addrtype)
 
 def address_from_private_key(sec, addrtype=0, wif_version=128):
-    """Gets the address for a WIF private key."""
-    public_key = public_key_from_private_key(sec, wif_version)
-    address = public_key_to_bc_address(public_key.decode('hex'), addrtype)
-    return address
+    """Deprecated."""
+    return eckey.address_from_private_key(sec, addrtype, wif_version)
 
 def is_valid(addr, active_chain=None):
     """Deprecated."""

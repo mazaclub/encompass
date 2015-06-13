@@ -14,6 +14,7 @@ except ImportError:
     sys.exit("Error: AES does not seem to be installed. Try 'sudo pip install slowaes'")
 
 from util_coin import var_int, Hash
+import base58
 from base58 import bc_address_to_hash_160, public_key_to_bc_address
 
 # AES encryption
@@ -76,6 +77,29 @@ def pw_decode(s, password):
 
 
 ################# code from pywallet ######################
+def regenerate_key(sec, addrtype=128):
+    """Gets the EC Key represented by a WIF key."""
+    b = base58.ASecretToSecret(sec, addrtype)
+    if not b:
+        return False
+    b = b[0:32]
+    return EC_KEY(b)
+
+def public_key_from_private_key(sec, addrtype=128):
+    """Gets the public key of a WIF private key."""
+    # rebuild public key from private key, compressed or uncompressed
+    pkey = regenerate_key(sec, addrtype)
+    assert pkey
+    compressed = base58.is_compressed(sec, addrtype)
+    public_key = GetPubKey(pkey.pubkey, compressed)
+    return public_key.encode('hex')
+
+def address_from_private_key(sec, addrtype=0, wif_version=128):
+    """Gets the address for a WIF private key."""
+    public_key = public_key_from_private_key(sec, wif_version)
+    address = public_key_to_bc_address(public_key.decode('hex'), addrtype)
+    return address
+
 # pywallet openssl private key implementation
 
 def i2d_ECPrivateKey(pkey, compressed=False):
