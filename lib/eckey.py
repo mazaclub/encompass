@@ -14,7 +14,7 @@ except ImportError:
     sys.exit("Error: AES does not seem to be installed. Try 'sudo pip install slowaes'")
 
 from util_coin import var_int, Hash
-from base58 import public_key_to_bc_address
+from base58 import bc_address_to_hash_160, public_key_to_bc_address
 
 # AES encryption
 EncodeAES = lambda secret, s: base64.b64encode(aes.encryptData(secret,s))
@@ -299,7 +299,8 @@ class EC_KEY(object):
         public_key.verify_digest( sig[1:], h, sigdecode = ecdsa.util.sigdecode_string)
 
         # check that we get the original signing address
-        addr = public_key_to_bc_address( point_to_ser(public_key.pubkey.point, compressed) )
+        addrtype = bc_address_to_hash_160(address)[0]
+        addr = public_key_to_bc_address( point_to_ser(public_key.pubkey.point, compressed), addrtype )
         if address != addr:
             raise Exception("Bad signature")
 
