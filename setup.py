@@ -12,15 +12,13 @@ del os.link
 #os.system("pyrcc4 icons.qrc -o gui/qt/icons_rc.py")
 
 version = imp.load_source('version', 'lib/version.py')
-util = imp.load_source('util', 'lib/util.py')
 
 if sys.version_info[:3] < (2, 6, 0):
     sys.exit("Error: Encompass requires Python version >= 2.6.0...")
-usr_share = util.usr_share_dir()
+usr_share = os.path.join(sys.prefix, "share")
 # presumes that user is competent if installing with additional options
 
 if (len(sys.argv) == 1 and (sys.argv[1] == "install")): 
-   usr_share = util.usr_share_dir()
    if not os.access(usr_share, os.W_OK):
        try:
            os.mkdir(usr_share)
