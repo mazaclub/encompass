@@ -31,6 +31,7 @@ from util_coin import COIN
 from bitcoin import is_valid, hash_160_to_bc_address, hash_160
 from decimal import Decimal
 import bitcoin
+import script
 from transaction import deserialize, Transaction
 import paymentrequest
 import chainparams
@@ -244,7 +245,7 @@ class Commands:
     def createmultisig(self, num, pubkeys):
         """Create multisig address"""
         assert isinstance(pubkeys, list), (type(num), type(pubkeys))
-        redeem_script = Transaction.multisig_script(pubkeys, num)
+        redeem_script = script.multisig_script(pubkeys, num)
         address = hash_160_to_bc_address(hash_160(redeem_script.decode('hex')), chainparams.get_active_chain().p2sh_version)
         return {'address':address, 'redeemScript':redeem_script}
 

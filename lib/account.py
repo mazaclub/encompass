@@ -17,10 +17,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import util_coin
+import script
 import bitcoin
 from bitcoin import *
 from i18n import _
-from transaction import Transaction, is_extended_pubkey
+from transaction import is_extended_pubkey
 from util import print_msg
 import chainparams
 
@@ -391,10 +392,10 @@ class BIP32_Account_2of2(BIP32_Account):
 
     def redeem_script(self, for_change, n):
         pubkeys = self.get_pubkeys(for_change, n)
-        return Transaction.multisig_script(sorted(pubkeys), 2)
+        return script.multisig_script(sorted(pubkeys), 2)
 
     def pubkeys_to_address(self, pubkeys):
-        redeem_script = Transaction.multisig_script(sorted(pubkeys), 2)
+        redeem_script = script.multisig_script(sorted(pubkeys), 2)
         address = hash_160_to_bc_address(hash_160(redeem_script.decode('hex')), self.active_chain.p2sh_version)
         return address
 
@@ -477,10 +478,10 @@ class BIP32_Account_MofN(BIP32_Account):
 
     def redeem_script(self, for_change, n):
         pubkeys = self.get_pubkeys(for_change, n)
-        return Transaction.multisig_script(sorted(pubkeys), self.multisig_m)
+        return script.multisig_script(sorted(pubkeys), self.multisig_m)
 
     def pubkeys_to_address(self, pubkeys):
-        redeem_script = Transaction.multisig_script(sorted(pubkeys), self.multisig_m)
+        redeem_script = script.multisig_script(sorted(pubkeys), self.multisig_m)
         address = hash_160_to_bc_address(hash_160(redeem_script.decode('hex')), self.active_chain.p2sh_version)
         return address
 
