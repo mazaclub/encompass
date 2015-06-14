@@ -9,6 +9,7 @@ from lib.account import BIP32_Account
 from lib.wallet import WalletStorage, Wallet_2of2, Wallet_MofN
 from lib import chainparams
 from lib.transaction import Transaction
+from lib.script import multisig_script
 
 
 class FakeConfig(object):
@@ -178,7 +179,7 @@ class TestMultisigMofN(WalletTestCase):
         pubkeys = map( lambda x: x.encode('hex'), raw_pubkeys )
 
         # Compare redeem script to manually calculated one
-        redeem_script = Transaction.multisig_script(sorted(pubkeys), acc.multisig_m)
+        redeem_script = multisig_script(sorted(pubkeys), acc.multisig_m)
         self.assertEqual('53210278a1a7de63493a8c8e0e7f4ebb13fd2a8144db25bb3bc2e5f44127a851a389332102ee780aa224c9fe54caff984205077b7cca08ced3188a3f3c639d83deda6b9a592103124429ddbed55593d0abea0d0d3d283eca4546e40017b2945f4666c561b494ba210312872f0aa80fa1a9bc7df77fa5be310f5441f7bfec798fe19209b04954dec8da54ae', redeem_script)
         p2sh_addr = hash_160_to_bc_address( hash_160(redeem_script.decode('hex')), self.wallet.active_chain.p2sh_version )
         self.assertEqual("32Ktuh5jGEAAJyNXQE7f1LUAcMXSfvdSzE", p2sh_addr)
@@ -333,7 +334,7 @@ class TestMultisigWallet(WalletTestCase):
         pubkeys = map( lambda x: x.encode('hex'), raw_pubkeys )
 
         # Compare redeem script to manually calculated one
-        redeem_script = Transaction.multisig_script(sorted(pubkeys), 2)
+        redeem_script = multisig_script(sorted(pubkeys), 2)
         self.assertEqual('522102ee780aa224c9fe54caff984205077b7cca08ced3188a3f3c639d83deda6b9a592103124429ddbed55593d0abea0d0d3d283eca4546e40017b2945f4666c561b494ba52ae',
             redeem_script)
 
@@ -349,7 +350,7 @@ class TestMultisigWallet(WalletTestCase):
         pubkeys = map( lambda x: x.encode('hex'), raw_pubkeys )
 
         # Compare redeem script to manually calculated one
-        redeem_script = Transaction.multisig_script(sorted(pubkeys), 2)
+        redeem_script = multisig_script(sorted(pubkeys), 2)
         self.assertEqual('5221027bdb7f5c42096580442e63235434bcc9ddf9689bbeb917705cd0edf9c6e264292102919725862f59a43274443ea11d7a8e25c15147213dcb6186c24d8629d37d6d8d52ae',
             redeem_script)
 

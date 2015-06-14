@@ -162,7 +162,7 @@ def parse_scriptSig(d, bytes, active_chain=None):
     d['x_pubkeys'] = x_pubkeys
     pubkeys = map(lambda x: parse_xpub(x)[0], x_pubkeys)
     d['pubkeys'] = pubkeys
-    redeemScript = Transaction.multisig_script(pubkeys,multis_m)
+    redeemScript = multisig_script(pubkeys,multis_m)
     d['redeemScript'] = redeemScript
     d['address'] = hash_160_to_bc_address(hash_160(redeemScript.decode('hex')), active_chain.p2sh_version)
 
@@ -427,7 +427,7 @@ class Transaction:
             else:
                 script = '00'                                       # op_0
                 script += sig_list
-                redeem_script = self.multisig_script(pubkeys,num_sig)
+                redeem_script = multisig_script(pubkeys,num_sig)
                 script += push_script(redeem_script)
 
         elif for_sig==i:
