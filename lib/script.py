@@ -1,5 +1,7 @@
 """Bitcoin scripting language."""
 
+from util_coin import op_push
+push_script = lambda x: op_push(len(x)/2) + x
 #
 # Workalike python implementation of Bitcoin's CDataStream class.
 #
@@ -269,3 +271,76 @@ def match_decoded_multisig(decoded):
                 return (i, j)
     return False
 
+def multisig_script(public_keys, m=None):
+    """Create a multisig redeeming script.
+
+    Args:
+        public_keys (list): List of hex-encoded public keys.
+        m: Number of required signers.
+
+    Returns:
+        Hex-encoded redeem script.
+
+    """
+    n = len(public_keys)
+    if m is None: m = n
+    s = []
+
+    # 0x50 + m
+    s.append(''.join([ '5', hex(m)[-1] ]))
+
+    for k in public_keys:
+        s.append(op_push(len(k)/2))
+        s.append(k)
+    # 0x50 + n
+    s.append(''.join([ '5', hex(n)[-1] ]))
+    s.append('ae')
+
+    return ''.join(s)
+
+def p2pkh_script(hash160):
+    """Create a Pay-To-Public-Key-Hash output script.
+
+    Args:
+        hash160 (str): 20 byte RIPEMD160 digest.
+
+    Returns:
+        Hex-encoded output script.
+
+    """
+    s = []
+    s.append('76a9')        # OP_DUP, OP_HASH160
+    s.append(push_script(hash160.encode('hex')))
+    s.append('88ac')        # OP_EQUALVERIFY, OP_CHECKSIG
+    return ''.join(s)
+
+def p2sh_script(hash160):
+    """Create a Pay-To-Script-Hash output script.
+
+    Args:
+        hash160 (str): 20 byte RIPEMD160 digest.
+
+    Returns:
+        Hex-encoded output script.
+
+    """
+    s = []
+    s.append('a9')          # OP_HASH160
+    s.append(push_script(hash160.encode('hex')))
+    s.append('87')          # OP_EQUAL
+    return ''.join(s)
+
+def null_output_script(data):
+    """Create a null output script.
+
+    Args:
+        data (str): Bytes of data.
+
+    Returns:
+        Hex-encoded output script.
+
+    """
+    s = []
+    s.append('6a')          # OP_RETURN
+    s.append(push_script(data.encode('hex')))
+    return ''.join(s)

@@ -267,9 +267,6 @@ def deserialize(raw, active_chain=None):
     deserialize_tx_fields(vds, d, fields, active_chain)
     return d
 
-
-push_script = lambda x: op_push(len(x)/2) + x
-
 class Transaction:
 
     def __str__(self):
@@ -363,21 +360,8 @@ class Transaction:
 
     @classmethod
     def multisig_script(klass, public_keys, num=None):
-        n = len(public_keys)
-        if num is None: num = n
-        s = []
-
-        # 0x50 + m
-        s.append(''.join([ '5', hex(num)[-1] ]))
-
-        for k in public_keys:
-            s.append(op_push(len(k)/2))
-            s.append(k)
-        s.append(''.join([ '5', hex(n)[-1] ]))
-
-        s.append('ae')
-
-        return ''.join(s)
+        """Deprecated. Use script.multisig_script."""
+        return multisig_script(public_keys, num)
 
 
     @classmethod
@@ -386,20 +370,15 @@ class Transaction:
             active_chain = chainparams.get_active_chain()
         self.active_chain = active_chain
         if type == 'op_return':
-            h = addr.encode('hex')
-            return '6a' + push_script(h)
+            return null_output_script(addr)
         else:
             assert type == 'address'
         script = []
         addrtype, hash_160 = bc_address_to_hash_160(addr)
         if addrtype == self.active_chain.p2pkh_version:
-            script.append('76a9')                               # op_dup, op_hash_160
-            script.append(push_script(hash_160.encode('hex')))
-            script.append('88ac')                               # op_equalverify, op_checksig
+            script.append(p2pkh_script(hash_160))
         elif addrtype == self.active_chain.p2sh_version:
-            script.append('a9')                                 # op_hash_160
-            script.append(push_script(hash_160.encode('hex')))
-            script.append('87')                                 # op_equal
+            script.append(p2sh_script(hash_160))
         else:
             raise
         return ''.join(script)

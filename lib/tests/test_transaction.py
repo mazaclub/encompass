@@ -6,12 +6,12 @@ import lib.transaction
 from lib.transaction import Transaction, deserialize
 import lib.bitcoin
 from lib.util_coin import int_to_hex
+from lib import script
 
 class TestTransaction(unittest.TestCase):
     def setUp(self):
         super(TestTransaction, self).setUp()
         chainparams.set_active_chain('BTC')
-        self.chain = chainparams.get_active_chain()
 
     def test_deserialize(self):
         chainparams.set_active_chain("BTC")
@@ -69,3 +69,33 @@ class TestTransaction(unittest.TestCase):
         rawtx = '0100000058e4615501a367e883a383167e64c84e9c068ba5c091672e434784982f877eede589cb7e53000000006a473044022043b9aee9187effd7e6c7bc444b09162570f17e36b4a9c02cf722126cc0efa3d502200b3ba14c809fa9a6f7f835cbdbbb70f2f43f6b30beaf91eec6b8b5981c80cea50121025edf500f18f9f2b3f175f823fa996fbb2ec52982a9aeb1dc2e388a651054fb0fffffffff0257be0100000000001976a91495efca2c6a6f0e0f0ce9530219b48607a962e77788ac45702000000000001976a914f28abfb465126d6772dcb4403b9e1ad2ea28a03488ac00000000'
         tx = Transaction.deserialize(rawtx, chainparams.get_active_chain())
         self.assertEqual(tx.serialize()[8:16], rawtx[8:16])
+
+class TestScript(unittest.TestCase):
+    def setUp(self):
+        super(TestScript, self).setUp()
+        chainparams.set_active_chain('BTC')
+
+    def test_multisig_script(self):
+        actual_multisig_script = '532102761ccce3560b63988df8c16e04e198509e07c7af00d3c25c96bd334276e89954210278a1a7de63493a8c8e0e7f4ebb13fd2a8144db25bb3bc2e5f44127a851a389332102ee780aa224c9fe54caff984205077b7cca08ced3188a3f3c639d83deda6b9a592103f62a2f747349ccdf9a6519801d9743a0f5a0590a52e122e7e18d2c1fa8cdd62854ae'
+        pubkeys = ['02ee780aa224c9fe54caff984205077b7cca08ced3188a3f3c639d83deda6b9a59', '03f62a2f747349ccdf9a6519801d9743a0f5a0590a52e122e7e18d2c1fa8cdd628', '02761ccce3560b63988df8c16e04e198509e07c7af00d3c25c96bd334276e89954', '0278a1a7de63493a8c8e0e7f4ebb13fd2a8144db25bb3bc2e5f44127a851a38933']
+        in_script = script.multisig_script(sorted(pubkeys), 3)
+        self.assertEqual(actual_multisig_script, in_script)
+
+    def test_p2pkh_script(self):
+        actual_p2pkh_script = '76a914000000000000000000000000000000000000000088ac'
+        h160 = ('00'*20).decode('hex')
+        out_script = script.p2pkh_script(h160)
+        self.assertEqual(actual_p2pkh_script, out_script)
+
+
+    def test_p2sh_script(self):
+        actual_p2sh_script = 'a914000000000000000000000000000000000000000087'
+        h160 = ('00'*20).decode('hex')
+        out_script = script.p2sh_script(h160)
+        self.assertEqual(actual_p2sh_script, out_script)
+
+    def test_null_output_script(self):
+        actual_null_script = '6a021337'
+        data = '1337'.decode('hex')
+        null_script = script.null_output_script(data)
+        self.assertEqual(actual_null_script, null_script)
