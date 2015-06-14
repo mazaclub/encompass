@@ -19,7 +19,7 @@ Attributes:
 
 """
 
-_known_chains = (
+known_chains = (
     # Bitcoin
     ChainParams(0, 'Bitcoin', 'BTC', 'bitcoin'),
 
@@ -51,9 +51,9 @@ _known_chains = (
     ChainParams(17, 'Groestlcoin', 'GRS', 'groestlcoin'),
 )
 
-_known_chain_dict = dict((i.code, i) for i in _known_chains)
+known_chain_dict = dict((i.code, i) for i in known_chains)
 
-_known_chain_codes = [i.code for i in _known_chains]
+known_chain_codes = [i.code for i in known_chains]
 
 def get_active_chain():
     global active_chain
@@ -67,19 +67,19 @@ def set_active_chain(chaincode):
 
 def is_known_chain(code):
     code = code.upper()
-    if code in _known_chain_codes:
+    if code in known_chain_codes:
         return True
     return False
 
 def get_params(code):
     code = code.upper()
-    if code in _known_chain_codes:
-        return _known_chain_dict[code]
+    if code in known_chain_codes:
+        return known_chain_dict[code]
     return None
 
 def get_chainparam(code, property):
     code = code.upper()
-    chain = _known_chain_dict.get(code)
+    chain = known_chain_dict.get(code)
     if chain:
         return getattr(chain, property)
     return None
@@ -88,7 +88,7 @@ def get_chain_index(code):
     return get_chainparam(code, 'chain_index')
 
 def get_code_from_index(index):
-    for chain in _known_chains:
+    for chain in known_chains:
         if chain.chain_index == index:
             return chain.code
     return None

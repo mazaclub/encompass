@@ -73,7 +73,7 @@ If an electrum fork has a custom method to call when a chain reorg occurs, it sh
 
 ## Implementation
 
-To implement a new chain after writing a chainkey module, place the coin's module in lib/chains with the others. Then edit lib/chainparams.py, adding a ChainParams named-tuple for that coin in `_known_chains`. When a chain is in `_known_chains`, Encompass will be able to use it as long as its metadata is correct.
+To implement a new chain after writing a chainkey module, place the coin's module in lib/chains with the others. Then edit lib/chainparams.py, adding a ChainParams named-tuple for that coin in `known_chains`. When a chain is in `known_chains`, Encompass will be able to use it as long as its metadata is correct.
 In the file `lib/chains/__init__.py`, a line that says `import yourcoin`, where `yourcoin` is the name of the new chainkey module, is required.
 
 For installation purposes, also add the module to the `py_modules` list in setup.py, as Bitcoin is done [here](https://github.com/mazaclub/encompass/blob/master/setup.py#L117).

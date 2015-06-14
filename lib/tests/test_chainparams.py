@@ -74,7 +74,7 @@ class TestChainParams(ChainParamsTestCase):
         self.assertEqual('BTC', code)
 
     def test_all_chainkey_modules(self):
-        all_chains = chainparams._known_chains
+        all_chains = chainparams.known_chains
         for params in all_chains:
             chain = chainparams.get_chain_instance(params.code)
             # ensure params data is correct

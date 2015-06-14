@@ -591,7 +591,7 @@ class Commands:
     @command('')
     def listchains(self):
         """List the chains that Encompass supports."""
-        return chainparams._known_chain_codes
+        return chainparams.known_chain_codes
 
 
 
@@ -644,7 +644,7 @@ command_options = {
 }
 
 arg_choices = {
-    'chain': chainparams._known_chain_codes,
+    'chain': chainparams.known_chain_codes,
 }
 
 arg_types = {

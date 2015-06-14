@@ -68,7 +68,7 @@ class WalletStorage(object):
 
     def _init_chains(self):
         """Make sure there's a dictionary for each chain"""
-        for code in chainparams._known_chain_codes:
+        for code in chainparams.known_chain_codes:
             if self.get_above_chain(code, None) is None:
                 self.put_above_chain(code, {})
 
@@ -887,7 +887,7 @@ class Abstract_Wallet(object):
             self.save_accounts()
 
         # loop through chains an re-encrypt private keys
-        chaincodes = chainparams._known_chain_codes
+        chaincodes = chainparams.known_chain_codes
         for code in chaincodes:
             # skip the active chain
             if code == self.active_chain.code: continue
@@ -1140,7 +1140,7 @@ class Abstract_Wallet(object):
         return not self.is_watching_only()
 
     def get_all_labels(self):
-        chaincodes = chainparams._known_chain_codes
+        chaincodes = chainparams.known_chain_codes
         labels = {}
         for code in sorted(chaincodes):
             d = self.storage.get_chain_value(code, 'labels', {})
@@ -1148,7 +1148,7 @@ class Abstract_Wallet(object):
         return labels
 
     def set_all_labels(self, new_labels):
-        chaincodes = chainparams._known_chain_codes
+        chaincodes = chainparams.known_chain_codes
         for code, d in new_labels.items():
             if not chainparams.is_known_chain(code):
                 continue

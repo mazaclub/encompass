@@ -1800,7 +1800,7 @@ class ElectrumWindow(QMainWindow):
         chains_view.setColumnWidth(3, 50)
         chains_view.setMinimumWidth(325)
         chains_view.itemActivated.connect(self.on_currency_select)
-        chains = chainkey.chainparams._known_chains
+        chains = chainkey.chainparams.known_chains
         # Yes or No
         y_or_n = lambda x: 'Yes' if x==True else 'No'
         for ch in sorted(chains, key=operator.attrgetter('code')):
