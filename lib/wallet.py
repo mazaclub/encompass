@@ -424,7 +424,7 @@ class Abstract_Wallet(object):
         assert len(keys) == 1
         sec = keys[0]
         key = regenerate_key(sec, self.active_chain.wif_version)
-        compressed = is_compressed(sec)
+        compressed = is_compressed(sec, addrtype=self.active_chain.wif_version)
         return key.sign_message(message, compressed, address)
 
     def decrypt_message(self, pubkey, message, password):
