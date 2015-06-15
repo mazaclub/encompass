@@ -55,7 +55,7 @@ class ChangeCurrencyDialog(QDialog):
         chains_view.setColumnWidth(3, 60)
         chains_view.setColumnWidth(4, 50)
         chains_view.setMinimumWidth(500)
-        chains = chainparams._known_chains
+        chains = chainparams.known_chains
         # Yes or No
         y_or_n = lambda x: 'Yes' if x==True else 'No'
         for ch in sorted(chains, key=operator.attrgetter('code')):
@@ -81,7 +81,7 @@ class ChangeCurrencyDialog(QDialog):
         chains_view = self.chains_view
         chains_view.clear()
 
-        chains = chainparams._known_chains
+        chains = chainparams.known_chains
         # Yes or No
         y_or_n = lambda x: 'Yes' if x==True else 'No'
         for ch in sorted(chains, key=operator.attrgetter('code')):
