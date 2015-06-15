@@ -1782,10 +1782,16 @@ class ElectrumWindow(QMainWindow):
 
     def change_currency_dialog(self):
         if self.change_currency_window is None:
-            self.change_currency_window = ChangeCurrencyDialog(self)
+            self.change_currency_window = ChangeCurrencyDialog(self, self.config.get_above_chain('verbose_currency_dialog', False))
             self.change_currency_window.chains_view.itemActivated.connect(self.on_currency_select)
         else:
             self.change_currency_window.refresh_chains()
+
+        # Refresh if the settings have changed
+        if self.change_currency_window.verbose_view != self.config.get_above_chain('verbose_currency_dialog', False):
+            self.change_currency_window.chains_view.itemActivated.disconnect()
+            self.change_currency_window = ChangeCurrencyDialog(self, self.config.get_above_chain('verbose_currency_dialog', False))
+            self.change_currency_window.chains_view.itemActivated.connect(self.on_currency_select)
 
         if not self.change_currency_window.exec_(): return
         self.on_currency_select()
@@ -2759,6 +2765,12 @@ class ElectrumWindow(QMainWindow):
         can_edit_fees_cb.stateChanged.connect(on_editfees)
         can_edit_fees_help = HelpButton(_('This option lets you edit fees in the send tab.'))
         widgets.append((can_edit_fees_cb, None, can_edit_fees_help))
+
+        verbose_currency_dialog = QCheckBox(_('Show verbose info in Change Currency window'))
+        verbose_currency_dialog.setChecked(self.config.get_above_chain('verbose_currency_dialog', False))
+        verbose_currency_dialog.stateChanged.connect(lambda x: self.config.set_key_above_chain('verbose_currency_dialog', verbose_currency_dialog.isChecked()))
+        verbose_currency_dialog_help = HelpButton(_('Show verbose information about currencies, such as the number of default servers.'))
+        widgets.append((verbose_currency_dialog, None, verbose_currency_dialog_help))
 
         use_def_wallet_cb = QCheckBox(_('Open default_wallet on wallet start'))
         use_def_wallet_cb.setChecked(self.config.get_above_chain('use_default_wallet', True))
