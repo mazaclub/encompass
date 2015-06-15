@@ -20,25 +20,10 @@ class ChangeCurrencyDialog(QDialog):
         self.main_layout = main_layout = QVBoxLayout()
 
         self.create_chains_info()
-
         self.create_chains_view()
+        self.refresh_chains()
+
         chains_view = self.chains_view
-        chains = chainparams.known_chains
-        # Yes or No
-        y_or_n = lambda x: 'Yes' if x==True else 'No'
-        for ch in sorted(chains, key=operator.attrgetter('code')):
-
-            is_initialized = True
-            dummy_key = self.parent.wallet.storage.get_chain_value(ch.code, 'accounts')
-            if dummy_key is None:
-                is_initialized = False
-
-            server_trust = chainparams.get_server_trust(ch.code)
-            uses_pow = server_trust['pow']
-            num_servers = server_trust['servers']
-            item = QTreeWidgetItem([ch.code, ch.coin_name, y_or_n(is_initialized), y_or_n(uses_pow), str(num_servers)])
-            chains_view.addTopLevelItem(item)
-        chains_view.setCurrentItem(chains_view.topLevelItem(0))
         main_layout.addWidget(chains_view)
 
         main_layout.addLayout(ok_cancel_buttons(self))
