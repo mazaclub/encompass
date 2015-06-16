@@ -76,11 +76,10 @@ setup(
 	'tlslite==0.4.8',
 	'dnspython',
 	'trezor==0.6.3',
-        'coinhash==1.1'
+        'coinhash==1.1.2'
     ],
     dependency_links=[
-        "git+https://github.com/mazaclub/python-trezor#egg=trezor",
-        "git+https://github.com/kefkius/coinhash#egg=coinhash-1.1"
+        "git+https://github.com/mazaclub/python-trezor#egg=trezor"
     ],
     package_dir={
         'chainkey': 'lib',
