@@ -72,6 +72,7 @@ class ChangeCurrencyDialog(QDialog):
                 item = QTreeWidgetItem([ch.code, ch.coin_name, y_or_n(is_initialized)])
             chains_view.addTopLevelItem(item)
         chains_view.setCurrentItem(chains_view.topLevelItem(0))
+        chains_view.setSortingEnabled(True)
 
     def create_chains_info(self):
         main_layout = self.main_layout
