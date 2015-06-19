@@ -8,6 +8,8 @@ import lib.bitcoin
 from lib.util_coin import int_to_hex
 from lib import script
 
+chainparams.testing_mode = True
+
 class TestTransaction(unittest.TestCase):
     def setUp(self):
         super(TestTransaction, self).setUp()
