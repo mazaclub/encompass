@@ -38,7 +38,7 @@ import icons_rc
 from chainkey.util import format_satoshis
 from chainkey import Transaction
 from chainkey import mnemonic
-from chainkey import util, bitcoin, commands, Interface, Wallet
+from chainkey import util, bitcoin, base58, commands, Interface, Wallet
 from chainkey import SimpleConfig, Wallet, WalletStorage
 from chainkey import Imported_Wallet
 import chainkey.chainparams
@@ -215,7 +215,10 @@ class ElectrumWindow(QMainWindow):
         self.load_block_explorers()
         self.load_base_units()
         # address used to create a dummy transaction and estimate transaction fee
-        self.dummy_address = self.wallet.addresses(False)[0]
+        try:
+            self.dummy_address = self.wallet.addresses(False)[0]
+        except IndexError: # wallet addresses not set up for chain yet
+            self.dummy_address = base58.hash_160_to_bc_address(('00'*20).decode('hex'), self.active_chain.p2pkh_version)
         self.invoices = self.wallet.storage.get('invoices', {})
         self.accounts_expanded = self.wallet.storage.get('accounts_expanded',{})
         self.current_account = self.wallet.storage.get("current_account", None)
