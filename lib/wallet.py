@@ -251,7 +251,7 @@ class Abstract_Wallet(object):
         tx_list = self.storage.get('transactions',{})
         for k, raw in tx_list.items():
             try:
-                tx = Transaction.deserialize(raw)
+                tx = Transaction.deserialize(raw, self.active_chain)
             except Exception:
                 print_msg("Warning: Cannot deserialize transactions. skipping")
                 continue
