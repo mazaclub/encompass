@@ -453,6 +453,7 @@ class Network(threading.Thread):
         print_error("Network: Stopping interfaces")
         for i in self.interfaces.values():
             i.stop()
+        self.blockchain.stop()
 
 
     def on_header(self, i, r):
