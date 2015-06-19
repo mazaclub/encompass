@@ -1,6 +1,8 @@
 """Chain-specific Namecoin code."""
 
-from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, sha256, Hash
+from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex
+
+from coinhash import SHA256dHash
 
 class Namecoin(CryptoCur):
     PoW = False
@@ -76,7 +78,7 @@ class Namecoin(CryptoCur):
             self.save_chunk(index, data)
 
     def hash_header(self, header):
-        return rev_hex(Hash(self.header_to_string(header).decode('hex')).encode('hex'))
+        return rev_hex(SHA256dHash(self.header_to_string(header).decode('hex')).encode('hex'))
 
 
 Currency = Namecoin
