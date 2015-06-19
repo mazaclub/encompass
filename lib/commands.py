@@ -45,6 +45,7 @@ class Command:
         self.requires_network = 'n' in s
         self.requires_wallet = 'w' in s
         self.requires_password = 'p' in s
+        self.can_specify_chain = 'c' in s
         self.description = func.__doc__
         self.help = self.description.split('.')[0]
         varnames = func.func_code.co_varnames[1:func.func_code.co_argcount]
@@ -59,6 +60,16 @@ class Command:
             self.defaults = []
 
 def command(s):
+    """Command decorator.
+
+    Args:
+        params (str): String of characters that signify data about the command.
+            n:  Requires network.
+            w:  Requires wallet.
+            p:  Requires password.
+            c:  A specific chain to act on can be specified.
+
+    """
     def decorator(func):
         global known_commands
         name = func.__name__
@@ -113,41 +124,25 @@ class Commands:
     def password(self):
         """Change wallet password. """
 
-    @command('')
-    def getconfig(self, key, chain=None):
+    @command('c')
+    def getconfig(self, key):
         """Return a configuration variable. """
-        if chain is not None:
-            chain_config = self.config.get_chain_config(chain)
-            if chain_config is not None:
-                return chain_config.get(key)
-            else:
-                return 'Error: No configuration section for chain "{}"'.format(chain)
-        else:
-            return self.config.get(key)
+        return self.config.get(key)
 
-    @command('')
-    def setconfig(self, key, value, chain=None):
+    @command('c')
+    def setconfig(self, key, value):
         """Set a configuration variable. 'value' may be a string or a Python expression."""
         try:
             value = ast.literal_eval(value)
         except:
             pass
-        if chain is not None:
-            chain_config = self.config.get_chain_config(chain)
-            if chain_config is not None:
-                chain_config[key] = value
-                self.config.set_chain_config(chain, chain_config)
-            else:
-                return 'Error: No configuration section for chain "{}"'.format(chain)
-        else:
-            self.config.set_key(key, value)
+        self.config.set_key(key, value)
         return True
 
-    @command('')
-    def dumpconfig(self, chain=None):
+    @command('c')
+    def dumpconfig(self):
         """Dump the contents of your configuration file."""
-        if chain is None:
-            chain = chainparams.get_active_chain().code
+        chain = chainparams.get_active_chain().code
         chain_config = self.config.get_chain_config(chain)
         if chain_config is not None:
             return chain_config
@@ -641,7 +636,6 @@ command_options = {
     'memo':        ("-m", "--memo",        "Description of the request"),
     'expiration':  (None, "--expiration",  "Time in seconds"),
     'status':      (None, "--status",      "Show status"),
-    'chain':       ("-n", "--chain",       "Act as if this is the active chain"),
 }
 
 arg_choices = {
@@ -730,6 +724,8 @@ def get_parser(run_gui, run_daemon, run_cmdline):
         cmd = known_commands[cmdname]
         p = subparsers.add_parser(cmdname, parents=[parent_parser], help=cmd.help, description=cmd.description)
         p.set_defaults(func=run_cmdline)
+        if cmd.can_specify_chain:
+            p.add_argument("-n", "--chain", dest="chain", default=None, help="Use this as the active chain", choices=arg_choices.get('chain'))
         if cmd.requires_password:
             p.add_argument("-W", "--password", dest="password", default=None, help="password")
         for optname, default in zip(cmd.options, cmd.defaults):
