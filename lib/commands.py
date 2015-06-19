@@ -193,7 +193,7 @@ class Commands:
         if r:
             return {'address':r[0]}
 
-    @command('wp')
+    @command('cwp')
     def createrawtx(self, inputs, outputs, unsigned=False):
         """Create a transaction from json inputs. The syntax is similar to bitcoind."""
         coins = self.wallet.get_unspent_coins()
@@ -214,7 +214,7 @@ class Commands:
             self.wallet.sign_transaction(tx, self.password)
         return tx
 
-    @command('wp')
+    @command('cwp')
     def signtransaction(self, tx, privkey=None):
         """Sign a transaction. The wallet keys will be used unless a private key is provided."""
         t = Transaction.deserialize(tx)
@@ -225,7 +225,7 @@ class Commands:
             self.wallet.sign_transaction(t, self.password)
         return t
 
-    @command('')
+    @command('c')
     def deserialize(self, tx):
         """Deserialize a serialized transaction."""
         return deserialize(tx)
@@ -236,7 +236,7 @@ class Commands:
         t = Transaction.deserialize(tx)
         return self.network.synchronous_get([('blockchain.transaction.broadcast', [str(t)])])[0]
 
-    @command('')
+    @command('c')
     def createmultisig(self, num, pubkeys):
         """Create multisig address"""
         assert isinstance(pubkeys, list), (type(num), type(pubkeys))
@@ -254,17 +254,17 @@ class Commands:
         """Unfreeze address. Unfreeze the funds at one of your wallet\'s address"""
         return self.wallet.unfreeze(address)
 
-    @command('wp')
+    @command('cwp')
     def getprivatekeys(self, address):
         """Get the private keys of an address. Address must be in wallet."""
         return self.wallet.get_private_key(address, self.password)
 
-    @command('w')
+    @command('cw')
     def ismine(self, address):
         """Check if address is in wallet. Return true if and only address is in wallet"""
         return self.wallet.is_mine(address)
 
-    @command('wp')
+    @command('cwp')
     def dumpprivkeys(self, domain=None):
         """Dump private keys from your wallet"""
         if domain is None:
@@ -274,9 +274,9 @@ class Commands:
     @command('')
     def validateaddress(self, address):
         """Check that the address is valid. """
-        return is_address(address)
+        return is_valid(address)
 
-    @command('w')
+    @command('cw')
     def getpubkeys(self, address):
         """Return the public keys for a wallet address. """
         return self.wallet.get_public_keys(address)
@@ -331,7 +331,7 @@ class Commands:
         import chainkey # Needs to stay here to prevent ciruclar imports
         return chainkey.ELECTRUM_VERSION
 
-    @command('w')
+    @command('cw')
     def getmpk(self):
         """Get Master Public Key. Return your wallet\'s master public key"""
         return self.wallet.get_master_public_keys()
@@ -342,7 +342,7 @@ class Commands:
         s = self.wallet.get_mnemonic(self.password)
         return s.encode('utf8')
 
-    @command('wp')
+    @command('cwp')
     def importprivkey(self, privkey):
         """Import a private key. """
         try:
@@ -364,13 +364,13 @@ class Commands:
         fee = int(Decimal(tx_fee)*COIN)
         return Transaction.sweep([privkey], self.network, dest, fee)
 
-    @command('wp')
+    @command('cwp')
     def signmessage(self, address, message):
         """Sign a message with a key. Use quotes if your message contains
         whitespaces"""
         return self.wallet.sign_message(address, message, self.password)
 
-    @command('')
+    @command('c')
     def verifymessage(self, address, signature, message):
         """Verify a signature."""
         return bitcoin.verify_message(address, signature, message)
@@ -418,7 +418,7 @@ class Commands:
                 outputs.append((address, amount))
         return outputs
 
-    @command('wp')
+    @command('cwp')
     def payto(self, destination, amount, tx_fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, deserialized=False, broadcast=False):
         """Create a transaction. """
         domain = [from_addr] if from_addr else None
@@ -429,7 +429,7 @@ class Commands:
         else:
             return deserialize(tx) if deserialized else tx
 
-    @command('wp')
+    @command('cwp')
     def paytomany(self, csv_file, tx_fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, deserialized=False, broadcast=False):
         """Create a multi-output transaction. """
         domain = [from_addr] if from_addr else None
@@ -458,23 +458,23 @@ class Commands:
             out.append({'txid':tx_hash, 'date':"%16s"%time_str, 'label':label, 'value':format_satoshis(value), 'confirmations':conf})
         return out
 
-    @command('w')
+    @command('cw')
     def setlabel(self, key, label):
         """Assign a label to an item. Item may be a coin address or a
         transaction ID"""
         self.wallet.set_label(key, label)
 
-    @command('')
+    @command('c')
     def listcontacts(self):
         """Show your list of contacts"""
         return self.contacts
 
-    @command('')
+    @command('c')
     def getalias(self, key, nocheck=False):
         """Retrieve alias. Lookup in your list of contacts, and for an OpenAlias DNS record."""
         return self.contacts.resolve(key, nocheck)
 
-    @command('')
+    @command('c')
     def searchcontacts(self, query):
         """Search through contacts, return matching entries. """
         results = {}
@@ -483,7 +483,7 @@ class Commands:
                 results[key] = value
         return results
 
-    @command('w')
+    @command('cw')
     def listaddresses(self, show_all=False, show_labels=False, frozen=False, unused=False, funded=False, show_balance=False):
         """List wallet addresses. Returns your list of addresses."""
         out = []
