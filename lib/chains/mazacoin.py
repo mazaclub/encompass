@@ -39,15 +39,6 @@ class Mazacoin(CryptoCur):
         'tate.cryptoadhd.com':DEFAULT_PORTS,
     }
 
-    # Used on chain reorg
-    def reorg_handler(self, local_height):
-        name = self.path()
-        if os.path.exists(name):
-            f = open(name,'rb+')
-            f.seek((local_height*80) - (self.COINBASE_MATURITY * 80))
-            f.truncate()
-            f.close()
-
     def verify_chain(self, chain):
 
         first_header = chain[0]

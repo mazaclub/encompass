@@ -95,6 +95,15 @@ class CryptoCur(object):
                     l.append( self.__class__ )
                 chainhooks[k] = l
 
+    # Called on chain reorg. Go back by COINBASE_MATURITY.
+    def reorg_handler(self, local_height):
+        name = self.path()
+        if os.path.exists(name):
+            f = open(name, 'rb+')
+            f.seek((local_height*80) - (self.COINBASE_MATURITY*80))
+            f.truncate()
+            f.close()
+
     # Tell us where our blockchain_headers file is
     def set_headers_path(self, path):
         self.headers_path = path
