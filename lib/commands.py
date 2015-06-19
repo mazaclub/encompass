@@ -125,23 +125,30 @@ class Commands:
         """Change wallet password. """
 
     @command('c')
-    def getconfig(self, key):
+    def getconfig(self, key, above_chain=False):
         """Return a configuration variable. """
-        return self.config.get(key)
+        if above_chain:
+            return self.config.get_above_chain(key, "Key '{}' not found in config".format(key))
+        return self.config.get(key, "Key '{}' not found in config".format(key))
 
     @command('c')
-    def setconfig(self, key, value):
+    def setconfig(self, key, value, above_chain=False):
         """Set a configuration variable. 'value' may be a string or a Python expression."""
         try:
             value = ast.literal_eval(value)
         except:
             pass
-        self.config.set_key(key, value)
+        if above_chain:
+            self.config.set_key_above_chain(key, value)
+        else:
+            self.config.set_key(key, value)
         return True
 
     @command('c')
-    def dumpconfig(self):
+    def dumpconfig(self, above_chain=False):
         """Dump the contents of your configuration file."""
+        if above_chain:
+            return self.config.user_config
         chain = chainparams.get_active_chain().code
         chain_config = self.config.get_chain_config(chain)
         if chain_config is not None:
@@ -636,6 +643,7 @@ command_options = {
     'memo':        ("-m", "--memo",        "Description of the request"),
     'expiration':  (None, "--expiration",  "Time in seconds"),
     'status':      (None, "--status",      "Show status"),
+    'above_chain': ("-A", "--above_chain", "Act above the active chain's section"),
 }
 
 arg_choices = {
