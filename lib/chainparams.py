@@ -6,6 +6,9 @@ import hashes
 import chains
 import chains.cryptocur
 
+# This makes the tests work with importing the active chain
+testing_mode = False
+
 active_chain = None
 
 ChainParams = namedtuple('ChainParams', ('chain_index', 'coin_name', 'code', 'module_name'))
@@ -122,13 +125,23 @@ def get_chain_instance(code):
     if not is_known_chain(code): return None
     params = get_params(code)
     module_name = params.module_name
-    # If importing fails, try with a different path.
-    try:
-        classmodule = importlib.import_module(''.join(['lib.chains.', module_name]))
-    except (AttributeError, ImportError):
-        classmodule = importlib.import_module(''.join(['chainkey.chains.', module_name]))
-        classInst = getattr(classmodule, 'Currency')
-    classInst = getattr(classmodule, 'Currency')
+    # If we're running tests, try the local path first.
+    if testing_mode:
+        # If importing fails, try with a different path.
+        try:
+            classmodule = importlib.import_module(''.join(['lib.chains.', module_name]))
+        except (AttributeError, ImportError):
+            classmodule = importlib.import_module(''.join(['chainkey.chains.', module_name]))
+        finally:
+            classInst = getattr(classmodule, 'Currency')
+    else:
+        # If importing fails, try with a different path.
+        try:
+            classmodule = importlib.import_module(''.join(['chainkey.chains.', module_name]))
+        except (AttributeError, ImportError):
+            classmodule = importlib.import_module(''.join(['lib.chains.', module_name]))
+        finally:
+            classInst = getattr(classmodule, 'Currency')
     return classInst()
 
 def run_chainhook(name, *args):
