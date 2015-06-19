@@ -24,6 +24,7 @@ class ChangeCurrencyDialog(QDialog):
         self.refresh_chains()
 
         chains_view = self.chains_view
+        chains_view.sortItems(0, Qt.AscendingOrder)
         main_layout.addWidget(chains_view)
 
         main_layout.addLayout(ok_cancel_buttons(self))
