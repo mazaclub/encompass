@@ -16,7 +16,7 @@ from mofn_dialog import run_select_mn_dialog
 
 import sys
 import threading
-from chainkey.plugins import run_hook
+from chainkey.plugins import run_hook, always_hook
 from chainkey.mnemonic import prepare_seed
 
 MSG_ENTER_ANYTHING    = _("Please enter a wallet seed, a master public key, a list of coin addresses, or a list of private keys")
@@ -343,7 +343,7 @@ class InstallWizard(QDialog):
         vbox.addLayout(ok_cancel_buttons(d))
         d.setLayout(vbox)
 
-        run_hook('password_dialog', pw, grid, 1)
+        always_hook('password_dialog', pw, grid, 1)
         if not d.exec_(): return
         return unicode(pw.text())
 
@@ -383,6 +383,9 @@ class InstallWizard(QDialog):
             action = wallet.get_action()
             # fixme: password is only needed for multiple accounts
             password = None
+
+        # load wallet in plugins
+        always_hook('installwizard_load_wallet', wallet, self)
 
         while action is not None:
             util.print_error("installwizard:", wallet, action)
@@ -454,7 +457,7 @@ class InstallWizard(QDialog):
                 self.waiting_dialog(wallet.synchronize)
 
             else:
-                f = run_hook('get_wizard_action', self, wallet, action)
+                f = always_hook('get_wizard_action', self, wallet, action)
                 if not f:
                     raise BaseException('unknown wizard action', action)
                 r = f(wallet, self)
@@ -585,7 +588,7 @@ class InstallWizard(QDialog):
 
             else:
                 self.storage.put_above_chain('wallet_type', t)
-                wallet = run_hook('installwizard_restore', self, self.storage)
+                wallet = always_hook('installwizard_restore', self, self.storage)
                 if not wallet:
                     return
 

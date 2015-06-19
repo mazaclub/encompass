@@ -248,7 +248,7 @@ class ElectrumWindow(QMainWindow):
         use_default_wallet = self.config.get_above_chain('use_default_wallet', True)
         if use_default_wallet == False:
             self.config.set_key_above_chain('current_wallet', os.path.basename(self.wallet.storage.path))
-        run_hook('load_wallet', wallet)
+        run_hook('load_wallet', wallet, self)
 
 
     def update_wallet_format(self):
@@ -1108,6 +1108,8 @@ class ElectrumWindow(QMainWindow):
 
 
     def do_send(self):
+        if run_hook('before_send'):
+            return
         r = self.read_send_tab()
         if not r:
             return
@@ -2822,7 +2824,7 @@ class ElectrumWindow(QMainWindow):
 
 
     def plugins_dialog(self):
-        from chainkey.plugins import plugins
+        from chainkey.plugins import plugins, plugin_data, is_available, loader
 
         d = QDialog(self)
         d.setWindowTitle(_('Encompass Plugins'))
@@ -2845,37 +2847,47 @@ class ElectrumWindow(QMainWindow):
         grid.setColumnStretch(0,1)
         w.setLayout(grid)
 
-        def do_toggle(cb, p, w):
-            if p.is_enabled():
-                if p.disable():
-                    p.close()
+        def do_toggle(cb, name, w):
+            p = plugins.get(name)
+            if p:
+                p.disable()
+                p.close()
+                plugins.pop(name)
             else:
-                if p.enable():
-                    p.load_wallet(self.wallet)
-                    p.init_qt(self.gui_object)
+                module = loader(name)
+                plugins[name] = p = module.Plugin(self.config, name)
+                p.enable()
+                p.wallet = self.wallet
+                p.load_wallet(self.wallet, self)
+                p.init_qt(self.gui_object)
             r = p.is_enabled()
             cb.setChecked(r)
             if w: w.setEnabled(r)
 
-        def mk_toggle(cb, p, w):
-            return lambda: do_toggle(cb,p,w)
+        def mk_toggle(cb, name, w):
+            return lambda: do_toggle(cb,name,w)
 
-        for i, p in enumerate(plugins):
+        for i, p_data in enumerate(plugin_data):
+            name = p_data['name']
+            p = plugins.get(name)
             try:
-                cb = QCheckBox(p.fullname())
-                cb.setDisabled(not p.is_available())
-                cb.setChecked(p.is_enabled())
+                cb = QCheckBox(p_data['fullname'])
+                cb.setEnabled(is_available(name, self.wallet))
+                cb.setChecked(p is not None and p.is_enabled())
                 grid.addWidget(cb, i, 0)
-                if p.requires_settings():
+                if p and p.requires_settings():
                     w = p.settings_widget(self)
                     w.setEnabled( p.is_enabled() )
                     grid.addWidget(w, i, 1)
                 else:
                     w = None
-                cb.clicked.connect(mk_toggle(cb,p,w))
-                grid.addWidget(HelpButton(p.description()), i, 2)
+                cb.clicked.connect(mk_toggle(cb,name,w))
+                msg = p_data['description']
+                if p_data.get('requires'):
+                    msg += '\n\n' + _('Requires') + ':\n' + '\n'.join(p_data.get('requires'))
+                grid.addWidget(HelpButton(msg), i, 2)
             except Exception:
-                print_msg(_("Error: cannot display plugin"), p)
+                print_msg(_("Error: cannot display plugin"), name)
                 traceback.print_exc(file=sys.stdout)
         grid.setRowStretch(i+1,1)
 

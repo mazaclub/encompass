@@ -33,7 +33,9 @@ import traceback
 #    basedir = os.path.dirname( __file__ )
 #    basedir = os.path.normpath( basedir )
 #
-is_local = os.path.dirname(os.path.realpath(__file__)) == os.getcwd()
+
+# TODO is_bundle
+is_bundle = is_local = os.path.dirname(os.path.realpath(__file__)) == os.getcwd()
 is_android = 'ANDROID_DATA' in os.environ
 
 if is_local:
@@ -84,7 +86,7 @@ from chainkey import util
 from chainkey import SimpleConfig, Network, Wallet, WalletStorage, NetworkProxy, Commands, known_commands, pick_random_server
 from chainkey.util import print_msg, print_stderr, print_json, set_verbosity
 from chainkey.daemon import get_daemon
-from chainkey.plugins import init_plugins
+from chainkey.plugins import init_plugins, run_hook, always_hook
 from chainkey import chainparams
 from chainkey.commands import get_parser, known_commands, Commands, config_variables
 
@@ -274,7 +276,7 @@ def run_cmdline(config):
     wallet = Wallet(storage) if cmd.requires_wallet else None
 
     # notify plugins
-#    always_hook('cmdline_load_wallet', wallet)
+    always_hook('cmdline_load_wallet', wallet)
 
     # important warning
     if cmd.name in ['dumpprivkey', 'dumpprivkeys']:
@@ -421,7 +423,7 @@ if __name__ == '__main__':
 
     # initialize plugins.
     if not is_android:
-        init_plugins(config) #, is_bundle or is_local or is_android, gui_name)
+        init_plugins(config, is_bundle or is_local or is_android, gui_name)
 
     # call function attached to parser
     args.func(config)
