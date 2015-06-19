@@ -44,6 +44,9 @@ class Feathercoin(CryptoCur):
     p2sh_version = 5
     wif_version = 142
 
+    MIN_RELAY_TX_FEE = 2000000
+    RECOMMENDED_FEE = 2000000
+
     block_explorers = {
         'Bchain.info': 'https://bchain.info/FTC/tx/',
         'Ftc-c.com': 'http://block.ftc-c.com/tx/'
