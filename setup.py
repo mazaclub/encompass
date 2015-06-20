@@ -159,6 +159,7 @@ setup(
         'chainkey_gui.stdio',
         'chainkey_gui.text',
         'chainkey_plugins.btchipwallet',
+        'chainkey_plugins.clamspeech',
         'chainkey_plugins.coinbase_buyback',
         'chainkey_plugins.cosigner_pool',
         'chainkey_plugins.exchange_rate',

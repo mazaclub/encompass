@@ -1,6 +1,6 @@
 '''Chain-specific Clam code'''
 from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, chainhook
-from util_coin import var_int
+from chainkey.util_coin import var_int
 import os
 import time
 

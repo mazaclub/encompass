@@ -65,6 +65,11 @@ def init_plugins(config, is_local, gui_name):
         wallet.wallet_types.append(x)
 
     plugin_data = chainkey_plugins.plugin_data
+    # Add hidden plugin data
+    hidden_plugin_data = chainkey_plugins.hidden_plugin_data
+    for d in hidden_plugin_data:
+        d['hidden'] = True
+    plugin_data.extend(hidden_plugin_data)
     # Load all plugins
     for item in plugin_data:
         name = item['name']
@@ -74,8 +79,8 @@ def init_plugins(config, is_local, gui_name):
         x = item.get('registers_wallet_type')
         if x:
             register_wallet_type(name, x, constructor)
-        # Stop if the plugin isn't enabled in config
-        if not config.get_above_chain('use_plugin_' + name):
+        # Stop if the plugin isn't enabled in config. Load anyway if it's a hidden plugin.
+        if not config.get_above_chain('use_plugin_' + name) and not item.get('hidden', False):
             continue
         try:
             p = loader(name)

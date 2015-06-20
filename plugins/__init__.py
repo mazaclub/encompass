@@ -64,3 +64,22 @@ plugin_data = [
         'available_for': ['qt'],
     }
 ]
+
+"""List of dicts containing hidden plugin data.
+
+Hidden plugins are plugins that are always loaded if their requirements are met,
+and are not visible to the user. They are not in the list of displayed plugins.
+
+The purpose of hidden plugins is to support unique features of chains by
+leveraging the plugin system in addition to the chainhook system.
+
+"""
+hidden_plugin_data = [
+    {
+        'name': 'clamspeech',
+        'fullname': 'ClamSpeech',
+        'description': _('Provides support for viewing ClamSpeech in Clam transactions.'),
+        'requires_chain': ['CLAMS'],
+        'available_for': ['qt'],
+    }
+]
