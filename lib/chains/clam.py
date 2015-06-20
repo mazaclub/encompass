@@ -1,5 +1,6 @@
 '''Chain-specific Clam code'''
 from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, chainhook
+from util_coin import var_int
 import os
 import time
 
@@ -149,11 +150,20 @@ class Clam(CryptoCur):
     def transaction_deserialize_tx_fields(self, vds, fields):
         timestamp = ('timestamp', vds.read_int32, False)
         fields.insert(1, timestamp)
+        clamspeech = ('clamspeech', 'read_bytes_compact_size', True)
+        fields.append(clamspeech)
 
     @chainhook
     def transaction_serialize(self, tx, for_sig, fields):
-        unix_time = int(time.time())
+        unix_time = getattr(tx, 'timestamp', None)
+        if unix_time is None:
+            unix_time = int(time.time())
         timestamp = ('timestamp', int_to_hex(unix_time, 4))
         fields.insert(1, timestamp)
+
+        speech = ('clamspeech', getattr(tx, 'clamspeech', ''))
+        speech_len = ('clamspeech_len', var_int(len(speech)))
+        clamspeech = [speech_len, speech]
+        fields.extend(clamspeech)
 
 Currency = Clam
