@@ -1,7 +1,5 @@
-# plugins
+"""Metadata about Encompass plugins."""
 from chainkey.i18n import _
-
-
 
 """List of dicts containing plugin data.
 
@@ -19,6 +17,8 @@ Optional dictionary keys/values:
     - requires_wallet_type (list): Wallet types that the plugin can work with.
     - registers_wallet_type (tuple): Wallet type that the plugin defines.
             Tuple format: (category, type, description)
+    - requires_chain (list): Chain codes that the plugin can work with.
+            This is a list of codes (e.g. BTC), not names (e.g. Bitcoin).
 
 """
 plugin_data = [

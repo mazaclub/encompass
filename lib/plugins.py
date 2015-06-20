@@ -27,6 +27,10 @@ def is_available(name, w):
     if wallet_types:
         if w.wallet_type not in wallet_types:
             return False
+    chains = d.get('requires_chain')
+    if chains:
+        if w.active_chain_code not in chains:
+            return False
     return True
 
 def init_plugins(config, is_local, gui_name):
