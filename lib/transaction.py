@@ -234,6 +234,18 @@ def parse_output(vds, i, active_chain=None):
     return d
 
 def deserialize_tx_fields(vds, d, fields, active_chain=None):
+    """Deserialize a data stream according to the given fields.
+
+    Fields is a list of 3-tuples: (name, action, add_to_dict)
+        name is the Transaction attribute to assign the extracted value to.
+        action is either a method of BCDataStream, or one of the following:
+            'parse_inputs': Extract inputs from stream
+            'parse_outputs': Extract output from stream
+            'read_bytes_compact_size': Calls vds.read_bytes(vds.read_compact_size())
+        add_to_dict specifies whether to set a Transaction attribute to the extracted
+        data, or only use it within this function.
+
+    """
     # dd is a separate dict containing data that doesn't go
     # in the tx dict.
     dd = {}
@@ -243,6 +255,11 @@ def deserialize_tx_fields(vds, d, fields, active_chain=None):
             d[name] = list(parse_input(vds, active_chain) for i in xrange(dd['vin']))
         elif action == 'parse_outputs':
             d[name] = list(parse_output(vds,i, active_chain) for i in xrange(dd['vout']))
+        elif action == 'read_bytes_compact_size':
+            if add_to_dict:
+                d[name] = vds.read_bytes(vds.read_compact_size())
+            else:
+                dd[name] = vds.read_bytes(vds.read_compact_size())
         else:
             if add_to_dict:
                 d[name] = action()
