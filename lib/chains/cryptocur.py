@@ -14,7 +14,7 @@ def int_to_hex(i, length=1):
     s = "0"*(2*length - len(s)) + s
     return rev_hex(s)
 
-def bits_to_target(self, bits):
+def bits_to_target(bits):
     """Convert a compact representation to a hex target."""
     MM = 256*256*256
     a = bits%MM
@@ -23,7 +23,7 @@ def bits_to_target(self, bits):
     target = (a) * pow(2, 8 * (bits/MM - 3))
     return target
 
-def target_to_bits(self, target):
+def target_to_bits(target):
     """Convert a target to compact representation."""
     MM = 256*256*256
     c = ("%064X"%target)[2:]
