@@ -14,6 +14,33 @@ def int_to_hex(i, length=1):
     s = "0"*(2*length - len(s)) + s
     return rev_hex(s)
 
+def bits_to_target(self, bits):
+    """Convert a compact representation to a hex target."""
+    MM = 256*256*256
+    a = bits%MM
+    if a < 0x8000:
+        a *= 256
+    target = (a) * pow(2, 8 * (bits/MM - 3))
+    return target
+
+def target_to_bits(self, target):
+    """Convert a target to compact representation."""
+    MM = 256*256*256
+    c = ("%064X"%target)[2:]
+    i = 31
+    while c[0:2]=="00":
+        c = c[2:]
+        i -= 1
+
+    c = int('0x'+c[0:6],16)
+    if c >= 0x800000:
+        c /= 256
+        i += 1
+
+    new_bits = c + MM * i
+    return new_bits
+
+
 # Chain hook system
 #
 # This allows the active blockchain to hook into arbitrary functions
