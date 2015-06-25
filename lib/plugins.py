@@ -191,6 +191,8 @@ class BasePlugin(object):
         return True
 
     def set_enabled(self, enabled):
+        if self.is_hidden:
+            return
         self.config.set_key_above_chain('use_plugin_'+self.name, enabled, True)
 
     def settings_dialog(self):
