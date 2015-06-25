@@ -85,6 +85,8 @@ def init_plugins(config, is_local, gui_name):
         try:
             p = loader(name)
             plugins[name] = p.Plugin(config, name)
+            if item.get('hidden', False):
+                plugins[name].is_hidden = True
         except Exception:
             print_error('Error: Cannot initialize plugin {}'.format(name))
             traceback.print_exc(file=sys.stdout)
@@ -135,6 +137,7 @@ class BasePlugin(object):
         self.name = name
         self.config = config
         self.wallet = None
+        self.is_hidden = False
         # add self to hooks
         for k in dir(self):
             if k in hook_names:
@@ -176,7 +179,7 @@ class BasePlugin(object):
         pass
 
     def is_enabled(self):
-        return self.is_available() and self.config.get_above_chain('use_plugin_'+self.name) is True
+        return self.is_available() and (self.config.get_above_chain('use_plugin_'+self.name) is True or self.is_hidden is True)
 
     def is_available(self):
         return True
