@@ -256,10 +256,13 @@ def deserialize_tx_fields(vds, d, fields, active_chain=None):
         elif action == 'parse_outputs':
             d[name] = list(parse_output(vds,i, active_chain) for i in xrange(dd['vout']))
         elif action == 'read_bytes_compact_size':
-            if add_to_dict:
-                d[name] = vds.read_bytes(vds.read_compact_size())
-            else:
-                dd[name] = vds.read_bytes(vds.read_compact_size())
+            try:
+                if add_to_dict:
+                    d[name] = vds.read_bytes(vds.read_compact_size())
+                else:
+                    dd[name] = vds.read_bytes(vds.read_compact_size())
+            except Exception:
+                continue
         else:
             if add_to_dict:
                 d[name] = action()

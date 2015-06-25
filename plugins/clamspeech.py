@@ -15,3 +15,4 @@ class Plugin(BasePlugin):
         speech_text.setReadOnly(True)
         speech_text.setMaximumHeight(100)
         speech_text.setText(clamspeech)
+        vbox.addWidget(speech_text)

@@ -6,6 +6,8 @@ import time
 
 from coinhash import SHA256dHash
 
+TX_VERSION_CLAMSPEECH = 2
+
 class Clam(CryptoCur):
     PoW = False
     chain_index = 23
@@ -160,6 +162,10 @@ class Clam(CryptoCur):
             unix_time = int(time.time())
         timestamp = ('timestamp', int_to_hex(unix_time, 4))
         fields.insert(1, timestamp)
+
+        tx_version = getattr(tx, 'version', 1)
+        if tx_version < TX_VERSION_CLAMSPEECH:
+            return
 
         speech = ('clamspeech', getattr(tx, 'clamspeech', ''))
         speech_len = ('clamspeech_len', var_int(len(speech)))
