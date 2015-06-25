@@ -2868,6 +2868,8 @@ class ElectrumWindow(QMainWindow):
             return lambda: do_toggle(cb,name,w)
 
         for i, p_data in enumerate(plugin_data):
+            if p_data.get('hidden', False):
+                continue
             name = p_data['name']
             p = plugins.get(name)
             try:
