@@ -87,6 +87,8 @@ def init_plugins(config, is_local, gui_name):
             plugins[name] = p.Plugin(config, name)
             if item.get('hidden', False):
                 plugins[name].is_hidden = True
+            if item.get('requires_chain', []):
+                plugins[name].required_chains = item['requires_chain']
         except Exception:
             print_error('Error: Cannot initialize plugin {}'.format(name))
             traceback.print_exc(file=sys.stdout)
@@ -138,6 +140,7 @@ class BasePlugin(object):
         self.config = config
         self.wallet = None
         self.is_hidden = False
+        self.required_chains = None
         # add self to hooks
         for k in dir(self):
             if k in hook_names:
@@ -182,6 +185,9 @@ class BasePlugin(object):
         return self.is_available() and (self.config.get_above_chain('use_plugin_'+self.name) is True or self.is_hidden is True)
 
     def is_available(self):
+        if self.required_chains and self.wallet:
+            if not self.wallet.active_chain_code in self.required_chains:
+                return False
         return True
 
     def set_enabled(self, enabled):
