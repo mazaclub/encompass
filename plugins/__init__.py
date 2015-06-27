@@ -39,13 +39,13 @@ plugin_data = [
         'description': _('Allows for payments to OpenAlias addresses.'),
         'available_for': ['cmdline', 'qt'],
     },
-#    {
-#        'name': 'plot',
-#        'fullname': 'Plot History',
-#        'description': _('Ability to graphically plot transaction history.'),
-#        'requires': ['matplotlib'],
-#        'available_for': ['qt'],
-#    },
+    {
+        'name': 'plot',
+        'fullname': 'Plot History',
+        'description': _('Ability to graphically plot transaction history.'),
+        'requires': ['matplotlib'],
+        'available_for': ['qt'],
+    },
     {
         'name': 'trezor',
         'fullname': 'Trezor Wallet',

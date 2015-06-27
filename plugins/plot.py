@@ -17,91 +17,73 @@ except:
     flag_matlib=False
 
 
-
-
-
 class Plugin(BasePlugin):
 
-
-    def fullname(self):
-        return 'Plot History'
-
-    def description(self):
-        return '%s\n%s' % (_("Ability to plot transaction history in graphical mode."), _("Warning: Requires matplotlib library."))
-
     def is_available(self):
-        # Disabled until compatibility is ensured
-        return False
+        if not BasePlugin.is_available(self):
+            return False
         if flag_matlib:
             return True
         else:
             return False
 
-
-
-    def is_enabled(self):
-        if not self.is_available():
-            return False
-        else:
-            return True
-
-
     @hook
     def init_qt(self, gui):
-        self.win = gui.main_window
+        pass
+
+    @hook
+    def load_wallet(self, wallet, window):
+        pass
 
     @hook
     def export_history_dialog(self, d,hbox):
-        self.wallet = d.wallet
-
         history = self.wallet.get_tx_history()
 
         if len(history) > 0:
             b = QPushButton(_("Preview plot"))
             hbox.addWidget(b)
-            b.clicked.connect(lambda: self.do_plot(self.wallet))
+            b.clicked.connect(lambda: self.do_plot(self.wallet, history))
         else:
             b = QPushButton(_("No history to plot"))
             hbox.addWidget(b)
 
 
 
-    def do_plot(self,wallet):
-        history = wallet.get_tx_history()
+    def do_plot(self, wallet, history):
         balance_Val=[]
-        fee_val=[]
+#        fee_val=[]
         value_val=[]
         datenums=[]
-        unknown_trans=0
-        pending_trans=0
-        counter_trans=0
+        unknown_trans = 0
+        pending_trans = 0
         for item in history:
             tx_hash, confirmations, is_mine, value, fee, balance, timestamp = item
             if confirmations:
                 if timestamp is not None:
                     try:
                         datenums.append(md.date2num(datetime.datetime.fromtimestamp(timestamp)))
-                        balance_string = format_satoshis(balance, False)
-                        balance_Val.append(float((format_satoshis(balance,False)))*1000.0)
+                        balance_string = format_satoshis(balance, False, decimal_point=self.window.decimal_point)
+                        balance_Val.append(float(balance_string))
                     except [RuntimeError, TypeError, NameError] as reason:
                         unknown_trans=unknown_trans+1
                         pass
                 else:
                     unknown_trans=unknown_trans+1
+
+                if value is not None:
+                    value_string = format_satoshis(value, True, decimal_point=self.window.decimal_point)
+                    value_val.append(float(value_string))
+                else:
+                    value_string = '--'
             else:
                 pending_trans=pending_trans+1
 
-            if value is not None:
-                value_string = format_satoshis(value, True)
-                value_val.append(float(value_string)*1000.0)
-            else:
-                value_string = '--'
 
-            if fee is not None:
-                fee_string = format_satoshis(fee, True)
-                fee_val.append(float(fee_string))
-            else:
-                fee_string = '0'
+#            if fee is not None:
+#                fee_string = format_satoshis(fee, True)
+#                fee_val.append(float(fee_string))
+#            else:
+#                fee_string = '0'
 
             if tx_hash:
                 label, is_default_label = wallet.get_label(tx_hash)
@@ -116,28 +98,29 @@ class Plugin(BasePlugin):
         plt.xticks( rotation=25 )
         ax=plt.gca()
         x=19
-        test11="Unknown transactions =  "+str(unknown_trans)+" Pending transactions =  "+str(pending_trans)+" ."
-        box1 = TextArea(" Test : Number of pending transactions", textprops=dict(color="k"))
-        box1.set_text(test11)
+        if unknown_trans > 0:
+            test11="Unknown transactions =  "+str(unknown_trans)+" ."
+            box1 = TextArea(" Test : Number of unkown transactions", textprops=dict(color="k"))
+            box1.set_text(test11)
 
 
-        box = HPacker(children=[box1],
-            align="center",
-            pad=0.1, sep=15)
+            box = HPacker(children=[box1],
+                align="center",
+                pad=0.1, sep=15)
 
-        anchored_box = AnchoredOffsetbox(loc=3,
-            child=box, pad=0.5,
-            frameon=True,
-            bbox_to_anchor=(0.5, 1.02),
-            bbox_transform=ax.transAxes,
-            borderpad=0.5,
-        )
-
-
-        ax.add_artist(anchored_box)
+            anchored_box = AnchoredOffsetbox(loc=3,
+                child=box, pad=0.5,
+                frameon=True,
+                bbox_to_anchor=(0.5, 1.02),
+                bbox_transform=ax.transAxes,
+                borderpad=0.5,
+            )
 
 
-        plt.ylabel('mBTC')
+            ax.add_artist(anchored_box)
+
+
+        plt.ylabel(self.window.base_unit())
         plt.xlabel('Dates')
         xfmt = md.DateFormatter('%Y-%m-%d')
         ax.xaxis.set_major_formatter(xfmt)
@@ -145,17 +128,18 @@ class Plugin(BasePlugin):
 
         axarr[0].plot(datenums,balance_Val,marker='o',linestyle='-',color='blue',label='Balance')
         axarr[0].legend(loc='upper left')
-        axarr[0].set_title('History Transactions')
+        axarr[0].set_title('Confirmed Balance History')
 
 
         xfmt = md.DateFormatter('%Y-%m-%d')
         ax.xaxis.set_major_formatter(xfmt)
-        axarr[1].plot(datenums,fee_val,marker='o',linestyle='-',color='red',label='Fee')
-        axarr[1].plot(datenums,value_val,marker='o',linestyle='-',color='green',label='Value')
-
-
-
-
+        axarr[1].plot(datenums,value_val,marker='o',linestyle='-',color='green',label='Tx Value')
         axarr[1].legend(loc='upper left')
+        axarr[1].set_title('Confirmed Transaction History')
+
+
+
+
      #   plt.annotate('unknown transaction = %d \n pending transactions = %d' %(unknown_trans,pending_trans),xy=(0.7,0.05),xycoords='axes fraction',size=12)
+        plt.annotate('pending transactions = %d' %pending_trans,xy=(0.7,-0.45),xycoords='axes fraction',size=12)
         plt.show()
