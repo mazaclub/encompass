@@ -262,19 +262,23 @@ def read_user_config(path, dormant=False):
 
     config_path = os.path.join(path, "config")
     result = {}
-    if os.path.exists(config_path):
+    try:
+        with open(config_path, "r") as f:
+            data = f.read()
+    except IOError:
+        print_msg("Error: Cannot read config file.")
+        result = {}
+    try:
+        result = json.loads(data)
+    except:
         try:
-
-            with open(config_path, "r") as f:
-                data = f.read()
-            result = ast.literal_eval( data )  #parse raw data from reading wallet file
-
-        except Exception:
+            result = ast.literal_eval(data)
+        except:
             print_msg("Error: Cannot read config file.")
-            result = {}
-
-        if not type(result) is dict:
             return {}
+
+    if not type(result) is dict:
+        return {}
     if not dormant:
         chainparams.set_active_chain(result.get('active_chain_code', 'BTC'))
     return result
