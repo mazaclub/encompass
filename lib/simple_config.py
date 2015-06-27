@@ -1,4 +1,5 @@
 import ast
+import json
 import threading
 import os
 
@@ -192,7 +193,7 @@ class SimpleConfig(object):
         if self.dormant: return
 
         path = os.path.join(self.path, "config")
-        s = repr(self.user_config)
+        s = json.dumps(self.user_config, indent=4, sort_keys=True)
         f = open(path,"w")
         f.write( s )
         f.close()
