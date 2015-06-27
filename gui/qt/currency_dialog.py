@@ -24,7 +24,9 @@ class ChangeCurrencyDialog(QDialog):
         self.refresh_chains()
 
         chains_view = self.chains_view
+        # Sort by favorite chains, then by code
         chains_view.sortItems(0, Qt.AscendingOrder)
+        chains_view.sortItems(3, Qt.AscendingOrder)
         main_layout.addWidget(chains_view)
 
         main_layout.addLayout(ok_cancel_buttons(self))
@@ -34,27 +36,30 @@ class ChangeCurrencyDialog(QDialog):
     def create_chains_view(self):
         self.chains_view = chains_view = QTreeWidget()
         if self.verbose_view:
-            chains_view.setColumnCount(4)
-            chains_view.setHeaderLabels([ _('Code'), _('Currency'), _('Initialized'), _('PoW'), _('Servers') ])
+            chains_view.setColumnCount(6)
+            chains_view.setHeaderLabels([ _('Code'), _('Currency'), _('Initialized'), _('Favorite'), _('PoW'), _('Servers') ])
             chains_view.setColumnWidth(0, 90)
             chains_view.setColumnWidth(1, 150)
             chains_view.setColumnWidth(2, 80)
-            chains_view.setColumnWidth(3, 60)
-            chains_view.setColumnWidth(4, 50)
-            chains_view.setMinimumWidth(500)
+            chains_view.setColumnWidth(3, 80)
+            chains_view.setColumnWidth(4, 60)
+            chains_view.setColumnWidth(5, 50)
+            chains_view.setMinimumWidth(540)
         else:
-            chains_view.setColumnCount(2)
-            chains_view.setHeaderLabels([ _('Code'), _('Currency'), _('Initialized') ])
+            chains_view.setColumnCount(4)
+            chains_view.setHeaderLabels([ _('Code'), _('Currency'), _('Initialized'), _('Favorite') ])
             chains_view.setColumnWidth(0, 90)
             chains_view.setColumnWidth(1, 150)
             chains_view.setColumnWidth(2, 80)
-            chains_view.setMinimumWidth(400)
+            chains_view.setColumnWidth(3, 80)
+            chains_view.setMinimumWidth(430)
 
     def refresh_chains(self):
         chains_view = self.chains_view
         chains_view.clear()
 
         chains = chainparams.known_chains
+        favorites = self.parent.config.get_above_chain('favorite_chains', [])
         # Yes or No
         y_or_n = lambda x: 'Yes' if x==True else 'No'
         for ch in sorted(chains, key=operator.attrgetter('code')):
@@ -64,13 +69,14 @@ class ChangeCurrencyDialog(QDialog):
             if dummy_key is None:
                 is_initialized = False
 
+            is_favorite = ch.code in favorites
             server_trust = chainparams.get_server_trust(ch.code)
             uses_pow = server_trust['pow']
             num_servers = server_trust['servers']
             if self.verbose_view:
-                item = QTreeWidgetItem([ch.code, ch.coin_name, y_or_n(is_initialized), y_or_n(uses_pow), str(num_servers)])
+                item = QTreeWidgetItem([ch.code, ch.coin_name, y_or_n(is_initialized), y_or_n(is_favorite), y_or_n(uses_pow), str(num_servers)])
             else:
-                item = QTreeWidgetItem([ch.code, ch.coin_name, y_or_n(is_initialized)])
+                item = QTreeWidgetItem([ch.code, ch.coin_name, y_or_n(is_initialized), y_or_n(is_favorite)])
             chains_view.addTopLevelItem(item)
         chains_view.setCurrentItem(chains_view.topLevelItem(0))
         chains_view.setSortingEnabled(True)
@@ -96,13 +102,17 @@ class ChangeCurrencyDialog(QDialog):
         key_layout.addWidget(QLabel(_('Whether this currency has been activated before.')), 0, 1)
         key_layout.addWidget(HelpButton(_('The first time you use a currency, you must enter your password to initialize it.')), 0, 2)
 
-        if self.verbose_view:
-            key_layout.addWidget(QLabel(_('PoW:')), 1, 0)
-            key_layout.addWidget(QLabel(_('Whether this wallet verifies proof-of-work.')), 1, 1)
-            key_layout.addWidget(HelpButton(_('Verifying proof-of-work helps ensure that data the wallet receives is legitimate.')), 1, 2)
+        key_layout.addWidget(QLabel(_('Favorite:')), 1, 0)
+        key_layout.addWidget(QLabel(_('Whether this currency is in your favorites.')), 1, 1)
+        key_layout.addWidget(HelpButton(_('Favorite chains are specified in Preferences.')), 1, 2)
 
-            key_layout.addWidget(QLabel(_('Servers:')), 2, 0)
-            key_layout.addWidget(QLabel(_('Number of default servers this currency has.')), 2, 1)
-            key_layout.addWidget(HelpButton(_('The more servers there are, the less trust has to be placed in one party.')), 2, 2)
+        if self.verbose_view:
+            key_layout.addWidget(QLabel(_('PoW:')), 2, 0)
+            key_layout.addWidget(QLabel(_('Whether this wallet verifies proof-of-work.')), 2, 1)
+            key_layout.addWidget(HelpButton(_('Verifying proof-of-work helps ensure that data the wallet receives is legitimate.')), 2, 2)
+
+            key_layout.addWidget(QLabel(_('Servers:')), 3, 0)
+            key_layout.addWidget(QLabel(_('Number of default servers this currency has.')), 3, 1)
+            key_layout.addWidget(HelpButton(_('The more servers there are, the less trust has to be placed in one party.')), 3, 2)
 
         main_layout.addLayout(key_layout)
