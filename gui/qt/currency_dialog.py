@@ -4,10 +4,72 @@ from PyQt4.QtCore import *
 
 from chainkey.i18n import _
 from chainkey import chainparams
+from chainkey.util import print_error
 
 from util import HelpButton, ok_cancel_buttons
 
+import functools
 import operator
+
+class FavoriteCurrenciesDialog(QDialog):
+    def __init__(self, parent):
+        QDialog.__init__(self, parent)
+        self.parent = parent
+        self.setWindowTitle(_('Favorite Coins'))
+        known_chains = chainparams.known_chain_codes
+        self.favorites = self.parent.config.get_above_chain('favorite_chains', [])
+        # sanity check, just in case. Main window should have already done this
+        if len(self.favorites) > 3: self.favorites = self.favorites[:3]
+
+        self.main_layout = vbox = QVBoxLayout()
+        limit_label = QLabel(_('Up to three coins may be selected as "favorites."\nThey will be listed before other coins in the currency selection dialog.'))
+        vbox.addWidget(limit_label)
+
+        self.coin_checkboxes = []
+        for coin in known_chains:
+            checkbox = QCheckBox(coin)
+            checkbox.setChecked(coin in self.favorites)
+            checkbox.stateChanged.connect(functools.partial(self.change_coin_state, checkbox))
+            self.coin_checkboxes.append(checkbox)
+            vbox.addWidget(checkbox)
+
+        vbox.addLayout(ok_cancel_buttons(self, ok_label=_('Save')))
+        self.accepted.connect(self.save_favorites)
+        self.setLayout(vbox)
+        self.enforce_limit()
+
+    def enforce_limit(self):
+        """Enforce limit on list of favorite chains."""
+        if not self.coin_checkboxes: return
+        if len(self.favorites) < 3:
+            for box in self.coin_checkboxes:
+                box.setEnabled(True)
+        else:
+            for box in self.coin_checkboxes:
+                if not box.isChecked():
+                    box.setEnabled(False)
+
+    def change_coin_state(self, checkbox):
+        code = str(checkbox.text())
+        is_favorite = checkbox.isChecked()
+        if is_favorite and code not in self.favorites:
+            self.favorites.append(code)
+        elif not is_favorite and code in self.favorites:
+            self.favorites.remove(code)
+        self.enforce_limit()
+
+    def save_favorites(self):
+        print_error("Saving new favorite chains: {}".format(map(lambda x: x.encode('ascii', 'ignore'), self.favorites)))
+        self.parent.config.set_key_above_chain('favorite_chains', self.favorites, True)
+
+def append_currency_key(grid, label, key, helpbutton):
+    """Add an explanation of a column to grid."""
+    row = grid.rowCount()
+    grid.addWidget(QLabel(label), row, 0)
+    key_label = QLabel(key)
+    key_label.setWordWrap(True)
+    grid.addWidget(key_label, row, 1)
+    grid.addWidget(HelpButton(helpbutton), row, 2)
 
 class ChangeCurrencyDialog(QDialog):
 
@@ -23,11 +85,7 @@ class ChangeCurrencyDialog(QDialog):
         self.create_chains_view()
         self.refresh_chains()
 
-        chains_view = self.chains_view
-        # Sort by favorite chains, then by code
-        chains_view.sortItems(0, Qt.AscendingOrder)
-        chains_view.sortItems(3, Qt.AscendingOrder)
-        main_layout.addWidget(chains_view)
+        main_layout.addWidget(self.chains_view)
 
         main_layout.addLayout(ok_cancel_buttons(self))
 
@@ -79,11 +137,13 @@ class ChangeCurrencyDialog(QDialog):
                 item = QTreeWidgetItem([ch.code, ch.coin_name, y_or_n(is_initialized), y_or_n(is_favorite)])
             chains_view.addTopLevelItem(item)
         chains_view.setCurrentItem(chains_view.topLevelItem(0))
-        chains_view.setSortingEnabled(True)
+        # Sort by favorite chains, then by code
+        chains_view.sortItems(0, Qt.AscendingOrder)
+        chains_view.sortItems(3, Qt.DescendingOrder)
 
     def create_chains_info(self):
         main_layout = self.main_layout
-        change_info = QLabel(_("Select a currency to start using it. The key below explains the column(s) in the currency table."))
+        change_info = QLabel(_("Select a currency to start using it. The key below explains the columns in the currency table."))
         change_info.setWordWrap(True)
         main_layout.addWidget(change_info)
 
@@ -97,22 +157,23 @@ class ChangeCurrencyDialog(QDialog):
         key_layout.setSpacing(0)
         key_layout.setColumnMinimumWidth(0, 75)
         key_layout.setColumnStretch(1, 1)
+        key_layout.setVerticalSpacing(6)
 
-        key_layout.addWidget(QLabel(_('Initialized:')), 0, 0)
-        key_layout.addWidget(QLabel(_('Whether this currency has been activated before.')), 0, 1)
-        key_layout.addWidget(HelpButton(_('The first time you use a currency, you must enter your password to initialize it.')), 0, 2)
+        append_currency_key(key_layout, _('Initialized:'),
+                _('Whether this currency has been activated before.'),
+                _('The first time you use a currency, you must enter your password to initialize it.'))
 
-        key_layout.addWidget(QLabel(_('Favorite:')), 1, 0)
-        key_layout.addWidget(QLabel(_('Whether this currency is in your favorites.')), 1, 1)
-        key_layout.addWidget(HelpButton(_('Favorite chains are specified in Preferences.')), 1, 2)
+        append_currency_key(key_layout, _('Favorite:'),
+                _('Whether this currency is in your favorites.'),
+                _('Favorite coins are specified in Preferences.'))
 
         if self.verbose_view:
-            key_layout.addWidget(QLabel(_('PoW:')), 2, 0)
-            key_layout.addWidget(QLabel(_('Whether this wallet verifies proof-of-work.')), 2, 1)
-            key_layout.addWidget(HelpButton(_('Verifying proof-of-work helps ensure that data the wallet receives is legitimate.')), 2, 2)
+            append_currency_key(key_layout, _('PoW:'),
+                    _('Whether this wallet verifies proof-of-work.'),
+                    _('Verifying proof-of-work helps ensure that data the wallet receives is legitimate.'))
 
-            key_layout.addWidget(QLabel(_('Servers:')), 3, 0)
-            key_layout.addWidget(QLabel(_('Number of default servers this currency has.')), 3, 1)
-            key_layout.addWidget(HelpButton(_('The more servers there are, the less trust has to be placed in one party.')), 3, 2)
+            append_currency_key(key_layout, _('Servers:'),
+                    _('Number of default servers this currency has.'),
+                    _('The more servers there are, the less trust has to be placed in one party.'))
 
         main_layout.addLayout(key_layout)
