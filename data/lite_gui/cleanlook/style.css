@@ -1,4 +1,4 @@
-#main_window
+#lite_window
 {
   background: qlineargradient(x1: 0, y1: 0, x2:0,y2:1, stop: 0 white , stop: 1 #E8E8E8);
 }
@@ -13,7 +13,7 @@ MiniWindow QPushButton {
   min-width: 30px;
 }
 
-#send_button{
+#lite_send_button{
   color: #FFF;
   border: 1px solid #3786E6;
   border-radius: 4px;
@@ -23,14 +23,14 @@ MiniWindow QPushButton {
   width: 20px;
 }
 
-#send_button:disabled{
+#lite_send_button:disabled{
   color: #D3E8FE;
   border: 1px solid #6DAEF7;
   border-radius: 4px;
   background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
   stop: 0 #A5CFFA, stop: 1 #72B2F8);
 }
-#address_input, #amount_input, #label_input
+#lite_address_input, #lite_amount_input, #lite_label_input
 {
     color: #000;
     padding: 5px;
@@ -40,22 +40,22 @@ MiniWindow QPushButton {
     width: 200px;
 }
 
-#address_input[isValid=true]
+#lite_address_input[isValid=true]
 {
   color: #4D9948;
 }
 
-#address_input[isValid=false]
+#lite_address_input[isValid=false]
 {
   color: #CE4141;
 }
 
-#balance_label
+#lite_balance_label
 {
     color: #333;
 }
 
-#history
+#lite_history
 {
     color: #888;
 }

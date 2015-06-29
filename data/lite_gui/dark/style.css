@@ -1,34 +1,34 @@
-#main_window
+#lite_window
 {
     background-image: url(:/icons/dark_background.png);
 }
 
-#address_input[readOnly=true], #amount_input[readOnly=true]
+#lite_address_input[readOnly=true], #lite_amount_input[readOnly=true]
 {
     font: italic;
     color: gray;
 }
-#address_input[readOnly=false], #amount_input[readOnly=false]
+#lite_address_input[readOnly=false], #lite_amount_input[readOnly=false]
 {
     font: normal;
     color: black;
 }
 
-#valid_address::indicator
+#lite_valid_address::indicator
 {
     width: 24px;
     height: 24px;
 }
-#valid_address::indicator:checked
+#lite_valid_address::indicator:checked
 {
     image: url(confirmed.png);
 }
-#valid_address::indicator:unchecked
+#lite_valid_address::indicator:unchecked
 {
     image: url(unconfirmed.png);
 }
 
-#balance_label
+#lite_balance_label
 {
     color: white;
 }

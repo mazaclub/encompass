@@ -1,4 +1,4 @@
-#main_window
+#lite_window
 {
   background: qlineargradient(x1: 0, y1: 0, x2:0,y2:1, stop: 0 white , stop: 1 #F2E3BE);
 }
@@ -13,7 +13,7 @@ MiniWindow QPushButton {
   min-width: 30px;
 }
 
-#send_button{
+#lite_send_button{
   color: #FEEBA7;
   border: 1px solid #AD8B35;
   border-radius: 4px;
@@ -24,7 +24,7 @@ MiniWindow QPushButton {
   padding: 2px;
 }
 
-#send_button:disabled{
+#lite_send_button:disabled{
   color: #FEEDD3;
   border: 1px solid #F7D46D;
   border-radius: 4px;
@@ -35,7 +35,7 @@ MiniWindow QPushButton {
   padding: 2px;
 }
 
-#receive_button
+#lite_receive_button
 {
   color: #FEEBA7;
   border: 1px solid #AD8B35;
@@ -45,14 +45,14 @@ MiniWindow QPushButton {
   min-height: 25px;
   min-width: 30px;
 }          
-#receive_button[isActive=true]
+#lite_receive_button[isActive=true]
 {
   color: #FEEBA7;
   background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
   stop: 0 #E0A035, stop: 1 #987620);
 } 
 
-#address_input, #amount_input
+#lite_address_input, #lite_amount_input
 {
     color: #000;
     padding: 5px;
@@ -61,7 +61,7 @@ MiniWindow QPushButton {
     width: 225px;
 }
 
-#address_input[isValid=true]
+#lite_address_input[isValid=true]
 {
   color: #4D9948;
   padding: 5px;
@@ -71,7 +71,7 @@ MiniWindow QPushButton {
   margin-top: 4px;
 }
 
-#address_input[isValid=false]
+#lite_address_input[isValid=false]
 {
   color: #CE4141;
   padding: 5px;
@@ -81,7 +81,7 @@ MiniWindow QPushButton {
   margin-top: 4px;
 }
 
-#address_input[isValid=placeholder]
+#lite_address_input[isValid=placeholder]
 {
   color: #DEC58D;
   padding: 5px;
@@ -90,12 +90,12 @@ MiniWindow QPushButton {
   width: 225px;
   margin-top: 4px;
 }
-#balance_label
+#lite_balance_label
 {
     color: #7E5907;
 }
 
-#history
+#lite_history
 {
     color: #8B6914;
 }

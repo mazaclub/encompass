@@ -64,7 +64,7 @@ class TransactionWindow(QDialog):
 
         self.label_edit = QLineEdit()
         self.label_edit.setPlaceholderText(_("Transaction label"))
-        self.label_edit.setObjectName("label_input")
+        self.label_edit.setObjectName("lite_label_input")
         self.label_edit.setAttribute(Qt.WA_MacShowFocusRect, 0)
         self.label_edit.setFocusPolicy(Qt.ClickFocus)
         self.layout.addWidget(self.label_edit)
@@ -93,13 +93,13 @@ class MiniWindow(QDialog):
         self.connect(self, SIGNAL("refresh_balance()"), self.refresh_balance)
 
         self.balance_label = BalanceLabel(self.change_quote_currency, self)
-        self.balance_label.setObjectName("balance_label")
+        self.balance_label.setObjectName("lite_balance_label")
 
 
         # Bitcoin address code
         self.address_input = QLineEdit()
         self.address_input.setPlaceholderText(_("Enter a coin address or contact"))
-        self.address_input.setObjectName("address_input")
+        self.address_input.setObjectName("lite_address_input")
 
         self.address_input.setFocusPolicy(Qt.ClickFocus)
 
@@ -118,7 +118,7 @@ class MiniWindow(QDialog):
 
         self.amount_input = QLineEdit()
         self.amount_input.setPlaceholderText(_("... and amount") + " (%s)"%self.actuator.g.base_unit())
-        self.amount_input.setObjectName("amount_input")
+        self.amount_input.setObjectName("lite_amount_input")
 
         self.amount_input.setFocusPolicy(Qt.ClickFocus)
         # This is changed according to the user's displayed balance
@@ -137,7 +137,7 @@ class MiniWindow(QDialog):
         #else:
         #    self.send_button = QPushButton(_("&Create"))
 
-        self.send_button.setObjectName("send_button")
+        self.send_button.setObjectName("lite_send_button")
         self.send_button.setDisabled(True);
         self.send_button.clicked.connect(self.send)
 
@@ -159,14 +159,14 @@ class MiniWindow(QDialog):
         self.send_button.setMaximumWidth(125)
 
         self.history_list = history_widget.HistoryWidget()
-        self.history_list.setObjectName("history")
+        self.history_list.setObjectName("lite_history")
         self.history_list.hide()
         self.history_list.setAlternatingRowColors(True)
 
         main_layout.addWidget(self.history_list, 3, 0, 1, 4)
 
         self.receiving = receiving_widget.ReceivingWidget(self)
-        self.receiving.setObjectName("receiving")
+        self.receiving.setObjectName("lite_receiving")
 
         # Add to the right side
         self.receiving_box = QGroupBox(_("Select a receiving address"))
@@ -213,7 +213,7 @@ class MiniWindow(QDialog):
         self.setWindowTitle("Encompass")
         self.setWindowFlags(Qt.Window|Qt.MSWindowsFixedSizeDialogHint)
         self.layout().setSizeConstraint(QLayout.SetFixedSize)
-        self.setObjectName("main_window")
+        self.setObjectName("lite_window")
 
 
     def context_menu(self):
