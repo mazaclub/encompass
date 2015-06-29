@@ -1,4 +1,4 @@
-from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex
+from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, bits_to_target, target_to_bits
 import os
 
 import coinhash
@@ -121,30 +121,6 @@ class Groestlcoin(CryptoCur):
         h = f.write(data)
         f.close()
 
-    def bits_to_target(self, bits):
-        MM = 256*256*256
-        a = bits%MM
-        if a < 0x8000:
-            a *= 256
-        target = (a) * pow(2, 8 * (bits/MM - 3))
-        return target
-
-    def target_to_bits(self, target):
-        MM = 256*256*256
-        c = ("%064X"%target)[2:]
-        i = 31
-        while c[0:2]=="00":
-            c = c[2:]
-            i -= 1
-
-        c = int('0x'+c[0:6],16)
-        if c >= 0x800000:
-            c /= 256
-            i += 1
-
-        new_bits = c + MM * i
-        return new_bits
-
 
     def get_target_dgw3(self, block_height, chain=None):
         if chain is None:
@@ -178,9 +154,9 @@ class Groestlcoin(CryptoCur):
 
             if CountBlocks <= PastBlocksMin:
                 if CountBlocks == 1:
-                    PastDifficultyAverage = self.bits_to_target(BlockReading.get('bits'))
+                    PastDifficultyAverage = bits_to_target(BlockReading.get('bits'))
                 else:
-                    bnNum = self.bits_to_target(BlockReading.get('bits'))
+                    bnNum = bits_to_target(BlockReading.get('bits'))
                     PastDifficultyAverage = ((PastDifficultyAveragePrev * CountBlocks)+(bnNum)) / (CountBlocks + 1)
                 PastDifficultyAveragePrev = PastDifficultyAverage
 
@@ -206,7 +182,7 @@ class Groestlcoin(CryptoCur):
         bnNew /= nTargetTimespan
         bnNew = min(bnNew, max_target)
 
-        new_bits = self.target_to_bits(bnNew)
+        new_bits = target_to_bits(bnNew)
         return new_bits, bnNew
 
     def get_target(self, block_height, chain=None):

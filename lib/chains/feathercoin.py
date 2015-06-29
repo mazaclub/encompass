@@ -1,5 +1,5 @@
 '''Chain-specific Feathercoin code'''
-from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex
+from cryptocur import CryptoCur, hash_encode, hash_decode, rev_hex, int_to_hex, bits_to_target, target_to_bits
 import os
 
 from coinhash import SHA256dHash, NeoscryptHash, ScryptHash
@@ -9,31 +9,6 @@ fork_one = 33000
 fork_two = 87948
 fork_three = 204639
 fork_four = 432000
-
-def bits_to_target(bits):
-    MM = 256*256*256
-    a = bits%MM
-    if a < 0x8000:
-        a *= 256
-    target = (a) * pow(2, 8 * (bits/MM - 3))
-    return target
-
-def target_to_bits(target):
-    MM = 256*256*256
-    c = ("%064X"%target)[2:]
-    i = 31
-    while c[0:2]=="00":
-        c = c[2:]
-        i -= 1
-
-    c = int('0x'+c[0:6],16)
-    if c >= 0x800000:
-        c /= 256
-        i += 1
-
-    new_bits = c + MM * i
-    return new_bits
-
 
 class Feathercoin(CryptoCur):
     PoW = True
