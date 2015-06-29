@@ -233,7 +233,7 @@ class CryptoCur(object):
         return h
 
     def hash_header(self, header):
-        return rev_hex(self.header_hash(self.header_to_string(header).decode('hex')).encode('hex'))
+        return rev_hex(( getattr(coinhash, self.header_hash.__name__)(self.header_to_string(header).decode('hex')) ).encode('hex'))
 
     # save a chunk of headers to the binary file. Should not need to be reimplemented but can be.
     def save_chunk(self, index, chunk):
