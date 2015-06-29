@@ -64,7 +64,8 @@ Lastly, after the currency class definition, it is required to define a variable
 All functions for verifying headers are required in a chainkey module. Most importantly, `get_target()`, `verify_chain()`, and `verify_chunk()`, but also any functions they rely on, including `header_to_string()`, `header_from_string()`, `hash_header()`, `save_chunk()`, `save_header()`, and `read_header()`.
 
 The base class CryptoCur implements some of these functions, since they're unlikely to differ from blockchain to blockchain. They can be re-implemented in a chainkey module's class if necessary.
-The functions CryptoCur implements are: `verify_chain()`, `verify_chunk()`, `header_to_string()`, `header_from_string()`, `save_chunk()`, `save_header()`, and `read_header()`.
+The functions CryptoCur implements are: `verify_chain()`, `verify_chunk()`, `header_to_string()`, `header_from_string()`, `hash_header()`, `save_chunk()`, `save_header()`, and `read_header()`.
+This leaves only `get_target()` as the method that must always be implemented in a Chainkey module's class.
 
 Note that commonly in Electrum forks, the functions `save_chunk()` and `save_header()` make a call to a function `set_local_height()`.
 This call must be removed in the chainkey module, as `set_local_height()` is called elsewhere. Also note that any calls to `print_error()` may be removed, as importing that function is not required.

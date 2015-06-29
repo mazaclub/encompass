@@ -90,6 +90,7 @@ class CryptoCur(object):
 
     ### Hash Algorithms ###
     base58_hash = coinhash.SHA256dHash
+    header_hash = coinhash.SHA256dHash
     transaction_hash = coinhash.SHA256dHash
 
     # Block explorers {name : URL}
@@ -232,7 +233,7 @@ class CryptoCur(object):
         return h
 
     def hash_header(self, header):
-        pass
+        return rev_hex(self.header_hash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     # save a chunk of headers to the binary file. Should not need to be reimplemented but can be.
     def save_chunk(self, index, chunk):
