@@ -316,7 +316,7 @@ class Transaction:
         return self
 
     def update(self, raw):
-        d = deserialize(raw)
+        d = deserialize(raw, self.active_chain)
         self.raw = raw
         self.inputs = d['inputs']
         self.outputs = map(lambda x: (x['type'], x['address'], x['value']), d['outputs'])
