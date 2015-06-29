@@ -76,7 +76,8 @@ def theme_dirs_from_prefix(prefix):
 
 def load_theme_paths():
     theme_paths = {}
-    theme_paths.update(theme_dirs_from_prefix(util.data_dir()))
+    lite_theme_dir = os.path.join(util.data_dir(), 'lite_gui')
+    theme_paths.update(theme_dirs_from_prefix(lite_theme_dir))
     return theme_paths
 
 
