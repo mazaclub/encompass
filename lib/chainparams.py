@@ -1,5 +1,5 @@
 from collections import namedtuple
-from util import print_error
+from util import print_msg, print_error
 import importlib
 import traceback, sys
 import hashes
@@ -125,23 +125,25 @@ def get_chain_instance(code):
     if not is_known_chain(code): return None
     params = get_params(code)
     module_name = params.module_name
-    # If we're running tests, try the local path first.
-    if testing_mode:
-        # If importing fails, try with a different path.
-        try:
-            classmodule = importlib.import_module(''.join(['lib.chains.', module_name]))
-        except (AttributeError, ImportError):
-            classmodule = importlib.import_module(''.join(['chainkey.chains.', module_name]))
-        finally:
-            classInst = getattr(classmodule, 'Currency')
-    else:
-        # If importing fails, try with a different path.
-        try:
-            classmodule = importlib.import_module(''.join(['chainkey.chains.', module_name]))
-        except (AttributeError, ImportError):
-            classmodule = importlib.import_module(''.join(['lib.chains.', module_name]))
-        finally:
-            classInst = getattr(classmodule, 'Currency')
+    classmodule = None
+    try:
+        # If we're running tests, try the local path first.
+        if testing_mode:
+            # If importing fails, try with a different path.
+            try:
+                classmodule = importlib.import_module(''.join(['lib.chains.', module_name]))
+            except (AttributeError, ImportError):
+                classmodule = importlib.import_module(''.join(['chainkey.chains.', module_name]))
+        else:
+            # If importing fails, try with a different path.
+            try:
+                classmodule = importlib.import_module(''.join(['chainkey.chains.', module_name]))
+            except (AttributeError, ImportError):
+                classmodule = importlib.import_module(''.join(['lib.chains.', module_name]))
+        classInst = getattr(classmodule, 'Currency')
+    except (AttributeError, ImportError):
+        print_msg("Error: Cannot load chain '{}'.".format(code))
+        return None
     return classInst()
 
 def run_chainhook(name, *args):
