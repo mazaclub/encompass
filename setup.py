@@ -152,6 +152,7 @@ setup(
         'chainkey_gui.qt.qrtextedit',
         'chainkey_gui.qt.receiving_widget',
         'chainkey_gui.qt.seed_dialog',
+        'chainkey_gui.qt.style',
         'chainkey_gui.qt.transaction_dialog',
         'chainkey_gui.qt.util',
         'chainkey_gui.qt.version_getter',

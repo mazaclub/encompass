@@ -131,7 +131,7 @@ class ElectrumGui:
             self.lite_window = None
             return
 
-        actuator = lite_window.MiniActuator(self.main_window)
+        actuator = lite_window.MiniActuator(self.main_window, is_lite=True)
         actuator.load_theme()
         self.lite_window = lite_window.MiniWindow(actuator, self.go_full, self.config)
         driver = lite_window.MiniDriver(self.main_window, self.lite_window)
