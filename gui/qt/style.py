@@ -58,6 +58,7 @@ class Actuator:
     def __init__(self, main_window, is_lite=False):
         self.g = main_window
         self.gui_type = 'maingui_theme'
+        self.is_lite = is_lite
         self.default_gui_theme = 'Default'
         if is_lite:
             self.gui_type = 'litegui_theme'
@@ -68,6 +69,8 @@ class Actuator:
 
     def load_theme(self):
         """Load theme retrieved from wallet file."""
+        # No lite window stylesheets
+        if self.is_lite: return
         try:
             theme_prefix, theme_path = self.themes[self.theme_name]
         except KeyError:

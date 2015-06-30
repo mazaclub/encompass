@@ -191,6 +191,12 @@ class ElectrumWindow(QMainWindow):
         self.not_enough_funds = False
         self.change_currency_window = None
 
+        self.setObjectName("main_window")
+
+    def recompute_style(self, element):
+        self.style().unpolish(element)
+        self.style().polish(element)
+
     def update_account_selector(self):
         # account selector
         accounts = self.wallet.get_account_names()
@@ -899,6 +905,7 @@ class ElectrumWindow(QMainWindow):
 
         from paytoedit import PayToEdit
         self.amount_e = BTCAmountEdit(self.get_decimal_point)
+        self.amount_e.setObjectName('amount_edit')
         self.payto_e = PayToEdit(self)
         self.payto_help = HelpButton(_('Recipient of the funds.') + '\n\n' + _('You may enter a coin address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to a coin address)'))
         grid.addWidget(QLabel(_('Pay to')), 1, 0)
@@ -938,6 +945,7 @@ class ElectrumWindow(QMainWindow):
 
         self.fee_e_label = QLabel(_('Fee'))
         self.fee_e = BTCAmountEdit(self.get_decimal_point)
+        self.fee_e.setObjectName('fee_edit')
         grid.addWidget(self.fee_e_label, 5, 0)
         grid.addWidget(self.fee_e, 5, 1, 1, 2)
         msg = _('Coin transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
@@ -991,18 +999,18 @@ class ElectrumWindow(QMainWindow):
 
         def entry_changed():
             if not self.not_enough_funds:
-                palette = QPalette()
-                palette.setColor(self.amount_e.foregroundRole(), QColor('black'))
+                self.amount_e.setProperty("notEnoughFunds", False)
+                self.fee_e.setProperty("notEnoughFunds", False)
                 text = ""
             else:
-                palette = QPalette()
-                palette.setColor(self.amount_e.foregroundRole(), QColor('red'))
+                self.amount_e.setProperty("notEnoughFunds", True)
+                self.fee_e.setProperty("notEnoughFunds", True)
                 text = _( "Not enough funds" )
                 c, u = self.wallet.get_frozen_balance()
                 if c+u: text += ' (' + self.format_amount(c+u).strip() + ' ' + self.base_unit() + ' ' +_("are frozen") + ')'
             self.statusBar().showMessage(text)
-            self.amount_e.setPalette(palette)
-            self.fee_e.setPalette(palette)
+            self.recompute_style(self.amount_e)
+            self.recompute_style(self.fee_e)
 
         self.amount_e.textChanged.connect(entry_changed)
         self.fee_e.textChanged.connect(entry_changed)

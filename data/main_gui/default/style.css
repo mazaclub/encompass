@@ -1,0 +1,4 @@
+#amount_edit[notEnoughFunds=true], #fee_edit[notEnoughFunds=true]
+{
+  color: red;
+}
