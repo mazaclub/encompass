@@ -39,23 +39,10 @@ if (len(sys.argv) > 1 and (sys.argv[1] == "sdist")) or (platform.system() != 'Wi
             data_files.append((os.path.join(usr_share, 'locale/%s/LC_MESSAGES' % lang), ['locale/%s/LC_MESSAGES/electrum.mo' % lang]))
 
 appdata_dir = os.path.join(usr_share, "encompass")
-lite_gui_dir = os.path.join(appdata_dir, "lite_gui")
 main_gui_dir = os.path.join(appdata_dir, "main_gui")
 
 data_files += [
     (appdata_dir, ["data/README"]),
-    (os.path.join(lite_gui_dir, "cleanlook"), [
-        "data/lite_gui/cleanlook/name.cfg",
-        "data/lite_gui/cleanlook/style.css"
-    ]),
-    (os.path.join(lite_gui_dir, "sahara"), [
-        "data/lite_gui/sahara/name.cfg",
-        "data/lite_gui/sahara/style.css"
-    ]),
-    (os.path.join(lite_gui_dir, "dark"), [
-        "data/lite_gui/dark/name.cfg",
-        "data/lite_gui/dark/style.css"
-    ]),
     (os.path.join(main_gui_dir, "default"), [
         "data/main_gui/default/name.cfg",
         "data/main_gui/default/style.css"

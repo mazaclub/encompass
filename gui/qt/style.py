@@ -42,11 +42,9 @@ def theme_dirs_from_prefix(prefix):
         theme_paths[theme_name] = prefix, potential_theme
     return theme_paths
 
-def load_theme_paths(is_lite=False):
+def load_theme_paths():
     theme_paths = {}
     gui_name = 'main_gui'
-    if is_lite:
-        gui_name = 'lite_gui'
     theme_dir = os.path.join(util.data_dir(), gui_name)
     theme_paths.update(theme_dirs_from_prefix(theme_dir))
     return theme_paths
@@ -60,11 +58,8 @@ class Actuator:
         self.gui_type = 'maingui_theme'
         self.is_lite = is_lite
         self.default_gui_theme = 'Default'
-        if is_lite:
-            self.gui_type = 'litegui_theme'
-            self.default_gui_theme = 'Cleanlook'
         self.theme_name = self.g.config.get_above_chain(self.gui_type, self.default_gui_theme)
-        self.themes = load_theme_paths(is_lite)
+        self.themes = load_theme_paths()
         self.load_theme()
 
     def load_theme(self):
