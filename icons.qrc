@@ -1,30 +1,33 @@
 <RCC>
   <qresource prefix="/" >
     <file>icons/encompass.png</file>
-    <file>icons/clock1.png</file>
-    <file>icons/clock2.png</file>
-    <file>icons/clock3.png</file>
-    <file>icons/clock4.png</file>
-    <file>icons/clock5.png</file>
-    <file>icons/confirmed.png</file>
     <file>icons/key.png</file>
-    <file>icons/lock.png</file>
-    <file>icons/unlock.png</file>
-    <file>icons/preferences.png</file>
     <file>icons/seed.png</file>
     <file>icons/hot_seed.png</file>
     <file>icons/cold_seed.png</file>
-    <file>icons/status_connected.png</file>
-    <file>icons/status_disconnected.png</file>
-    <file>icons/status_waiting.png</file>
-    <file>icons/status_lagging.png</file>
     <file>icons/switchgui.png</file>
     <file>icons/electrum_light_icon.png</file>
     <file>icons/electrum_dark_icon.png</file>
-    <file>icons/unconfirmed.png</file>
     <file>icons/network.png</file>
     <file>icons/dark_background.png</file>
     <file>icons/qrcode.png</file>
     <file>icons/trustedcoin.png</file>
+  </qresource>
+
+  <qresource prefix="/theme/Default" >
+    <file alias="confirmed.png">icons/Default/confirmed.png</file>
+    <file alias="clock1.png">icons/Default/clock1.png</file>
+    <file alias="clock2.png">icons/Default/clock2.png</file>
+    <file alias="clock3.png">icons/Default/clock3.png</file>
+    <file alias="clock4.png">icons/Default/clock4.png</file>
+    <file alias="clock5.png">icons/Default/clock5.png</file>
+    <file alias="unconfirmed.png">icons/Default/unconfirmed.png</file>
+    <file alias="lock.png">icons/Default/lock.png</file>
+    <file alias="unlock.png">icons/Default/unlock.png</file>
+    <file alias="preferences.png">icons/Default/preferences.png</file>
+    <file alias="status_connected.png">icons/Default/status_connected.png</file>
+    <file alias="status_disconnected.png">icons/Default/status_disconnected.png</file>
+    <file alias="status_waiting.png">icons/Default/status_waiting.png</file>
+    <file alias="status_lagging.png">icons/Default/status_lagging.png</file>
   </qresource>
 </RCC>

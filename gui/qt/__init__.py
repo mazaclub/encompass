@@ -181,7 +181,7 @@ class ElectrumGui:
         actuator = style.Actuator(self, is_lite=False)
         actuator.load_theme()
         # main window
-        self.main_window = w = ElectrumWindow(self.config, self.network, self)
+        self.main_window = w = ElectrumWindow(self.config, self.network, self, actuator)
         self.current_window = self.main_window
 
         #lite window

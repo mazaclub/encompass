@@ -110,7 +110,7 @@ default_column_widths = { "history":[40,140,350,140], "contacts":[350,330], "rec
 class ElectrumWindow(QMainWindow):
     labelsChanged = pyqtSignal()
 
-    def __init__(self, config, network, gui_object):
+    def __init__(self, config, network, gui_object, actuator=None):
         QMainWindow.__init__(self)
 
         self.config = config
@@ -123,6 +123,10 @@ class ElectrumWindow(QMainWindow):
         self.tray = gui_object.tray
         self.go_lite = gui_object.go_lite
         self.lite = None
+        if actuator is not None:
+            self.actuator = actuator
+        else:
+            self.actuator = None
 
         self.create_status_bar()
         self.need_update = threading.Event()
@@ -504,16 +508,16 @@ class ElectrumWindow(QMainWindow):
 
         if self.network is None or not self.network.is_running():
             text = _("Offline")
-            icon = QIcon(":icons/status_disconnected.png")
+            icon = self.actuator.get_icon("status_disconnected.png")
 
         elif self.network.is_connected():
             server_lag = self.network.get_local_height() - self.network.get_server_height()
             if not self.wallet.up_to_date:
                 text = _("Synchronizing...")
-                icon = QIcon(":icons/status_waiting.png")
+                icon = self.actuator.get_icon("status_waiting.png")
             elif server_lag > 1:
                 text = _("Server is lagging (%d blocks)"%server_lag)
-                icon = QIcon(":icons/status_lagging.png")
+                icon = self.actuator.get_icon("status_lagging.png")
             else:
                 c, u = self.wallet.get_account_balance(self.current_account)
                 text =  _( "Balance" ) + ": %s "%( self.format_amount(c) ) + self.base_unit()
@@ -528,10 +532,10 @@ class ElectrumWindow(QMainWindow):
 
                 if self.tray:
                     self.tray.setToolTip(text)
-                icon = QIcon(":icons/status_connected.png")
+                icon = self.actuator.get_icon("status_connected.png")
         else:
             text = _("Not connected")
-            icon = QIcon(":icons/status_disconnected.png")
+            icon = self.actuator.get_icon("status_disconnected.png")
 
         self.balance_label.setText(text)
         self.status_button.setIcon( icon )
@@ -676,14 +680,14 @@ class ElectrumWindow(QMainWindow):
 
             if conf == -1:
                 time_str = 'unverified'
-                icon = QIcon(":icons/unconfirmed.png")
+                icon = self.actuator.get_icon("unconfirmed.png")
             elif conf == 0:
                 time_str = 'pending'
-                icon = QIcon(":icons/unconfirmed.png")
+                icon = self.actuator.get_icon("unconfirmed.png")
             elif conf < 6:
-                icon = QIcon(":icons/clock%d.png"%conf)
+                icon = self.actuator.get_icon("clock%d.png"%conf)
             else:
-                icon = QIcon(":icons/confirmed.png")
+                icon = self.actuator.get_icon("confirmed.png")
 
             if value is not None:
                 v_str = self.format_amount(value, True, whitespaces=True)
@@ -1763,10 +1767,10 @@ class ElectrumWindow(QMainWindow):
         self.password_button = StatusBarButton( self.lock_icon, _("Password"), self.change_password_dialog )
         sb.addPermanentWidget( self.password_button )
 
-        sb.addPermanentWidget( StatusBarButton( QIcon(":icons/preferences.png"), _("Preferences"), self.settings_dialog ) )
+        sb.addPermanentWidget( StatusBarButton( self.actuator.get_icon("preferences.png"), _("Preferences"), self.settings_dialog ) )
         self.seed_button = StatusBarButton( QIcon(":icons/seed.png"), _("Seed"), self.show_seed_dialog )
         sb.addPermanentWidget( self.seed_button )
-        self.status_button = StatusBarButton( QIcon(":icons/status_disconnected.png"), _("Network"), self.run_network_dialog )
+        self.status_button = StatusBarButton( self.actuator.get_icon("status_disconnected.png"), _("Network"), self.run_network_dialog )
         sb.addPermanentWidget( self.status_button )
 
         run_hook('create_status_bar', (sb,))
@@ -1775,7 +1779,7 @@ class ElectrumWindow(QMainWindow):
 
 
     def update_lock_icon(self):
-        icon = QIcon(":icons/lock.png") if self.wallet.use_encryption else QIcon(":icons/unlock.png")
+        icon = self.actuator.get_icon("lock.png") if self.wallet.use_encryption else self.actuator.get_icon("unlock.png")
         self.password_button.setIcon( icon )
 
 

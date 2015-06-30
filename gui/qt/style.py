@@ -75,6 +75,18 @@ class Actuator:
         with open(full_theme_path) as style_file:
             qApp.setStyleSheet(style_file.read())
 
+    def get_icon(self, name):
+        use_backup = False
+        current_theme = self.selected_theme()
+        theme_dir = QDir(":theme/" + current_theme)
+        if not theme_dir.exists(): use_backup = True
+        if not theme_dir.exists(name): use_backup = True
+
+        # Use default theme image if not found
+        if use_backup:
+            theme_dir = QDir(":theme/Default")
+        return QIcon(theme_dir.filePath(name))
+
     def theme_names(self):
         """Sort themes."""
         return sorted(self.themes.keys())
