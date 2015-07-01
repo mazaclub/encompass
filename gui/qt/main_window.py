@@ -356,7 +356,7 @@ class ElectrumWindow(QMainWindow):
         wallet_menu = menubar.addMenu(_("&Wallet"))
         wallet_menu.addAction(_("&New contact"), self.new_contact_dialog)
         self.new_account_menu = wallet_menu.addAction(_("&New account"), self.new_account_dialog)
-        wallet_menu.addAction(_("Change currency"), self.change_currency_dialog)
+        wallet_menu.addAction(_("&Change currency"), self.change_currency_dialog)
 
         wallet_menu.addSeparator()
 
