@@ -167,36 +167,61 @@ def parse_scriptSig(d, bytes, active_chain=None):
     d['address'] = hash_160_to_bc_address(hash_160(redeemScript.decode('hex')), active_chain.p2sh_version)
 
 
+def _get_address_from_output_script(decoded, matches, active_chain=None):
+    """Find address in output script. matches is a list of tuples of the form:
+        ( opcodes_to_match (list),
+        address type (str),
+        index in script where address is (int),
+        actions to take on extracted data (list) )
 
+        actions to take on extracted data may contain one or more of
+        the following to have the corresponding effect on the extracted data, "data":
+            - 'encode': data.encode('hex')
+            - 'address': hash_160_to_bc_address(data, p2pkh_version)
+            - 'p2sh': hash_160_to_bc_address(data, p2sh_version)
+
+    """
+    if active_chain is None: active_chain = chainparams.get_active_chain()
+    for match, addr_type, data_index, actions in matches:
+        if match_decoded(decoded, match):
+            data = decoded[data_index][1]
+
+            # Convert to address
+            if addr_type == 'address':
+                addr_version = active_chain.p2pkh_version
+                if 'p2sh' in actions:
+                    addr_version = active_chain.p2sh_version
+                data = hash_160_to_bc_address(data, addr_version)
+            # Encode in hex if necessary
+            if 'encode' in actions:
+                data = data.encode('hex')
+
+            return addr_type, data
+
+    return "(None)", "(None)"
 
 def get_address_from_output_script(bytes, active_chain=None):
     if active_chain is None:
         active_chain = chainparams.get_active_chain()
     decoded = [ x for x in script_GetOp(bytes) ]
 
-    # The Genesis Block, self-payments, and pay-by-IP-address payments look like:
-    # 65 BYTES:... CHECKSIG
-    match = [ opcodes.OP_PUSHDATA4, opcodes.OP_CHECKSIG ]
-    if match_decoded(decoded, match):
-        return 'pubkey', decoded[0][1].encode('hex')
+    # list of (opcodes_list, addr_type, addr_data_index, [actions_to_take])
+    # actions_to_take contains things such as 'encode' if the data should be hex-encoded.
+    matches = [
+        # The Genesis Block, self-payments, and pay-by-IP-address payments
+        ([ opcodes.OP_PUSHDATA4, opcodes.OP_CHECKSIG ], 'pubkey', 0, ['encode']),
+        # Pay-to-Public-Key-Hash
+        ([ opcodes.OP_DUP, opcodes.OP_HASH160, opcodes.OP_PUSHDATA4, opcodes.OP_EQUALVERIFY, opcodes.OP_CHECKSIG ], 'address', 2, [None]),
+        # Pay-to-Script-Hash
+        ([ opcodes.OP_HASH160, opcodes.OP_PUSHDATA4, opcodes.OP_EQUAL ], 'address', 1, ['p2sh']),
+        # OP_RETURN (null output)
+        ([ opcodes.OP_RETURN, opcodes.OP_PUSHDATA4 ], 'op_return', 1, [None])
+    ]
 
-    # Pay-by-Bitcoin-address TxOuts look like:
-    # DUP HASH160 20 BYTES:... EQUALVERIFY CHECKSIG
-    match = [ opcodes.OP_DUP, opcodes.OP_HASH160, opcodes.OP_PUSHDATA4, opcodes.OP_EQUALVERIFY, opcodes.OP_CHECKSIG ]
-    if match_decoded(decoded, match):
-        return 'address', hash_160_to_bc_address(decoded[2][1], active_chain.p2pkh_version)
+    run_chainhook('transaction_get_address_from_output_script', opcodes, matches)
 
-    # p2sh
-    match = [ opcodes.OP_HASH160, opcodes.OP_PUSHDATA4, opcodes.OP_EQUAL ]
-    if match_decoded(decoded, match):
-        return 'address', hash_160_to_bc_address(decoded[1][1], active_chain.p2sh_version)
+    return _get_address_from_output_script(decoded, matches, active_chain)
 
-    # OP_RETURN
-    match = [ opcodes.OP_RETURN, opcodes.OP_PUSHDATA4 ]
-    if match_decoded(decoded, match):
-        return 'op_return', decoded[1][1]
-
-    return "(None)", "(None)"
 
 
 
@@ -336,7 +361,7 @@ class Transaction:
         return self
 
     def update(self, raw):
-        d = deserialize(raw)
+        d = deserialize(raw, self.active_chain)
         self.raw = raw
         self.inputs = d['inputs']
         self.outputs = map(lambda x: (x['type'], x['address'], x['value']), d['outputs'])

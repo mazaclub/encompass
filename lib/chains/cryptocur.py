@@ -14,6 +14,33 @@ def int_to_hex(i, length=1):
     s = "0"*(2*length - len(s)) + s
     return rev_hex(s)
 
+def bits_to_target(bits):
+    """Convert a compact representation to a hex target."""
+    MM = 256*256*256
+    a = bits%MM
+    if a < 0x8000:
+        a *= 256
+    target = (a) * pow(2, 8 * (bits/MM - 3))
+    return target
+
+def target_to_bits(target):
+    """Convert a target to compact representation."""
+    MM = 256*256*256
+    c = ("%064X"%target)[2:]
+    i = 31
+    while c[0:2]=="00":
+        c = c[2:]
+        i -= 1
+
+    c = int('0x'+c[0:6],16)
+    if c >= 0x800000:
+        c /= 256
+        i += 1
+
+    new_bits = c + MM * i
+    return new_bits
+
+
 # Chain hook system
 #
 # This allows the active blockchain to hook into arbitrary functions
@@ -63,6 +90,7 @@ class CryptoCur(object):
 
     ### Hash Algorithms ###
     base58_hash = coinhash.SHA256dHash
+    header_hash = coinhash.SHA256dHash
     transaction_hash = coinhash.SHA256dHash
 
     # Block explorers {name : URL}
@@ -95,6 +123,15 @@ class CryptoCur(object):
                     l.append( self.__class__ )
                 chainhooks[k] = l
 
+    # Called on chain reorg. Go back by COINBASE_MATURITY.
+    def reorg_handler(self, local_height):
+        name = self.path()
+        if os.path.exists(name):
+            f = open(name, 'rb+')
+            f.seek((local_height*80) - (self.COINBASE_MATURITY*80))
+            f.truncate()
+            f.close()
+
     # Tell us where our blockchain_headers file is
     def set_headers_path(self, path):
         self.headers_path = path
@@ -104,11 +141,74 @@ class CryptoCur(object):
 
     # Called from blockchain.py when a chain of headers (arbitrary number of headers that's less than a chunk) needs verification.
     def verify_chain(self, chain):
-        pass
+        first_header = chain[0]
+        prev_header = self.read_header(first_header.get('block_height') - 1)
+        # if we don't verify PoW, just check that headers connect by previous_hash
+        if not self.PoW:
+            for header in chain:
+                prev_hash = self.hash_header(prev_header)
+                try:
+                    assert prev_hash == header.get('prev_block_hash')
+                except Exception:
+                    return False
+            return True
+        for header in chain:
+            height = header.get('block_height')
+
+            prev_hash = self.hash_header(prev_header)
+            bits, target = self.get_target(height/self.chunk_size, chain)
+            _hash = self.hash_header(header)
+            try:
+                assert prev_hash == header.get('prev_block_hash')
+                assert bits == header.get('bits')
+                assert int('0x'+_hash,16) < target
+            except Exception:
+                return False
+
+            prev_header = header
+
+        return True
 
     # Called from blockchain.py when a chunk of headers needs verification.
     def verify_chunk(self, index, hexdata):
-        pass
+        data = hexdata.decode('hex')
+        height = index*self.chunk_size
+        num = len(data)/80
+
+        if index == 0:
+            previous_hash = ("0"*64)
+        else:
+            prev_header = self.read_header(index*self.chunk_size-1)
+            if prev_header is None: raise
+            previous_hash = self.hash_header(prev_header)
+
+        # if we don't verify PoW, just check that headers connect by previous_hash
+        if not self.PoW:
+            for i in range(num):
+                raw_header = data[i*80:(i+1)*80]
+                header = self.header_from_string(raw_header)
+                _hash = self.hash_header(header)
+                assert previous_hash == header.get('prev_block_hash')
+                previous_header = header
+                previous_hash = _hash
+            self.save_chunk(index, data)
+            return
+
+        bits, target = self.get_target(index)
+
+        for i in range(num):
+            height = index*self.chunk_size + i
+            raw_header = data[i*80:(i+1)*80]
+            header = self.header_from_string(raw_header)
+            _hash = self.hash_header(header)
+            assert previous_hash == header.get('prev_block_hash')
+            assert bits == header.get('bits')
+            assert int('0x'+_hash,16) < target
+
+            previous_header = header
+            previous_hash = _hash
+
+        self.save_chunk(index, data)
 
     # Most common header format. Reimplement in a derived class if header format differs.
     def header_to_string(self, res):
@@ -133,7 +233,7 @@ class CryptoCur(object):
         return h
 
     def hash_header(self, header):
-        pass
+        return rev_hex(( getattr(coinhash, self.header_hash.__name__)(self.header_to_string(header).decode('hex')) ).encode('hex'))
 
     # save a chunk of headers to the binary file. Should not need to be reimplemented but can be.
     def save_chunk(self, index, chunk):

@@ -206,6 +206,10 @@ def run_cmdline(config):
     if cmdname == 'listrequests' and config.get('status'):
         cmd.requires_network = True
 
+    # set chain if a chain can be specified
+    if cmd.can_specify_chain and config.get('chain') is not None:
+        config.set_active_chain_code(config.get('chain'), False)
+
     # arguments passed to function
     args = map(lambda x: config.get(x), cmd.params)
     # options

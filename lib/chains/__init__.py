@@ -10,3 +10,4 @@ import dogecoin
 import blackcoin
 import feathercoin
 import groestlcoin
+import namecoin
