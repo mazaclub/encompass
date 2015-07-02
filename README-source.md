@@ -47,6 +47,7 @@ Use pip to install all dependencies:
 Use pyrcc4 to build the icons:
    ``` 
    pyrcc4 icons.qrc -o gui/qt/icons_rc.py
+   pyrcc4 data/themes/theme_icons.qrc -o gui/qt/theme_icons_rc.py
    ```
 If you do not have pyrcc4 on your system, you may need to install the PyQt4-devel or pyqt4-dev-tools package first.
 
