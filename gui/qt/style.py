@@ -62,6 +62,27 @@ class Actuator:
         self.theme_name = self.g.config.get_above_chain(self.gui_type, self.default_gui_theme)
         self.themes = load_theme_paths()
         self.load_theme()
+        # There's no easy way to use stylesheets to change the color of individual columns
+        # in a TreeWidgetItem. Therefore, this hack is used.
+        self.brushes = {'tx_date_col': None,
+                    'tx_amount_col': None,
+                    'negative_amount_col': None,
+                    'default_label_col': None,
+                    'tx_label_col': None,
+                    'balance_col': None}
+        for k in self.brushes.keys():
+            v = QWidget()
+            v.setObjectName(k)
+            self.brushes[k] = v
+
+    def get_brush(self, name, default='black'):
+        """Get the brush specified by the current theme's stylesheet for name.
+
+        This is a hack around the limitations on using stylesheets for
+        QTreeWidgetItem rows."""
+        w = self.brushes.get(name)
+        if not w: return QBrush(QColor(default))
+        return w.palette().foreground()
 
     def load_theme(self):
         """Load theme retrieved from wallet file."""
@@ -101,6 +122,7 @@ class Actuator:
         self.theme_name = theme_name
         self.g.config.set_key_above_chain(self.gui_type, theme_name)
         self.load_theme()
+        self.g.main_window.theme_changed()
 
 class ThemeDialog(QDialog):
 

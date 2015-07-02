@@ -3,6 +3,27 @@
   color: red;
 }
 
+/* This is a hack for when a row in the history tab
+has a transaction label. */
+#tx_label_col
+{
+  color: black;
+}
+
+/* This is a hack for when a row in the history tab
+has a negative amount. */
+#negative_amount_col
+{
+  color: #BC1E1E;
+}
+
+/* This is a hack for when a row in the history tab
+uses the default label. */
+#default_label_col
+{
+  color: grey;
+}
+
 /* Lite window styles */
 
 #lite_window
