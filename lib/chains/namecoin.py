@@ -32,7 +32,9 @@ class Namecoin(CryptoCur):
 
     DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}
 
-    DEFAULT_SERVERS = {}
+    DEFAULT_SERVERS = {
+        'e-nmc.us-west-2.maza.club': DEFAULT_PORTS,
+    }
 
     def verify_chain(self, chain):
         first_header = chain[0]
