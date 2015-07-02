@@ -8,6 +8,8 @@ import os
 from chainkey import util
 from util import *
 
+import theme_icons_rc
+
 def IconButton(filename, parent=None):
     pixmap = QPixmap(filename)
     icon = QIcon(pixmap)
@@ -44,8 +46,7 @@ def theme_dirs_from_prefix(prefix):
 
 def load_theme_paths():
     theme_paths = {}
-    gui_name = 'main_gui'
-    theme_dir = os.path.join(util.data_dir(), gui_name)
+    theme_dir = os.path.join(util.data_dir(), 'themes')
     theme_paths.update(theme_dirs_from_prefix(theme_dir))
     return theme_paths
 

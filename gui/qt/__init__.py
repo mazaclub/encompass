@@ -44,6 +44,10 @@ try:
     import icons_rc
 except Exception:
     sys.exit("Error: Could not import icons_rc.py, please generate it with: 'pyrcc4 icons.qrc -o gui/qt/icons_rc.py'")
+try:
+    import theme_icons_rc
+except Exception:
+    sys.exit("Error: Could not import theme_icons_rc.py, please generate it with: 'pyrcc4 data/themes/theme_icons.qrc -o gui/qt/theme_icons_rc.py'")
 
 from util import *
 from main_window import ElectrumWindow

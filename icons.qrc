@@ -13,28 +13,4 @@
     <file>icons/qrcode.png</file>
     <file>icons/trustedcoin.png</file>
   </qresource>
-
-  <qresource prefix="/theme/Default" >
-    <file alias="confirmed.png">icons/Default/confirmed.png</file>
-    <file alias="clock1.png">icons/Default/clock1.png</file>
-    <file alias="clock2.png">icons/Default/clock2.png</file>
-    <file alias="clock3.png">icons/Default/clock3.png</file>
-    <file alias="clock4.png">icons/Default/clock4.png</file>
-    <file alias="clock5.png">icons/Default/clock5.png</file>
-    <file alias="unconfirmed.png">icons/Default/unconfirmed.png</file>
-    <file alias="lock.png">icons/Default/lock.png</file>
-    <file alias="unlock.png">icons/Default/unlock.png</file>
-    <file alias="preferences.png">icons/Default/preferences.png</file>
-    <file alias="status_connected.png">icons/Default/status_connected.png</file>
-    <file alias="status_disconnected.png">icons/Default/status_disconnected.png</file>
-    <file alias="status_waiting.png">icons/Default/status_waiting.png</file>
-    <file alias="status_lagging.png">icons/Default/status_lagging.png</file>
-    <file alias="tab_addresses.png">icons/Default/tab_addresses.png</file>
-    <file alias="tab_console.png">icons/Default/tab_console.png</file>
-    <file alias="tab_contacts.png">icons/Default/tab_contacts.png</file>
-    <file alias="tab_history.png">icons/Default/tab_history.png</file>
-    <file alias="tab_invoices.png">icons/Default/tab_invoices.png</file>
-    <file alias="tab_receive.png">icons/Default/tab_receive.png</file>
-    <file alias="tab_send.png">icons/Default/tab_send.png</file>
-  </qresource>
 </RCC>

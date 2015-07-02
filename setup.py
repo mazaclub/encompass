@@ -39,15 +39,25 @@ if (len(sys.argv) > 1 and (sys.argv[1] == "sdist")) or (platform.system() != 'Wi
             data_files.append((os.path.join(usr_share, 'locale/%s/LC_MESSAGES' % lang), ['locale/%s/LC_MESSAGES/electrum.mo' % lang]))
 
 appdata_dir = os.path.join(usr_share, "encompass")
-main_gui_dir = os.path.join(appdata_dir, "main_gui")
 
 data_files += [
-    (appdata_dir, ["data/README"]),
-    (os.path.join(main_gui_dir, "default"), [
-        "data/main_gui/default/name.cfg",
-        "data/main_gui/default/style.css"
-    ])
+    (appdata_dir, ["data/README"])
 ]
+
+# add theme data
+for theme in os.listdir('data/themes'):
+    if theme == 'theme_icons.qrc':
+        continue
+    # add theme icons
+    if os.path.exists(os.path.join('data/themes', theme, 'icons')):
+        data_files.append((os.path.join(appdata_dir, 'themes', theme, 'icons'),
+                    map(lambda x: os.path.join('data/themes', theme, 'icons', x), os.listdir(os.path.join('data/themes', theme, 'icons')))))
+
+    # add theme style
+    theme_files = os.listdir(os.path.join('data/themes', theme))
+    if 'icons' in theme_files: theme_files.remove('icons')
+    data_files.append((os.path.join(appdata_dir, 'themes', theme),
+                    map(lambda x: os.path.join('data/themes', theme, x), theme_files)))
 
 for lang in os.listdir('data/wordlist'):
     data_files.append((os.path.join(appdata_dir, 'wordlist'), ['data/wordlist/%s' % lang]))
@@ -146,6 +156,8 @@ setup(
         'chainkey_gui.qt.receiving_widget',
         'chainkey_gui.qt.seed_dialog',
         'chainkey_gui.qt.style',
+        'chainkey_gui.qt.theme_icons_rc',
+        'chainkey_gui.qt.installwizard',
         'chainkey_gui.qt.transaction_dialog',
         'chainkey_gui.qt.util',
         'chainkey_gui.qt.version_getter',
