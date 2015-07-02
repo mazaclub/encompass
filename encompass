@@ -67,6 +67,7 @@ try:
     import hid
     import mnemonic
     import google.protobuf
+    import coinhash
     import trezorlib
     from trezorlib import client                                                
     from trezorlib.client import types, proto, BaseClient, ProtocolMixin
