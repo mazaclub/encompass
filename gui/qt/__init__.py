@@ -44,9 +44,14 @@ try:
     import icons_rc
 except Exception:
     sys.exit("Error: Could not import icons_rc.py, please generate it with: 'pyrcc4 icons.qrc -o gui/qt/icons_rc.py'")
+try:
+    import theme_icons_rc
+except Exception:
+    sys.exit("Error: Could not import theme_icons_rc.py, please generate it with: 'pyrcc4 data/themes/theme_icons.qrc -o gui/qt/theme_icons_rc.py'")
 
 from util import *
 from main_window import ElectrumWindow
+import style
 
 
 class OpenFileEventFilter(QObject):
@@ -131,7 +136,7 @@ class ElectrumGui:
             self.lite_window = None
             return
 
-        actuator = lite_window.MiniActuator(self.main_window)
+        actuator = lite_window.MiniActuator(self.main_window, is_lite=True)
         actuator.load_theme()
         self.lite_window = lite_window.MiniWindow(actuator, self.go_full, self.config)
         driver = lite_window.MiniDriver(self.main_window, self.lite_window)
@@ -177,8 +182,10 @@ class ElectrumGui:
         else:
             self.tray = None
 
+        actuator = style.Actuator(self, is_lite=False)
+        actuator.load_theme()
         # main window
-        self.main_window = w = ElectrumWindow(self.config, self.network, self)
+        self.main_window = w = ElectrumWindow(self.config, self.network, self, actuator)
         self.current_window = self.main_window
 
         #lite window

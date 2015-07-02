@@ -11,6 +11,7 @@ contrib/encompass-release/repo/*
 *.dylib
 *.pyd
 gui/qt/icons_rc.py
+gui/qt/theme_icons_rc.py
 contrib/encompass-release/repo/
 contrib/encompass-release/source/Encompas-*
 contrib/encompass-release/source/encompas-*

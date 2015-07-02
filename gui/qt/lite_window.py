@@ -33,54 +33,12 @@ from chainkey.version import ELECTRUM_VERSION as electrum_version
 from chainkey.util import format_satoshis, age
 
 from main_window import ElectrumWindow
+from style import *
 import shutil
 
 from util import *
 
 bitcoin = lambda v: v * 100000000
-
-def IconButton(filename, parent=None):
-    pixmap = QPixmap(filename)
-    icon = QIcon(pixmap)
-    return QPushButton(icon, "", parent)
-
-
-def resize_line_edit_width(line_edit, text_input):
-    metrics = QFontMetrics(qApp.font())
-    # Create an extra character to add some space on the end
-    text_input += "A"
-    line_edit.setMinimumWidth(metrics.width(text_input))
-
-def load_theme_name(theme_path):
-    try:
-        with open(os.path.join(theme_path, "name.cfg")) as name_cfg_file:
-            return name_cfg_file.read().rstrip("\n").strip()
-    except IOError:
-        return None
-
-
-def theme_dirs_from_prefix(prefix):
-    if not os.path.exists(prefix):
-        return []
-    theme_paths = {}
-    for potential_theme in os.listdir(prefix):
-        theme_full_path = os.path.join(prefix, potential_theme)
-        theme_css = os.path.join(theme_full_path, "style.css")
-        if not os.path.exists(theme_css):
-            continue
-        theme_name = load_theme_name(theme_full_path)
-        if theme_name is None:
-            continue
-        theme_paths[theme_name] = prefix, potential_theme
-    return theme_paths
-
-def load_theme_paths():
-    theme_paths = {}
-    theme_paths.update(theme_dirs_from_prefix(util.data_dir()))
-    return theme_paths
-
-
-
 
 class TransactionWindow(QDialog):
 
@@ -106,7 +64,7 @@ class TransactionWindow(QDialog):
 
         self.label_edit = QLineEdit()
         self.label_edit.setPlaceholderText(_("Transaction label"))
-        self.label_edit.setObjectName("label_input")
+        self.label_edit.setObjectName("lite_label_input")
         self.label_edit.setAttribute(Qt.WA_MacShowFocusRect, 0)
         self.label_edit.setFocusPolicy(Qt.ClickFocus)
         self.layout.addWidget(self.label_edit)
@@ -135,13 +93,13 @@ class MiniWindow(QDialog):
         self.connect(self, SIGNAL("refresh_balance()"), self.refresh_balance)
 
         self.balance_label = BalanceLabel(self.change_quote_currency, self)
-        self.balance_label.setObjectName("balance_label")
+        self.balance_label.setObjectName("lite_balance_label")
 
 
         # Bitcoin address code
         self.address_input = QLineEdit()
         self.address_input.setPlaceholderText(_("Enter a coin address or contact"))
-        self.address_input.setObjectName("address_input")
+        self.address_input.setObjectName("lite_address_input")
 
         self.address_input.setFocusPolicy(Qt.ClickFocus)
 
@@ -160,7 +118,7 @@ class MiniWindow(QDialog):
 
         self.amount_input = QLineEdit()
         self.amount_input.setPlaceholderText(_("... and amount") + " (%s)"%self.actuator.g.base_unit())
-        self.amount_input.setObjectName("amount_input")
+        self.amount_input.setObjectName("lite_amount_input")
 
         self.amount_input.setFocusPolicy(Qt.ClickFocus)
         # This is changed according to the user's displayed balance
@@ -179,7 +137,7 @@ class MiniWindow(QDialog):
         #else:
         #    self.send_button = QPushButton(_("&Create"))
 
-        self.send_button.setObjectName("send_button")
+        self.send_button.setObjectName("lite_send_button")
         self.send_button.setDisabled(True);
         self.send_button.clicked.connect(self.send)
 
@@ -201,14 +159,14 @@ class MiniWindow(QDialog):
         self.send_button.setMaximumWidth(125)
 
         self.history_list = history_widget.HistoryWidget()
-        self.history_list.setObjectName("history")
+        self.history_list.setObjectName("lite_history")
         self.history_list.hide()
         self.history_list.setAlternatingRowColors(True)
 
         main_layout.addWidget(self.history_list, 3, 0, 1, 4)
 
         self.receiving = receiving_widget.ReceivingWidget(self)
-        self.receiving.setObjectName("receiving")
+        self.receiving.setObjectName("lite_receiving")
 
         # Add to the right side
         self.receiving_box = QGroupBox(_("Select a receiving address"))
@@ -255,7 +213,7 @@ class MiniWindow(QDialog):
         self.setWindowTitle("Encompass")
         self.setWindowFlags(Qt.Window|Qt.MSWindowsFixedSizeDialogHint)
         self.layout().setSizeConstraint(QLayout.SetFixedSize)
-        self.setObjectName("main_window")
+        self.setObjectName("lite_window")
 
 
     def context_menu(self):
@@ -598,42 +556,9 @@ class ReceivePopup(QDialog):
         QCursor.setPos(center_mouse_pos)
         self.show()
 
-class MiniActuator:
+class MiniActuator(Actuator):
     """Initialize the definitions relating to themes and
     sending/receiving bitcoins."""
-
-
-    def __init__(self, main_window):
-        """Retrieve the gui theme used in previous session."""
-        self.g = main_window
-        self.theme_name = self.g.config.get('litegui_theme','Cleanlook')
-        self.themes = load_theme_paths()
-        self.load_theme()
-
-    def load_theme(self):
-        """Load theme retrieved from wallet file."""
-        try:
-            theme_prefix, theme_path = self.themes[self.theme_name]
-        except KeyError:
-            util.print_error("Theme not found!", self.theme_name)
-            return
-        full_theme_path = "%s/%s/style.css" % (theme_prefix, theme_path)
-        with open(full_theme_path) as style_file:
-            qApp.setStyleSheet(style_file.read())
-
-    def theme_names(self):
-        """Sort themes."""
-        return sorted(self.themes.keys())
-
-    def selected_theme(self):
-        """Select theme."""
-        return self.theme_name
-
-    def change_theme(self, theme_name):
-        """Change theme."""
-        self.theme_name = theme_name
-        self.g.config.set_key('litegui_theme',theme_name)
-        self.load_theme()
 
     def set_configured_exchange(self, set_exchange):
         use_exchange = self.g.config.get('use_exchange')
