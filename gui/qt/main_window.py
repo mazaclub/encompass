@@ -48,6 +48,7 @@ from network_dialog import NetworkDialog
 from qrcodewidget import QRCodeWidget, QRDialog
 from qrtextedit import ScanQRTextEdit, ShowQRTextEdit
 from currency_dialog import ChangeCurrencyDialog, FavoriteCurrenciesDialog
+import style
 
 from decimal import Decimal
 
@@ -2663,6 +2664,17 @@ class ElectrumWindow(QMainWindow):
                 self.need_restart = True
         lang_combo.currentIndexChanged.connect(on_lang)
         widgets.append((lang_label, lang_combo, lang_help))
+
+        current_theme = self.actuator.selected_theme()
+        theme_label = QLabel(_('Theme: ') + _(current_theme))
+        theme_button = QPushButton(_('Change Theme'))
+        theme_help = HelpButton(_('Themes change how Encompass looks.'))
+        def on_theme_button():
+            style.ThemeDialog(self).exec_()
+            current_theme = self.actuator.selected_theme()
+            theme_label.setText(_('Theme: ') + _(current_theme))
+        theme_button.clicked.connect(on_theme_button)
+        widgets.append((theme_label, theme_button, theme_help))
 
         fav_chains_list = map(lambda x: x.encode('ascii', 'ignore'), self.config.get_above_chain('favorite_chains', []))
         # Maximum of three favorite chains

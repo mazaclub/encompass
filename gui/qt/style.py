@@ -102,3 +102,25 @@ class Actuator:
         self.g.config.set_key_above_chain(self.gui_type, theme_name)
         self.load_theme()
 
+class ThemeDialog(QDialog):
+
+    def __init__(self, parent):
+        super(ThemeDialog, self).__init__(parent)
+        self.parent = parent
+        self.actuator = parent.actuator
+        self.main_layout = vbox = QVBoxLayout()
+        self.radio_group = radio_group = QButtonGroup()
+        for theme_name in self.actuator.theme_names():
+            radio = QRadioButton(theme_name)
+            if theme_name == self.actuator.selected_theme():
+                radio.setChecked(True)
+            radio.toggled.connect(self.change_theme)
+            radio_group.addButton(radio)
+            vbox.addWidget(radio)
+        vbox.addLayout(ok_cancel_buttons(self))
+        self.setLayout(vbox)
+
+    def change_theme(self):
+        radio = self.radio_group.checkedButton()
+        theme_name = str(radio.text())
+        self.actuator.change_theme(theme_name)
