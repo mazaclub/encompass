@@ -1,0 +1,90 @@
+QDialog, QStatusBar, #plugins_area,
+#main_window, #send_tab, #receive_tab, #console_tab
+{
+  background-color: #333;
+}
+
+#console_tab
+{
+  color: #4CD93F;
+}
+
+QTextEdit
+{
+  background-color: #212121;
+  color: #4CD93F;
+}
+
+QTabWidget::pane
+{
+  background-color: #333;
+  border: 1px solid #3CA832;
+}
+
+QTabBar::tab
+{
+  color: #4CD93F;
+  background-color: #333;
+}
+
+QTabBar::tab:selected
+{
+  color: #4CD93F;
+  background-color: #1D1F1D;
+}
+
+QLineEdit, QLabel, QRadioButton, QCheckBox, QSpinBox
+{
+  color: #4CD93F;
+  background-color: #333;
+}
+
+QLineEdit
+{
+  border: 2px groove #184F12;
+  border-radius: 2px;
+  padding: 2px;
+}
+
+QHeaderView::section
+{
+  background: #393B39;
+  color: #4CD93F;
+}
+
+QTreeView, QTableView
+{
+  background-color: #393B39;
+  selection-background-color: #279630;
+  selection-color: white;
+}
+
+QTreeView::item:selected, QTreeView::branch:selected
+{
+  background-color: #279630;
+  color: white;
+}
+
+QMenuBar, QMenuBar::item, QMenu
+{
+  background-color: #393B39;
+  selection-background-color: #279630;
+  selection-color: white;
+  color: #4CD93F;
+}
+
+#text_column, #tx_label_col, #tx_date_col, #balance_col, #tx_amount_col,
+#address_col, #address_txs_col
+{
+  color: #BFBFBF;
+}
+
+#default_label_col
+{
+  color: #ABABAB;
+}
+
+#negative_amount_col
+{
+  color: #E81E1E;
+}
