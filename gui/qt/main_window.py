@@ -205,7 +205,7 @@ class ElectrumWindow(QMainWindow):
         self.style().polish(element)
 
     def theme_changed(self):
-        self.update_history_tab()
+        self.update_tabs()
 
     def update_account_selector(self):
         # account selector
