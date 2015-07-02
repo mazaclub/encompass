@@ -2468,7 +2468,7 @@ class ElectrumWindow(QMainWindow):
         d.setMinimumSize(400, 200)
         vbox = QVBoxLayout(d)
 
-        defaultname = os.path.expanduser('~/electrum-history.csv')
+        defaultname = os.path.expanduser('~/encompass-history.csv')
         select_msg = _('Select file to export your wallet transactions to')
 
         hbox, filename_e, csv_button = filename_field(self, self.config, defaultname, select_msg)
@@ -2490,7 +2490,8 @@ class ElectrumWindow(QMainWindow):
             return
 
         try:
-            self.do_export_history(self.wallet, filename, csv_button.isChecked())
+            lines = self.create_export_history(self.wallet, csv_button.isChecked())
+            self.do_export_history(lines, filename, csv_button.isChecked(), self.wallet.active_chain)
         except (IOError, os.error), reason:
             export_error_label = _("Encompass was unable to produce a transaction export.")
             QMessageBox.critical(self, _("Unable to export history"), export_error_label + "\n" + str(reason))
@@ -2499,7 +2500,8 @@ class ElectrumWindow(QMainWindow):
         QMessageBox.information(self,_("History exported"), _("Your wallet history has been successfully exported."))
 
 
-    def do_export_history(self, wallet, fileName, is_csv):
+    def create_export_history(self, wallet, is_csv):
+        chaincode = wallet.active_chain.code
         history = wallet.get_tx_history()
         lines = []
         for item in history:
@@ -2534,19 +2536,50 @@ class ElectrumWindow(QMainWindow):
 
             balance_string = format_satoshis(balance, False)
             if is_csv:
-                lines.append([tx_hash, label, confirmations, value_string, fee_string, balance_string, time_string])
+                lines.append([chaincode, tx_hash, label, confirmations, value_string, fee_string, balance_string, time_string])
             else:
                 lines.append({'txid':tx_hash, 'date':"%16s"%time_string, 'label':label, 'value':value_string})
 
-        with open(fileName, "w+") as f:
-            if is_csv:
+        if is_csv:
+            return lines
+        return {chaincode: lines}
+
+    def do_export_history(self, lines, fileName, is_csv, active_chain=None):
+        if active_chain is None: active_chain = chainkey.chainparams.get_active_chain()
+        chaincode = active_chain.code
+
+        if is_csv:
+            with open(fileName, "w+") as f:
                 transaction = csv.writer(f)
-                transaction.writerow(["transaction_hash","label", "confirmations", "value", "fee", "balance", "timestamp"])
+                transaction.writerow(["coin","transaction_hash","label", "confirmations", "value", "fee", "balance", "timestamp"])
                 for line in lines:
                     transaction.writerow(line)
-            else:
-                import json
-                f.write(json.dumps(lines, indent = 4))
+        else:
+            import ast
+            import json
+            existing_history = {}
+            try:
+                with open(fileName, "r") as f:
+                    data = f.read()
+            except IOError:
+                existing_history = {chaincode: []}
+            try:
+                existing_history = json.loads(data)
+            except Exception:
+                try:
+                    existing_history = ast.literal_eval(data)
+                except:
+                    existing_history = {chaincode: []}
+
+            if not type(existing_history) is dict:
+                existing_history = {}
+
+            if existing_history.get(chaincode):
+                del existing_history[chaincode]
+            existing_history.update(lines)
+            with open(fileName, "w+") as f:
+                f.truncate(0)
+                f.write(json.dumps(existing_history, indent = 4))
 
 
     def sweep_key_dialog(self):
