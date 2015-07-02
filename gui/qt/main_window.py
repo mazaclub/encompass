@@ -2905,12 +2905,13 @@ class ElectrumWindow(QMainWindow):
         vbox.addWidget(scroll)
 
         w = QWidget()
-        scroll.setWidget(w)
         w.setMinimumHeight(len(plugins)*35)
+        w.setObjectName("plugins_area")
 
         grid = QGridLayout()
         grid.setColumnStretch(0,1)
         w.setLayout(grid)
+        scroll.setWidget(w)
 
         def do_toggle(cb, p, w):
             if p.is_enabled():

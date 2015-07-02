@@ -146,7 +146,7 @@ class ThemeDialog(QDialog):
             radio.toggled.connect(self.change_theme)
             radio_group.addButton(radio)
             vbox.addWidget(radio)
-        vbox.addLayout(ok_cancel_buttons(self))
+        vbox.addLayout(close_button(self))
         self.setLayout(vbox)
 
     def change_theme(self):
