@@ -188,9 +188,7 @@ def _get_address_from_output_script(decoded, matches, active_chain=None):
 
             # Convert to address
             if addr_type == 'address':
-                addr_version = 0
-                if 'address' in actions:
-                    addr_version = active_chain.p2pkh_version
+                addr_version = active_chain.p2pkh_version
                 if 'p2sh' in actions:
                     addr_version = active_chain.p2sh_version
                 data = hash_160_to_bc_address(data, addr_version)
