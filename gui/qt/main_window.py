@@ -570,6 +570,7 @@ class ElectrumWindow(QMainWindow):
         l.itemDoubleClicked.connect(self.tx_label_clicked)
         l.itemChanged.connect(self.tx_label_changed)
         l.customContextMenuRequested.connect(self.create_history_menu)
+        l.setObjectName("history_tab")
         return l
 
 
@@ -783,6 +784,7 @@ class ElectrumWindow(QMainWindow):
 
         grid.addWidget(self.receive_requests_label, 6, 0)
         grid.addWidget(self.receive_list, 7, 0, 1, 6)
+        w.setObjectName("receive_tab")
         return w
 
     def receive_item_changed(self, item):
@@ -1032,6 +1034,7 @@ class ElectrumWindow(QMainWindow):
         self.fee_e.textChanged.connect(entry_changed)
 
         run_hook('create_send_tab', grid)
+        w.setObjectName("send_tab")
         return w
 
     def update_fee_edit(self):
@@ -1377,6 +1380,7 @@ class ElectrumWindow(QMainWindow):
         l.itemChanged.connect(lambda a,b: self.address_label_changed(a,b,l,0,1))
         l.currentItemChanged.connect(lambda a,b: self.current_item_changed(a))
         self.address_list = l
+        w.setObjectName("addresses_tab")
         return w
 
 
@@ -1407,6 +1411,7 @@ class ElectrumWindow(QMainWindow):
         l.itemDoubleClicked.connect(lambda a, b: self.address_label_clicked(a,b,l,0,1))
         l.itemChanged.connect(lambda a,b: self.address_label_changed(a,b,l,0,1))
         self.contacts_list = l
+        w.setObjectName("contacts_tab")
         return w
 
 
@@ -1421,6 +1426,7 @@ class ElectrumWindow(QMainWindow):
         l.setContextMenuPolicy(Qt.CustomContextMenu)
         l.customContextMenuRequested.connect(self.create_invoice_menu)
         self.invoices_list = l
+        w.setObjectName("invoices_tab")
         return w
 
     def update_invoices_tab(self):
@@ -1436,6 +1442,8 @@ class ElectrumWindow(QMainWindow):
             item.setData(0, 32, key)
             item.setFont(0, QFont(MONOSPACE_FONT))
             item.setFont(3, QFont(MONOSPACE_FONT))
+            for i in range(l.columnCount()):
+                item.setForeground(i, self.actuator.get_brush('text_column'))
             l.addTopLevelItem(item)
         l.setCurrentItem(l.topLevelItem(0))
 
@@ -1664,6 +1672,7 @@ class ElectrumWindow(QMainWindow):
                 if len(sequences) > 1:
                     name = _("Receiving") if not is_change else _("Change")
                     seq_item = QTreeWidgetItem( [ name, '', '', '', ''] )
+                    seq_item.setForeground(0, self.actuator.get_brush('text_column'))
                     account_item.addChild(seq_item)
                     if not is_change:
                         seq_item.setExpanded(True)
@@ -1671,6 +1680,7 @@ class ElectrumWindow(QMainWindow):
                     seq_item = account_item
 
                 used_item = QTreeWidgetItem( [ _("Used"), '', '', '', ''] )
+                used_item.setForeground(0, self.actuator.get_brush('text_column'))
                 used_flag = False
 
                 addr_list = account.get_addresses(is_change)
@@ -1682,6 +1692,10 @@ class ElectrumWindow(QMainWindow):
                     item = QTreeWidgetItem( [ address, label, balance, "%d"%num] )
                     item.setFont(0, QFont(MONOSPACE_FONT))
                     item.setData(0, 32, True) # label can be edited
+                    item.setForeground(0, self.actuator.get_brush('address_col', self.actuator.get_brush('text_column')))
+                    item.setForeground(1, self.actuator.get_brush('tx_label_col'))
+                    item.setForeground(2, self.actuator.get_brush('balance_col'))
+                    item.setForeground(3, self.actuator.get_brush('address_txs_col', self.actuator.get_brush('text_column')))
                     if address in self.wallet.frozen_addresses:
                         item.setBackgroundColor(0, QColor('lightblue'))
                     if self.wallet.is_beyond_limit(address, account, is_change):
@@ -1706,6 +1720,9 @@ class ElectrumWindow(QMainWindow):
             label = self.wallet.labels.get(address,'')
             n = self.wallet.get_num_tx(address)
             item = QTreeWidgetItem( [ address, label, "%d"%n] )
+            item.setForeground(0, self.actuator.get_brush('address_col', self.actuator.get_brush('text_column')))
+            item.setForeground(1, self.actuator.get_brush('text_column'))
+            item.setForeground(2, self.actuator.get_brush('address_txs_col', self.actuator.get_brush('text_column')))
             item.setFont(0, QFont(MONOSPACE_FONT))
             # 32 = label can be edited (bool)
             item.setData(0,32, True)
@@ -1720,6 +1737,7 @@ class ElectrumWindow(QMainWindow):
     def create_console_tab(self):
         from console import Console
         self.console = console = Console()
+        console.setObjectName("console_tab")
         return console
 
 

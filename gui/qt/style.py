@@ -64,12 +64,15 @@ class Actuator:
         self.load_theme()
         # There's no easy way to use stylesheets to change the color of individual columns
         # in a TreeWidgetItem. Therefore, this hack is used.
-        self.brushes = {'tx_date_col': None,
-                    'tx_amount_col': None,
-                    'negative_amount_col': None,
+        self.brushes = {'text_column': None,        # Generic text
+                    'tx_date_col': None,
+                    'tx_amount_col': None,          # Transaction coin amount
+                    'negative_amount_col': None,    # Transaction coin amount, negative
                     'default_label_col': None,
                     'tx_label_col': None,
-                    'balance_col': None}
+                    'balance_col': None,
+                    'address_col': None,            # Address
+                    'address_txs_col': None}        # Txs sent to address
         for k in self.brushes.keys():
             v = QWidget()
             v.setObjectName(k)
@@ -81,7 +84,11 @@ class Actuator:
         This is a hack around the limitations on using stylesheets for
         QTreeWidgetItem rows."""
         w = self.brushes.get(name)
-        if not w: return QBrush(QColor(default))
+        if not w:
+            if type(default) == str:
+                return QBrush(QColor(default))
+            else:
+                return default
         return w.palette().foreground()
 
     def load_theme(self):

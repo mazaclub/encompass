@@ -135,6 +135,8 @@ class ChangeCurrencyDialog(QDialog):
                 item = QTreeWidgetItem([ch.code, ch.coin_name, y_or_n(is_initialized), y_or_n(is_favorite), y_or_n(uses_pow), str(num_servers)])
             else:
                 item = QTreeWidgetItem([ch.code, ch.coin_name, y_or_n(is_initialized), y_or_n(is_favorite)])
+            for i in range(chains_view.columnCount()):
+                item.setForeground(i, self.parent.actuator.get_brush('text_column'))
             chains_view.addTopLevelItem(item)
         chains_view.setCurrentItem(chains_view.topLevelItem(0))
         # Sort by favorite chains, then by code
