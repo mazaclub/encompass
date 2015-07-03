@@ -28,6 +28,7 @@ from script import *
 import time
 import chainparams
 from chainparams import run_chainhook
+import hashes
 
 def parse_redeemScript(bytes):
     dec = [ x for x in script_GetOp(bytes.decode('hex')) ]
@@ -546,7 +547,7 @@ class Transaction:
         return self.serialize(for_sig = i)
 
     def hash(self):
-        return Hash(self.raw.decode('hex') )[::-1].encode('hex')
+        return hashes.transaction_hash(self.raw.decode('hex') )[::-1].encode('hex')
 
     def add_input(self, input):
         self.inputs.append(input)
@@ -619,7 +620,7 @@ class Transaction:
                     txin['pubkeys'][ii] = pubkey
                     self.inputs[i] = txin
                     # add signature
-                    for_sig = Hash(self.tx_for_sig(i).decode('hex'))
+                    for_sig = hashes.transaction_hash(self.tx_for_sig(i).decode('hex'))
                     pkey = regenerate_key(sec, self.active_chain.wif_version)
                     secexp = pkey.secret
                     private_key = ecdsa.SigningKey.from_secret_exponent( secexp, curve = SECP256k1 )
