@@ -60,12 +60,6 @@ class Plugin(BasePlugin):
     def is_available(self):
         return OA_READY
 
-    def fullname(self):
-        return 'OpenAlias'
-
-    def description(self):
-        return 'Allows for payments to OpenAlias addresses.'
-
     def __init__(self, gui, name):
         BasePlugin.__init__(self, gui, name)
         self._is_available = OA_READY
@@ -112,7 +106,7 @@ class Plugin(BasePlugin):
         self.win.payto_e.setText(new_url)
         self.previous_payto = new_url
 
-        if self.config.get('openalias_autoadd') == 'checked':
+        if self.config.get_above_chain('openalias_autoadd') == 'checked':
             self.win.contacts[url] = ('openalias', name)
             self.win.update_contacts_tab()
 
@@ -168,7 +162,7 @@ class Plugin(BasePlugin):
         layout.addWidget(QLabel(_('Automatically add to contacts')), 0, 0)
         autoadd_checkbox = QCheckBox()
         autoadd_checkbox.setEnabled(True)
-        autoadd_checkbox.setChecked(self.config.get('openalias_autoadd', 'unchecked') != 'unchecked')
+        autoadd_checkbox.setChecked(self.config.get_above_chain('openalias_autoadd', 'unchecked') != 'unchecked')
         layout.addWidget(autoadd_checkbox, 0, 1)
         ok_button = QPushButton(_("OK"))
         ok_button.clicked.connect(d.accept)
@@ -176,9 +170,9 @@ class Plugin(BasePlugin):
 
         def on_change_autoadd(checked):
             if checked:
-                self.config.set_key('openalias_autoadd', 'checked')
+                self.config.set_key_above_chain('openalias_autoadd', 'checked')
             else:
-                self.config.set_key('openalias_autoadd', 'unchecked')
+                self.config.set_key_above_chain('openalias_autoadd', 'unchecked')
 
         autoadd_checkbox.stateChanged.connect(on_change_autoadd)
 

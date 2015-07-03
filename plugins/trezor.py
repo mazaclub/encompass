@@ -6,6 +6,7 @@ from sys import stderr
 from time import sleep
 from base64 import b64encode, b64decode
 import unicodedata
+import threading
 
 import chainkey
 from chainkey.account import BIP32_Account
@@ -16,6 +17,7 @@ from chainkey.transaction import deserialize
 from chainkey.wallet import NewWallet
 from chainkey.util import print_error
 from chainkey import chainparams
+from chainkey.wallet import pw_decode, bip32_private_derivation, bip32_root
 
 from chainkey_gui.qt.util import ok_cancel_buttons, EnterButton
 
@@ -37,36 +39,18 @@ def give_error(message):
     print_error(message)
     raise Exception(message)
 
-def trezor_passphrase_dialog(msg):
-    from chainkey_gui.qt.password_dialog import make_password_dialog, run_password_dialog
-    d = QDialog()
-    d.setModal(1)
-    d.setLayout(make_password_dialog(d, None, msg, False))
-    confirmed, p, passphrase = run_password_dialog(d, None, None)
-    if not confirmed:
-        return None
-    if passphrase is None:
-        passphrase = '' # Even blank string is valid Trezor passphrase
-    passphrase = unicodedata.normalize('NFKD', unicode(passphrase))
-    return passphrase
-
 
 class Plugin(BasePlugin):
-
-    def fullname(self):
-        return 'Trezor Wallet'
-
-    def description(self):
-        return 'Provides support for Trezor hardware wallet\n\nRequires github.com/trezor/python-trezor'
 
     def __init__(self, config, name):
         BasePlugin.__init__(self, config, name)
         self._is_available = self._init()
         self._requires_settings = True
         self.wallet = None
-        self.window = None
-        if self._is_available:
-            chainkey.wallet.wallet_types.append(('hardware', 'trezor', _("Trezor wallet"), TrezorWallet))
+        self.handler = None
+
+    def constructor(self, s):
+        return TrezorWallet(s)
 
     def _init(self):
         return TREZOR
@@ -84,7 +68,7 @@ class Plugin(BasePlugin):
         return self._requires_settings
 
     def set_enabled(self, enabled):
-        self.wallet.storage.put('use_' + self.name, enabled)
+        self.wallet.storage.put_above_chain('use_' + self.name, enabled)
 
     def is_enabled(self):
         if not self.is_available():
@@ -93,9 +77,6 @@ class Plugin(BasePlugin):
             return False
         return True
 
-    def enable(self):
-        return BasePlugin.enable(self)
-
     def trezor_is_connected(self):
         try:
             self.wallet.get_client().ping('t')
@@ -103,34 +84,43 @@ class Plugin(BasePlugin):
             return False
         return True
 
-    def show_message(self, msg):
-        if self.window is None:
-            return
-        self.window.show_message(msg)
-
-    @hook
-    def init_qt(self, gui):
-        self.window = gui.main_window
-
     @hook
     def close_wallet(self):
         print_error("trezor: clear session")
         if self.wallet and self.wallet.client:
             self.wallet.client.clear_session()
             self.wallet.client.transport.close()
+        self.wallet = None
 
     @hook
-    def load_wallet(self, wallet):
+    def cmdline_load_wallet(self, wallet):
+        self.wallet = wallet
+        self.wallet.plugin = self
+        if self.handler is None:
+            self.handler = TrezorCmdLineHandler()
+
+    @hook
+    def load_wallet(self, wallet, window):
+        self.wallet = wallet
+        self.window = window
+        self.wallet.plugin = self
+        if self.handler is None:
+            self.handler = TrezorQtHandler(self.window.app)
+
         if self.trezor_is_connected():
             if not wallet.is_supported_coin():
                 QMessageBox.information(self.window, _('Error'), _("Wallet firmware does not support the active currency.\nContinuing in watching-only mode."), _('OK'))
                 self.wallet.force_watching_only = True
-            if not self.wallet.check_proper_device():
+            if self.wallet.addresses() and not self.wallet.check_proper_device():
                 QMessageBox.information(self.window, _('Error'), _("This wallet does not match your Trezor device"), _('OK'))
                 self.wallet.force_watching_only = True
         else:
             QMessageBox.information(self.window, _('Error'), _("Trezor device not detected.\nContinuing in watching-only mode."), _('OK'))
             self.wallet.force_watching_only = True
+
+    @hook
+    def installwizard_load_wallet(self, wallet, window):
+        self.load_wallet(wallet, window)
 
     @hook
     def installwizard_restore(self, wizard, storage):
@@ -141,9 +131,8 @@ class Plugin(BasePlugin):
             return
         wallet = TrezorWallet(storage)
         self.wallet = wallet
-        passphrase = trezor_passphrase_dialog(_("Please enter your Trezor passphrase.") + '\n' + _("Press OK if you do not use one."))
+        passphrase = self.handler.get_passphrase(_("Please enter your Trezor passphrase.") + '\n' + _("Press OK if you do not use one."))
         if passphrase is None:
-            QMessageBox.critical(None, _('Error'), _("Password request canceled"), _('OK'))
             return
         password = wizard.password_dialog()
         wallet.add_seed(seed, password)
@@ -154,20 +143,11 @@ class Plugin(BasePlugin):
         return wallet
 
     @hook
-    def send_tx(self, tx):
-        tx.error = None
-        try:
-            self.wallet.trezor_sign(tx)
-        except Exception as e:
-            tx.error = str(e)
-    @hook
     def receive_menu(self, menu, addrs):
         if not self.wallet.is_watching_only() and self.wallet.atleast_version(1, 3) and len(addrs) == 1:
             menu.addAction(_("Show on TREZOR"), lambda: self.wallet.show_address(addrs[0]))
 
     def settings_widget(self, window):
-        if self.window is None:
-            self.window = window
         return EnterButton(_('Settings'), self.settings_dialog)
 
     def settings_dialog(self):
@@ -185,9 +165,9 @@ class Plugin(BasePlugin):
             if not response[1]:
                 return
             new_label = str(response[0])
-            twd.start("Please confirm label change on Trezor")
+            self.handler.show_message("Please confirm label change on Trezor")
             status = self.wallet.get_client().apply_settings(label=new_label)
-            twd.stop()
+            self.handler.stop()
             update_label()
 
         current_label_label = QLabel()
@@ -198,28 +178,24 @@ class Plugin(BasePlugin):
         layout.addWidget(change_label_button,3,1)
 
         def remove_pin():
-#            twd.start("Please confirm pin removal on Trezor")
             try:
                 status = self.wallet.get_client().change_pin(True)
                 print_error(status)
-                self.show_message(status)
+                self.handler.show_message(status)
             except Exception, e:
                 give_error(e)
             finally:
-                twd.emit(SIGNAL('trezor_done'))
-#            twd.stop()
+                self.handler.stop()
 
         def modify_pin():
-#            twd.start("Please confirm pin change on Trezor")
             try:
                 status = self.wallet.get_client().change_pin()
                 print_error(status)
-                self.show_message(status)
+                self.handler.show_message(status)
             except Exception, e:
                 give_error(e)
             finally:
-                twd.emit(SIGNAL('trezor_done'))
-#            twd.stop()
+                self.handler.stop()
 
         remove_pin_button = QPushButton("Remove Pin")
         remove_pin_button.clicked.connect(remove_pin)
@@ -234,7 +210,6 @@ class Plugin(BasePlugin):
         else:
             return False
 
-from chainkey.wallet import pw_decode, bip32_private_derivation, bip32_root
 
 class TrezorWallet(NewWallet):
     wallet_type = 'trezor'
@@ -254,6 +229,10 @@ class TrezorWallet(NewWallet):
 
     def can_import(self):
         return False
+
+    def can_sign_xpubkey(self, x_pubkey):
+        xpub, sequence = BIP32_Account.parse_xpubkey(x_pubkey)
+        return xpub in self.master_public_keys.values()
 
     def can_export(self):
         return False
@@ -278,6 +257,7 @@ class TrezorWallet(NewWallet):
             except:
                 give_error('Could not connect to your Trezor. Please verify the cable is connected and that no other app is using it.')
             self.client = QtGuiTrezorClient(self.transport)
+            self.client.handler = self.plugin.handler
             self.client.set_tx_api(self)
             #self.client.clear_session()# TODO Doesn't work with firmware 1.1, returns proto.Failure
             self.client.bad = False
@@ -372,7 +352,7 @@ class TrezorWallet(NewWallet):
         except Exception, e:
             give_error(e)
         finally:
-            twd.emit(SIGNAL('trezor_done'))
+            self.plugin.handler.stop()
 
     def sign_message(self, address, message, password):
         if not self.check_proper_device():
@@ -387,16 +367,11 @@ class TrezorWallet(NewWallet):
         except Exception, e:
             give_error(e)
         finally:
-            twd.emit(SIGNAL('trezor_done'))
+            self.plugin.handler.stop()
         b64_msg_sig = b64encode(msg_sig.signature)
         return str(b64_msg_sig)
 
     def sign_transaction(self, tx, password):
-        # the tx is signed by trezor_sign, in the GUI thread
-        if tx.error:
-            raise BaseException(tx.error)
-
-    def trezor_sign(self, tx):
         if tx.is_complete():
             return
         if not self.check_proper_device():
@@ -409,12 +384,12 @@ class TrezorWallet(NewWallet):
         except Exception, e:
             give_error(e)
         finally:
-            twd.emit(SIGNAL('trezor_done'))
-        values = [i['value'] for i in tx.inputs]
+            self.plugin.handler.stop()
+#        values = [i['value'] for i in tx.inputs]
         raw = signed_tx.encode('hex')
         tx.update(raw)
-        for i, txinput in enumerate(tx.inputs):
-            txinput['value'] = values[i]
+#        for i, txinput in enumerate(tx.inputs):
+#            txinput['value'] = values[i]
 
     def tx_inputs(self, tx):
         inputs = []
@@ -511,10 +486,10 @@ class TrezorWallet(NewWallet):
         return self.proper_device
 
 
-class TrezorQtGuiMixin(object):
+class TrezorGuiMixin(object):
 
     def __init__(self, *args, **kwargs):
-        super(TrezorQtGuiMixin, self).__init__(*args, **kwargs)
+        super(TrezorGuiMixin, self).__init__(*args, **kwargs)
 
     def callback_ButtonRequest(self, msg):
         if msg.code == 3:
@@ -527,7 +502,7 @@ class TrezorQtGuiMixin(object):
             message = "Confirm address on Trezor device to continue"
         else:
             message = "Check Trezor device to continue"
-        twd.start(message)
+        self.handler.show_message(message)
         return proto.ButtonAck()
 
     def callback_PinMatrixRequest(self, msg):
@@ -540,16 +515,15 @@ class TrezorQtGuiMixin(object):
         else:
             desc = 'PIN'
 
-        pin = self.pin_dialog(msg="Please enter Trezor %s" % desc)
+        pin = self.handler.get_pin("Please enter Trezor %s" % desc)
         if not pin:
             return proto.Cancel()
         return proto.PinMatrixAck(pin=pin)
 
     def callback_PassphraseRequest(self, req):
         msg = _("Please enter your Trezor passphrase.")
-        passphrase = trezor_passphrase_dialog(msg)
+        passphrase = self.handler.get_passphrase(msg)
         if passphrase is None:
-            QMessageBox.critical(None, _('Error'), _("Password request canceled"), _('OK'))
             return proto.Cancel()
         return proto.PassphraseAck(passphrase=passphrase)
 
@@ -559,47 +533,104 @@ class TrezorQtGuiMixin(object):
         word = raw_input()
         return proto.WordAck(word=word)
 
-    def pin_dialog(self, msg):
+
+class TrezorCmdLineHandler:
+
+    def get_passphrase(self, msg):
+        import getpass
+        print_msg(msg)
+        return getpass.getpass('')
+
+    def get_pin(self, msg):
+        t = { 'a':'7', 'b':'8', 'c':'9', 'd':'4', 'e':'5', 'f':'6', 'g':'1', 'h':'2', 'i':'3'}
+        print_msg(msg)
+        print_msg("a b c\nd e f\ng h i\n-----")
+        o = raw_input()
+        return ''.join(map(lambda x: t[x], o))
+
+    def stop(self):
+        pass
+
+    def show_message(self, msg):
+        print_msg(msg)
+
+class TrezorQtHandler:
+
+    def __init__(self, win):
+        self.win = win
+        self.win.connect(win, SIGNAL('trezor_done'), self.dialog_stop)
+        self.win.connect(win, SIGNAL('message_dialog'), self.message_dialog)
+        self.win.connect(win, SIGNAL('pin_dialog'), self.pin_dialog)
+        self.win.connect(win, SIGNAL('passphrase_dialog'), self.passphrase_dialog)
+        self.done = threading.Event()
+
+    def stop(self):
+        self.win.emit(SIGNAL('trezor_done'))
+
+    def show_message(self, msg):
+        self.message = msg
+        self.win.emit(SIGNAL('message_dialog'))
+
+    def get_pin(self, msg):
+        self.done.clear()
+        self.message = msg
+        self.win.emit(SIGNAL('pin_dialog'))
+        self.done.wait()
+        return self.response
+
+    def get_passphrase(self, msg):
+        self.done.clear()
+        self.message = msg
+        self.win.emit(SIGNAL('passphrase_dialog'))
+        self.done.wait()
+        return self.passphrase
+
+    def pin_dialog(self):
         d = QDialog(None)
         d.setModal(1)
         d.setWindowTitle(_("Enter PIN"))
         d.setWindowFlags(d.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
         matrix = PinMatrixWidget()
-
         vbox = QVBoxLayout()
-        vbox.addWidget(QLabel(msg))
+        vbox.addWidget(QLabel(self.message))
         vbox.addWidget(matrix)
         vbox.addLayout(ok_cancel_buttons(d))
         d.setLayout(vbox)
+        if not d.exec_():
+            self.response = None
+        self.response = str(matrix.get_value())
+        self.done.set()
 
-        if not d.exec_(): return
-        return str(matrix.get_value())
+    def passphrase_dialog(self):
+        from chainkey_gui.qt.password_dialog import make_password_dialog, run_password_dialog
+        d = QDialog()
+        d.setModal(1)
+        d.setLayout(make_password_dialog(d, None, self.message, False))
+        confirmed, p, passphrase = run_password_dialog(d, None, None)
+        if not confirmed:
+            QMessageBox.critical(None, _('Error'), _('Password request canceled'), _('OK'))
+            self.passphrase = None
+        else:
+            if passphrase is None:
+                passphrase = '' # Even blank string is valid Trezor passphrase
+            self.passphrase = unicodedata.normalize('NFKD', unicode(passphrase))
+        self.done.set()
 
-class TrezorWaitingDialog(QThread):
-    def __init__(self):
-        QThread.__init__(self)
-        self.waiting = False
-
-    def start(self, message):
+    def message_dialog(self):
         self.d = QDialog()
         self.d.setModal(1)
         self.d.setWindowTitle('Please Check Trezor Device')
         self.d.setWindowFlags(self.d.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
-        l = QLabel(message)
+        l = QLabel(self.message)
         vbox = QVBoxLayout(self.d)
         vbox.addWidget(l)
         self.d.show()
-        if not self.waiting:
-            self.waiting = True
-            self.d.connect(twd, SIGNAL('trezor_done'), self.stop)
 
-    def stop(self):
+    def dialog_stop(self):
         self.d.hide()
-        self.waiting = False
-
 
 if TREZOR:
-    class QtGuiTrezorClient(ProtocolMixin, TrezorQtGuiMixin, BaseClient):
+    class QtGuiTrezorClient(ProtocolMixin, TrezorGuiMixin, BaseClient):
         def call_raw(self, msg):
             try:
                 resp = BaseClient.call_raw(self, msg)
@@ -609,5 +640,4 @@ if TREZOR:
     
             return resp
 
-    twd = TrezorWaitingDialog()
 

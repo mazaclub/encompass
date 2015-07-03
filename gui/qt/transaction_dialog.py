@@ -52,29 +52,33 @@ class TxDialog(QDialog):
         self.setWindowTitle(_("Transaction"))
         self.setModal(1)
 
-        vbox = QVBoxLayout()
-        self.setLayout(vbox)
+        main_layout = QFormLayout()
+        self.setLayout(main_layout)
 
-        vbox.addWidget(QLabel(_("Transaction ID:")))
+        tx_vbox = QVBoxLayout()
+        tx_vbox.addWidget(QLabel(_("Transaction ID:")))
         self.tx_hash_e  = QLineEdit()
         self.tx_hash_e.setReadOnly(True)
-        vbox.addWidget(self.tx_hash_e)
+        tx_vbox.addWidget(self.tx_hash_e)
+        main_layout.addRow(tx_vbox)
+
         self.status_label = QLabel()
-        vbox.addWidget(self.status_label)
+        main_layout.addRow(QLabel(_("Status:")), self.status_label)
 
+        self.tx_date_label = QLabel(_("Date:"))
         self.date_label = QLabel()
-        vbox.addWidget(self.date_label)
+        main_layout.addRow(self.tx_date_label, self.date_label)
+
         self.amount_label = QLabel()
-        vbox.addWidget(self.amount_label)
+        main_layout.addRow(QLabel(_("Amount:")), self.amount_label)
+        self.tx_fee_label = QLabel(_("Transaction Fee:"))
         self.fee_label = QLabel()
-        vbox.addWidget(self.fee_label)
+        main_layout.addRow(self.tx_fee_label, self.fee_label)
 
-        self.add_io(vbox)
-
-        vbox.addStretch(1)
+        self.add_io(main_layout)
 
         self.buttons = buttons = QHBoxLayout()
-        vbox.addLayout( buttons )
+        main_layout.addRow(buttons)
 
         buttons.addStretch(1)
 
@@ -162,13 +166,15 @@ class TxDialog(QDialog):
             tx_hash = 'unknown'
 
         self.tx_hash_e.setText(tx_hash)
-        self.status_label.setText(_('Status:') + ' ' + status)
+        self.status_label.setText(status)
 
         if time_str is not None:
-            self.date_label.setText(_("Date: %s")%time_str)
+            self.date_label.setText(time_str)
             self.date_label.show()
+            self.tx_date_label.show()
         else:
             self.date_label.hide()
+            self.tx_date_label.hide()
 
         # if we are not synchronized, we cannot tell
         if self.parent.network is None or not self.parent.network.is_running() or not self.parent.network.is_connected():
@@ -179,26 +185,27 @@ class TxDialog(QDialog):
         if is_relevant:
             if is_mine:
                 if fee is not None:
-                    self.amount_label.setText(_("Amount sent:")+' %s'% self.parent.format_amount(v-fee) + ' ' + self.parent.base_unit())
-                    self.fee_label.setText(_("Transaction fee")+': %s'% self.parent.format_amount(fee) + ' ' + self.parent.base_unit())
+                    self.amount_label.setText(_("sent")+' %s'% self.parent.format_amount(v-fee) + ' ' + self.parent.base_unit())
+                    self.fee_label.setText(' %s'% self.parent.format_amount(fee) + ' ' + self.parent.base_unit())
                 else:
-                    self.amount_label.setText(_("Amount sent:")+' %s'% self.parent.format_amount(v) + ' ' + self.parent.base_unit())
-                    self.fee_label.setText(_("Transaction fee")+': '+ _("unknown"))
+                    self.amount_label.setText(_("sent")+' %s'% self.parent.format_amount(v) + ' ' + self.parent.base_unit())
+                    self.fee_label.setText(' '+ _("unknown"))
             else:
-                self.amount_label.setText(_("Amount received:")+' %s'% self.parent.format_amount(v) + ' ' + self.parent.base_unit())
+                self.amount_label.setText(_("received")+' %s'% self.parent.format_amount(v) + ' ' + self.parent.base_unit())
+                self.tx_fee_label.clear()
         else:
             self.amount_label.setText(_("Transaction unrelated to your wallet"))
+            self.tx_fee_label.clear()
 
         run_hook('transaction_dialog_update', self)
 
 
 
-    def add_io(self, vbox):
+    def add_io(self, form):
 
         if self.tx.locktime > 0:
-            vbox.addWidget(QLabel("LockTime: %d\n" % self.tx.locktime))
+            form.addRow(QLabel("LockTime:"), QLabel(self.tx.locktime))
 
-        vbox.addWidget(QLabel(_("Inputs")))
         def format_input(x):
             if x.get('is_coinbase'):
                 return 'coinbase'
@@ -211,16 +218,21 @@ class TxDialog(QDialog):
         i_text.setText('\n'.join(lines))
         i_text.setReadOnly(True)
         i_text.setMaximumHeight(100)
-        vbox.addWidget(i_text)
+        inputs_layout = QVBoxLayout()
+        inputs_layout.addWidget(QLabel(_("Inputs:")))
+        inputs_layout.addWidget(i_text)
+        form.addRow(inputs_layout)
 
-        vbox.addWidget(QLabel(_("Outputs")))
         lines = map(lambda x: x[0] + u'\t\t' + self.parent.format_amount(x[1]) if x[1] else x[0], self.tx.get_outputs())
         o_text = QTextEdit()
         o_text.setFont(QFont(MONOSPACE_FONT))
         o_text.setText('\n'.join(lines))
         o_text.setReadOnly(True)
         o_text.setMaximumHeight(100)
-        vbox.addWidget(o_text)
+        outputs_layout = QVBoxLayout()
+        outputs_layout.addWidget(QLabel(_("Outputs:")))
+        outputs_layout.addWidget(o_text)
+        form.addRow(outputs_layout)
 
 
 
