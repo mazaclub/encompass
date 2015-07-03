@@ -1,3 +1,76 @@
+# Release 0.6.0
+
+ * Bug-Fixes
+   - Addresses with the correct version will now be shown when importing keys.
+   - The known private key for a multisig address can now be shown in the GUI.
+   - Numerous daemon-mode bugs have been fixed.
+
+ * Multisig wallets now use a different key derivation path that allows multi-coin multisig
+ wallets to be used, while only requiring that master public keys be shared once.
+
+ * Chainkey improvements
+   - Chainhooks: Allow chains to 'hook' into functions, very similarly to how plugins
+   do.
+   - The hash algorithms used for transaction hashing and in base58 encoding can now
+   be specified on a per-chain basis.
+   - The base class `CryptoCur` now has generic implementations for some of the methods
+   required in chainkey modules.
+
+ * GUI improvements
+   - The "Change Currency" dialog now has more information. Its verbosity can be set
+   in the settings.
+   - Some chains may be specified as "favorites" - these chains appear before others in
+   the currency selection dialog.
+   - The main window's tabs now have icons.
+
+ * Theme System: Themes for the lite window have been removed. Themes now apply to the
+ entire program. Themes can be installed by placing them in the application data
+ folder "themes". A theme that demonstrates the new customization capabilities is included.
+ It's called "Terminal" and provides a green-on-black color scheme.
+
+ * M-of-N Multisig: Arbitrary M-of-N multisig wallets are now creatable. M and N are limited
+ by the size of the input scripts they would create. The function `is_standard_mofn(m,n)`
+ in `bitcoin.py` calculates whether they are acceptable.
+
+ * Daemon code has been updated with upstream Electrum's improvements.
+
+ * Plugin code has been updated with upstream Electrum's improvements.
+
+ * A new plugin, "Auto History Export," automatically exports the wallet's history when
+ a transaction is received, as well as doing so on command.
+
+ * There can now be plugins that are "hidden." These plugins are not visible to the user,
+ and are always considered "enabled" if their requirements are met. Their purpose is to allow
+ more unique features of certain chains to be used.
+
+ * New daemon commands:
+   - dumpconfig: Outputs the section of the config file for the active chain.
+   - listchains: Outputs a list of blockchains that Encompass supports.
+
+ * Support for new blockchains
+   - Blackcoin
+   - Clam
+   - Dogecoin
+   - Feathercoin
+   - Groestlcoin
+   - Namecoin
+   - Peercoin
+
+ * Dependencies for various hash algorithms are now consolidated into one package, coinhash,
+ which is available on PyPI and can be installed with pip.
+
+ * Backwards-compatible refactoring has been done to improve encapsulation.
+   - Script-related code is now in `script.py` (from `transaction.py`)
+   - ECDSA code is now in `eckey.py` (from `bitcoin.py`)
+   - Base58-related code is now is `base58.py` (from `bitcoin.py`)
+   - Coin-related utilities like `var_int()` are now in `util_coin.py` (from `util.py`)
+
+ * DER signatures in transactions are now always canonical.
+
+ * User config is now stored as formatted JSON, rather than a JSON string.
+
+ * Several functions are now documented.
+
 # Release 0.5.0
 
  * Produce Linux,OSX,Windows binary releases
