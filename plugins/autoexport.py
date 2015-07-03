@@ -27,11 +27,26 @@ class Plugin(BasePlugin):
         d.setMinimumWidth(500)
         vbox = QVBoxLayout(d)
 
-        select_msg = _("Select the file that wallet history will be exported to.")
-        hbox, filename_e, csv_button = filename_field(d, self.window.config, self.file_path, select_msg, False)
-        vbox.addLayout(hbox)
+        format_layout = QVBoxLayout()
+        format_widget = QWidget()
+        format_layout.addWidget(format_widget)
 
-        vbox.addLayout(ok_cancel_buttons(d))
+        vbox.addWidget(QLabel(_("Wallet history will be exported to the file below.\n")))
+        select_msg = _("Select the file that wallet history will be exported to.")
+        file_vbox, filename_e, csv_button = filename_field(format_widget, self.window.config, self.file_path, select_msg, self.csv)
+        vbox.addLayout(file_vbox)
+        vbox.addStretch(1)
+
+        def do_save_now():
+            # save config in case the user has changed options before clicking the button
+            self.save_config()
+            self.save_history()
+        save_now_button = QPushButton(_("Save history now"))
+        save_now_button.clicked.connect(do_save_now)
+
+        buttons_layout = ok_cancel_buttons(d)
+        buttons_layout.addWidget(save_now_button)
+        vbox.addLayout(buttons_layout)
 
         if not d.exec_():
             return
@@ -53,6 +68,12 @@ class Plugin(BasePlugin):
         self.print_error('Saving config: {}'.format(options))
         self.wallet.storage.config.set_key_above_chain('auto_history_export', options, True)
 
+    def save_history(self):
+        if not self.window or not self.wallet: return
+        lines = self.window.create_export_history(self.wallet, self.csv)
+        self.window.do_export_history(lines, self.file_path, self.csv, self.wallet.active_chain)
+        self.print_error('Saved wallet history')
+
     @hook
     def load_wallet(self, wallet, window):
         self.wallet = wallet
@@ -63,7 +84,4 @@ class Plugin(BasePlugin):
 
     @hook
     def receive_tx_callback(self, tx_hash, tx, tx_height):
-        if not self.window or not self.wallet: return
-        lines = self.window.create_export_history(self.wallet, self.csv)
-        self.window.do_export_history(lines, self.file_path, self.csv, self.wallet.active_chain)
-        self.print_error('Saved wallet history')
+        self.save_history()
