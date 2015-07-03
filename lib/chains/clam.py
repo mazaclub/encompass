@@ -38,7 +38,7 @@ class Clam(CryptoCur):
     DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}
 
     DEFAULT_SERVERS = {
-        'scallop.maza.club':DEFAULT_PORTS
+        'scallop.us-west-2.maza.club':DEFAULT_PORTS
     }
 
     def verify_chain(self, chain):
@@ -166,10 +166,13 @@ class Clam(CryptoCur):
         tx_version = getattr(tx, 'version', 1)
         if tx_version < TX_VERSION_CLAMSPEECH:
             return
+        else:
+            txver = ('version', int_to_hex(tx_version, 4))
+            fields[0] = txver
 
-        speech = ('clamspeech', getattr(tx, 'clamspeech', ''))
-        speech_len = ('clamspeech_len', var_int(len(speech)))
-        clamspeech = [speech_len, speech]
-        fields.extend(clamspeech)
+        speech = ('clamspeech', getattr(tx, 'clamspeech', '').encode('hex'))
+        speech_len = ('clamspeech_len', var_int(len(speech[1])/2))
+        fields.insert(-1,  speech_len)
+        fields.insert(-1,  speech)
 
 Currency = Clam
