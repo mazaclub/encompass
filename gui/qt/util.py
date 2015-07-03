@@ -171,16 +171,17 @@ def address_field(addresses):
     return hbox, address_e
 
 
-def filename_field(parent, config, defaultname, select_msg):
+def filename_field(parent, config, defaultname, select_msg, csv_default=True):
 
     vbox = QVBoxLayout()
     vbox.addWidget(QLabel(_("Format")))
     gb = QGroupBox("format", parent)
     b1 = QRadioButton(gb)
     b1.setText(_("CSV"))
-    b1.setChecked(True)
+    b1.setChecked(csv_default)
     b2 = QRadioButton(gb)
     b2.setText(_("json"))
+    b2.setChecked(False if csv_default else True)
     vbox.addWidget(b1)
     vbox.addWidget(b2)
 

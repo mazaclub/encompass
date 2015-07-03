@@ -616,6 +616,7 @@ class Abstract_Wallet(object):
             if self.verifier and tx_height>0:
                 self.verifier.add(tx_hash, tx_height)
             self.update_tx_outputs(tx_hash)
+        run_hook('receive_tx_callback', tx_hash, tx, tx_height)
 
     def save_transactions(self):
         tx = {}

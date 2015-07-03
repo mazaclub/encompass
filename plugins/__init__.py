@@ -65,6 +65,12 @@ plugin_data = [
             _("Warning: Do not use this if it makes you pick a weaker password.")
         ]),
         'available_for': ['qt'],
+    },
+    {
+        'name': 'autoexport',
+        'fullname': 'Auto History Export',
+        'description': _('Automatically exports transaction history.'),
+        'available_for': ['qt'],
     }
 ]
 
