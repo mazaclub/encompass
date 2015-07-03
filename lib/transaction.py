@@ -507,38 +507,38 @@ class Transaction:
         inputs = self.inputs
         outputs = self.outputs
 
-        # field, data_overriden_by_chainhook
-        fields = [('version', None),
-                ('vin', None),
-                ('inputs', None),
-                ('vout', None),
-                ('outputs', None),
-                ('locktime', None),
-                ('hashtype', None)
+        # field, field data(data_overridden_by_chainhook)
+        fields = [('version', []),
+                ('vin', []),
+                ('inputs', []),
+                ('vout', []),
+                ('outputs', []),
+                ('locktime', []),
+                ('hashtype', [])
                 ]
         run_chainhook('transaction_serialize', self, for_sig, fields)
-        s = []
-        for field, data_overridden_by_chainhook in fields:
-            if data_overridden_by_chainhook is None:
+        for i, (field, field_data) in enumerate(fields):
+            if not field_data:
                 if field == 'version':
-                    s.append(int_to_hex(1,4))
+                    field_data.append(int_to_hex(1,4))
                 elif field == 'vin':
-                    s.append(var_int(len(inputs)))
+                    field_data.append(var_int(len(inputs)))
                 elif field == 'inputs':
                     for i in range(len(inputs)):
-                        s.append(self.serialize_input(i, for_sig))
+                        field_data.append(self.serialize_input(i, for_sig))
                 elif field == 'vout':
-                    s.append(var_int(len(outputs)))
+                    field_data.append(var_int(len(outputs)))
                 elif field == 'outputs':
                     for output in outputs:
-                        s.append(self.serialize_output(output, for_sig))
+                        field_data.append(self.serialize_output(output, for_sig))
                 elif field == 'locktime':
-                    s.append(int_to_hex(0,4))
+                    field_data.append(int_to_hex(0,4))
                 elif field == 'hashtype':
                     if for_sig is not None and for_sig != -1:
-                        s.append(int_to_hex(1,4))
-            else: # chainhook has overriden the default data
-                s.append(data_overridden_by_chainhook)
+                        field_data.append(int_to_hex(1,4))
+        s = []
+        for field, field_data in fields:
+            s.append(''.join(field_data))
 
         return ''.join(s)
 

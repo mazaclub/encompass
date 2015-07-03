@@ -173,7 +173,7 @@ class Blackcoin(CryptoCur):
         unix_time = getattr(tx, 'timestamp', None)
         if unix_time is None:
             unix_time = int(time.time())
-        timestamp = ('timestamp', int_to_hex(unix_time, 4))
+        timestamp = ('timestamp', [int_to_hex(unix_time, 4)])
         fields.insert(1, timestamp)
 
 Currency = Blackcoin

@@ -1,5 +1,8 @@
 """Metadata about Encompass plugins."""
-from chainkey.i18n import _
+try:
+    from chainkey.i18n import _
+except Exception:
+    _ = lambda s: str(s)
 
 """List of dicts containing plugin data.
 
