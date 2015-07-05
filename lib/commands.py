@@ -511,6 +511,17 @@ class Commands:
             out.append(item)
         return out
 
+    @command('n')
+    def getheader(self, height, deserialized=False):
+        """Retrieve the block header at a given height."""
+        header = self.network.synchronous_get([('blockchain.block.get_header', [height])])[0]
+        if not header or isinstance(header, unicode):
+            raise BaseException("Unknown block")
+        # genesis block
+        if header.get('prev_block_hash') is None and header.get('block_height') == 0:
+            header['prev_block_hash'] = '0'*64
+        return header if deserialized else chainparams.get_active_chain().header_to_string(header)
+
     @command('nw')
     def gettransaction(self, txid, deserialized=False):
         """Retrieve a transaction. """
@@ -635,7 +646,7 @@ command_options = {
     'language':    ("-L", "--lang",        "Default language for wordlist"),
     'gap_limit':   ("-G", "--gap",         "Gap limit"),
     'mpk':         (None, "--mpk",         "Restore from master public key"),
-    'deserialized':("-d", "--deserialized","Return deserialized transaction"),
+    'deserialized':("-d", "--deserialized","Return deserialized block/transaction"),
     'privkey':     (None, "--privkey",     "Private key. Set to '?' to get a prompt."),
     'unsigned':    ("-u", "--unsigned",    "Do not sign transaction"),
     'domain':      ("-D", "--domain",      "List of addresses"),
