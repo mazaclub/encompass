@@ -7,7 +7,7 @@ import traceback
 
 import socks
 import socket
-import json
+import re
 
 import chainparams
 import util
@@ -476,7 +476,7 @@ class Network(util.DaemonThread):
         if len(self.interfaces) < self.num_server:
             self.start_random_interface()
             if now - self.nodes_retry_time > NODES_RETRY_INTERVAL:
-                self.print_error('network: retrying connections')
+                self.print_error('retrying connections to reach preferred number of interfaces ({}/{})'.format(len(self.interfaces), self.num_server))
                 self.disconnected_servers = set([])
                 self.nodes_retry_time = now
         # main interface

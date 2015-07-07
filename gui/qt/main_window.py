@@ -517,8 +517,9 @@ class ElectrumWindow(QMainWindow):
             icon = self.actuator.get_icon("status_disconnected.png")
 
         elif self.network.is_connected():
-            server_lag = self.network.get_local_height() - self.network.get_server_height()
-            if not self.wallet.up_to_date:
+            server_height = self.network.get_server_height()
+            server_lag = self.network.get_local_height() - server_height
+            if not self.wallet.up_to_date or server_height == 0:
                 text = _("Synchronizing...")
                 icon = self.actuator.get_icon("status_waiting.png")
             elif server_lag > 1:
