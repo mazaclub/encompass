@@ -62,6 +62,7 @@ class NetworkProxy(util.DaemonThread):
         self.interfaces = []
 
     def switch_to_active_chain(self):
+        """Create a new Network instance."""
         with self.lock:
             self.message_id = 0
             self.unanswered_requests = {}

@@ -23,9 +23,9 @@ import os.path, json, ast, traceback
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from chainkey import DEFAULT_SERVERS, DEFAULT_PORTS
 
 from util import *
+from chainkey.chainparams import get_chain_instance
 
 #protocol_names = ['TCP', 'HTTP', 'SSL', 'HTTPS']
 #protocol_letters = 'thsg'
@@ -43,6 +43,8 @@ class NetworkDialog(QDialog):
         self.network = network
         self.config = config
         self.protocol = None
+
+        self.active_chain = get_chain_instance(self.config.get_active_chain_code())
 
         self.servers = network.get_servers()
         host, port, protocol, proxy_config, auto_connect = network.get_parameters()
@@ -186,7 +188,7 @@ class NetworkDialog(QDialog):
     def change_protocol(self, index):
         p = protocol_letters[index]
         host = unicode(self.server_host.text())
-        pp = self.servers.get(host, DEFAULT_PORTS)
+        pp = self.servers.get(host, self.active_chain.DEFAULT_PORTS)
         if p not in pp.keys():
             p = pp.keys()[0]
         port = pp[p]
@@ -200,7 +202,7 @@ class NetworkDialog(QDialog):
 
     def change_server(self, host, protocol):
 
-        pp = self.servers.get(host, DEFAULT_PORTS)
+        pp = self.servers.get(host, self.active_chain.DEFAULT_PORTS)
         if protocol:
             port = pp.get(protocol)
             if not port: protocol = None
