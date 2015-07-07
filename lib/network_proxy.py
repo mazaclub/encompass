@@ -16,30 +16,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import socket
 import time
-import sys
-import os
 import threading
-import traceback
-import json
 import Queue
 
 import util
-from network import Network
-from util import print_error, print_stderr, parse_json
+from network import Network, serialize_proxy, serialize_server
+from util import print_error
 from simple_config import SimpleConfig
-from daemon import NetworkServer, DAEMON_PORT
 
 
-
-class NetworkProxy(threading.Thread):
+class NetworkProxy(util.DaemonThread):
 
     def __init__(self, socket, config=None):
 
         if config is None:
             config = {}  # Do not use mutables as default arguments!
-        threading.Thread.__init__(self)
+        util.DaemonThread.__init__(self)
         self.config = SimpleConfig(config) if type(config) == type({}) else config
         self.message_id = 0
         self.unanswered_requests = {}
@@ -48,16 +41,14 @@ class NetworkProxy(threading.Thread):
         self.lock = threading.Lock()
         self.pending_transactions_for_notifications = []
         self.callbacks = {}
-        self.running = True
-        self.daemon = True
 
         if socket:
             self.pipe = util.SocketPipe(socket)
             self.network = None
         else:
-            self.network = Network(config)
-            self.pipe = util.QueuePipe(send_queue=self.network.requests_queue)
-            self.network.start(self.pipe.get_queue)
+            self.pipe = util.QueuePipe()
+            self.network = Network(self.pipe, config)
+            self.network.start()
             for key in ['status','banner','updated','servers','interfaces']:
                 value = self.network.get_status_value(key)
                 self.pipe.get_queue.put({'method':'network.status', 'params':[key, value]})
@@ -71,22 +62,17 @@ class NetworkProxy(threading.Thread):
         self.interfaces = []
 
     def switch_to_active_chain(self):
-#        print("\nNetworkProxy switch to active chain, waiting for lock")
         with self.lock:
-#            print(" Got lock")
             self.message_id = 0
             self.unanswered_requests = {}
             self.subscriptions = {}
             self.pending_transactions_for_notifications = []
-#            print(" Stopping current network")
             self.network.stop()
             time.sleep(0.3)
 
-            self.network = Network(self.config)
-#            print(" Set new network")
-            self.pipe = util.QueuePipe(send_queue=self.network.requests_queue)
-            self.network.start(self.pipe.get_queue)
-#            print(" Started new network")
+            self.pipe = util.QueuePipe()
+            self.network = Network(self.pipe, self.config)
+            self.network.start()
 
             self.status = 'connecting'
             self.servers = {}
@@ -98,11 +84,6 @@ class NetworkProxy(threading.Thread):
             for key in ['status','banner','updated','servers','interfaces']:
                 value = self.network.get_status_value(key)
                 self.pipe.get_queue.put({'method':'network.status', 'params':[key, value]})
-
-
-
-    def is_running(self):
-        return self.running
 
     def run(self):
         while self.is_running():
@@ -117,7 +98,7 @@ class NetworkProxy(threading.Thread):
         self.trigger_callback('stop')
         if self.network:
             self.network.stop()
-        print_error("NetworkProxy: terminating")
+        self.print_error("stopped")
 
     def process(self, response):
         if self.debug:
@@ -221,7 +202,7 @@ class NetworkProxy(threading.Thread):
         return self.interfaces
 
     def get_header(self, height):
-        return self.synchronous_get([('network.get_header',[height])])[0]
+        return self.synchronous_get([('network.get_header', [height])])[0]
 
     def get_local_height(self):
         return self.blockchain_height
@@ -239,13 +220,19 @@ class NetworkProxy(threading.Thread):
         return self.unanswered_requests == {}
 
     def get_parameters(self):
-        return self.synchronous_get([('network.get_parameters',[])])[0]
+        return self.synchronous_get([('network.get_parameters', [])])[0]
 
-    def set_parameters(self, *args):
-        return self.synchronous_get([('network.set_parameters',args)])[0]
+    def set_parameters(self, host, port, protocol, proxy, auto_connect):
+        proxy_str = serialize_proxy(proxy)
+        server_str = serialize_server(host, port, protocol)
+        self.config.set_key('auto_connect', auto_connect, True)
+        self.config.set_key("proxy", proxy_str, True)
+        self.config.set_key("server", server_str, True)
+        # abort if changes were not allowed by config
+        if self.config.get('server') != server_str or self.config.get('proxy') != proxy_str:
+            return
 
-    def stop(self):
-        self.running = False
+        return self.synchronous_get([('network.set_parameters', (host, port, protocol, proxy, auto_connect))])[0]
 
     def stop_daemon(self):
         return self.send([('daemon.stop',[])], None)
