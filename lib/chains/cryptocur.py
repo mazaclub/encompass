@@ -148,31 +148,21 @@ class CryptoCur(object):
         first_header = chain[0]
         prev_header = self.read_header(first_header.get('block_height') - 1)
         # if we don't verify PoW, just check that headers connect by previous_hash
-        if not self.PoW:
-            for header in chain:
-                prev_hash = self.hash_header(prev_header)
-                height = header.get('block_height')
-                checkpoint_hash = self.checkpoints.get(height)
-                try:
-                    if checkpoint_hash is not None:
-                        assert checkpoint_hash == self.hash_header(header)
-                    assert prev_hash == header.get('prev_block_hash')
-                except Exception:
-                    return False
-            return True
         for header in chain:
             height = header.get('block_height')
 
             prev_hash = self.hash_header(prev_header)
-            bits, target = self.get_target(height/self.chunk_size, chain)
+            if self.PoW:
+                bits, target = self.get_target(height/self.chunk_size, chain)
             _hash = self.hash_header(header)
             try:
+                assert prev_hash == header.get('prev_block_hash')
                 checkpoint_hash = self.checkpoints.get(height)
                 if checkpoint_hash is not None:
                     assert checkpoint_hash == _hash
-                assert prev_hash == header.get('prev_block_hash')
-                assert bits == header.get('bits')
-                assert int('0x'+_hash,16) < target
+                if self.PoW:
+                    assert bits == header.get('bits')
+                    assert int('0x'+_hash,16) < target
             except Exception:
                 return False
 
@@ -194,36 +184,22 @@ class CryptoCur(object):
             previous_hash = self.hash_header(prev_header)
 
         # if we don't verify PoW, just check that headers connect by previous_hash
-        if not self.PoW:
-            for i in range(num):
-                raw_header = data[i*80:(i+1)*80]
-                header = self.header_from_string(raw_header)
-                _hash = self.hash_header(header)
-
-                height = index*self.chunk_size + i
-                checkpoint_hash = self.checkpoints.get(height)
-                if checkpoint_hash is not None:
-                    assert checkpoint_hash == _hash
-                assert previous_hash == header.get('prev_block_hash')
-                previous_header = header
-                previous_hash = _hash
-            self.save_chunk(index, data)
-            return
-
-        bits, target = self.get_target(index)
-
         for i in range(num):
             height = index*self.chunk_size + i
             raw_header = data[i*80:(i+1)*80]
             header = self.header_from_string(raw_header)
             _hash = self.hash_header(header)
 
+            if self.PoW:
+                bits, target = self.get_target(height)
+
             checkpoint_hash = self.checkpoints.get(height)
             if checkpoint_hash is not None:
                 assert checkpoint_hash == _hash
             assert previous_hash == header.get('prev_block_hash')
-            assert bits == header.get('bits')
-            assert int('0x'+_hash,16) < target
+            if self.PoW:
+                assert bits == header.get('bits')
+                assert int('0x'+_hash,16) < target
 
             previous_header = header
             previous_hash = _hash
@@ -287,7 +263,7 @@ class CryptoCur(object):
                 return h
 
     # Calculate the difficulty target
-    def get_target(self, index, chain=None):
+    def get_target(self, height, chain=None):
         pass
 
 
