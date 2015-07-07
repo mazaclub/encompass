@@ -38,6 +38,11 @@ class Peercoin(CryptoCur):
         'ppc-cce-1.coinomi.net':DEFAULT_PORTS
     }
 
+    checkpoints = {
+        0: "0000000032fe677166d54963b62a4677d8957e87c508eaa4fd7eb1c880cd27e3",
+        99999: "27fd5e1de16a4270eb8c68dee2754a64da6312c7c3a0e99a7e6776246be1ee3f",
+    }
+
     def get_target(self, index, chain=None):
         if chain is None:
             chain = []  # Do not use mutables as default values!

@@ -36,6 +36,11 @@ class Blackcoin(CryptoCur):
         'blk-cce-2.coinomi.net':{'t':'5015','s':'5015','h':'8081','g':'8082'}
     }
 
+    checkpoints = {
+        0: "000001faef25dec4fbcf906e6242621df2c183bf232f263d0ba5b101911e4563",
+        319002: "0011494d03b2cdf1ecfc8b0818f1e0ef7ee1d9e9b3d1279c10d35456bc3899ef",
+    }
+
     def hash_header(self, header):
         if header.get('version', 0) > 6:
             return rev_hex(SHA256dHash(self.header_to_string(header).decode('hex')).encode('hex'))

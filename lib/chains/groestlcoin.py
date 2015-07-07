@@ -37,6 +37,11 @@ class Groestlcoin(CryptoCur):
         'electrum2.groestlcoin.org':DEFAULT_PORTS,
     }
 
+    checkpoints = {
+        0: "00000ac5927c594d49cc0bdb81759d0da8297eb614683d3acb62f0703b639023",
+        111111: "00000000013de206275ee83f93bee57622335e422acbf126a37020484c6e113c",
+    }
+
     def reorg_handler(self, local_height):
         name = self.path()
         if os.path.exists(name):

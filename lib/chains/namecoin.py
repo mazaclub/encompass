@@ -30,4 +30,9 @@ class Namecoin(CryptoCur):
         'e-nmc.us-west-2.maza.club': DEFAULT_PORTS,
     }
 
+    checkpoints = {
+        0: "000000000062b72c5e2ceb45fbc8587e807c155b0da735e6483dfba2f0a9c770",
+        193000: "3b85e70ba7f5433049cfbcf0ae35ed869496dbedcd1c0fafadb0284ec81d7b58",
+    }
+
 Currency = Namecoin

@@ -45,6 +45,11 @@ class Dash(CryptoCur):
         'electrum-drk.club':DEFAULT_PORTS,         # duffman
     }
 
+    checkpoints = {
+        0: "00000ffd590b1485b3caadc19b22e6379c733355108f107a430458cdf3407ab6",
+        217752: "00000000000a7baeb2148272a7e14edf5af99a64af456c0afc23d15a0918b704",
+    }
+
     def get_target(self, index, chain=None):
         if chain is None:
             chain = []  # Do not use mutables as default values!

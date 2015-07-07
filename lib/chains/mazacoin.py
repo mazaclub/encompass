@@ -35,6 +35,11 @@ class Mazacoin(CryptoCur):
         'tate.cryptoadhd.com':DEFAULT_PORTS,
     }
 
+    checkpoints = {
+        0: "00000c7c73d8ce604178dae13f0fc6ec0be3275614366d44b1b4b5c6e238c60c",
+        183600: "0000000000000787f10fa4a547822f8170f1f182ca0de60ecd2de189471da885",
+    }
+
     def get_target_v1(self, block_height, chain=None):
         # params
         nTargetTimespan = 8 * 60
