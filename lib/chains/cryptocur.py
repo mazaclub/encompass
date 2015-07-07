@@ -101,10 +101,7 @@ class CryptoCur(object):
     }
 
     # Currency units {name : decimal point}
-    base_units = {
-        'COIN': 8,
-        'mCOIN': 5
-    }
+    base_units = None
 
     ### Electrum constants ###
 
@@ -121,6 +118,12 @@ class CryptoCur(object):
 
     def __init__(self):
         if self.checkpoints is None: self.checkpoints = {}
+        # set base_units if not set
+        if self.base_units is None:
+            self.base_units = {}
+            if self.code:
+                self.base_units = {self.code : 8}
+        # add chainhooks
         for k in dir(self):
             if k in chainhook_names:
                 l = chainhooks.get(k, [])

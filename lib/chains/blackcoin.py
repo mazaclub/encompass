@@ -26,10 +26,6 @@ class Blackcoin(CryptoCur):
         'Bchain.info': 'https://bchain.info/BC/tx/'
     }
 
-    base_units = {
-        'BLK': 8
-    }
-
     chunk_size = 2016
 
     # Network

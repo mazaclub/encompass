@@ -24,10 +24,6 @@ class Namecoin(CryptoCur):
         'Coinplorer.com': 'https://coinplorer.com/NMC/Transactions/'
     }
 
-    base_units = {
-        'NMC': 8
-    }
-
     DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}
 
     DEFAULT_SERVERS = {
