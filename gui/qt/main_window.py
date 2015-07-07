@@ -513,17 +513,17 @@ class ElectrumWindow(QMainWindow):
             return
 
         if self.network is None or not self.network.is_running():
-            text = _("Offline")
+            text = ' - '.join([ self.active_chain.code, _("Offline") ])
             icon = self.actuator.get_icon("status_disconnected.png")
 
         elif self.network.is_connected():
             server_height = self.network.get_server_height()
             server_lag = self.network.get_local_height() - server_height
             if not self.wallet.up_to_date or server_height == 0:
-                text = _("Synchronizing...")
+                text = ' - '.join([ self.active_chain.code, _("Synchronizing...") ])
                 icon = self.actuator.get_icon("status_waiting.png")
             elif server_lag > 1:
-                text = _("Server is lagging (%d blocks)"%server_lag)
+                text = ' - '.join([ self.active_chain.code, _("Server is lagging (%d blocks)"%server_lag) ])
                 icon = self.actuator.get_icon("status_lagging.png")
             else:
                 c, u = self.wallet.get_account_balance(self.current_account)
