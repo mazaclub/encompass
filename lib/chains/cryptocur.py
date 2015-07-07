@@ -3,16 +3,17 @@
 import os, hashlib
 import coinhash
 
-hash_encode = lambda x: x[::-1].encode('hex')
-hash_decode = lambda x: x.decode('hex')[::-1]
+try:
+    from chainkey import util_coin
+except Exception:
+    from .. import util_coin
 
-def rev_hex(s):
-    return s.decode('hex')[::-1].encode('hex')
-
-def int_to_hex(i, length=1):
-    s = hex(i)[2:].rstrip('L')
-    s = "0"*(2*length - len(s)) + s
-    return rev_hex(s)
+hash_encode = lambda x: util_coin.hash_encode(x)
+hash_decode = lambda x: util_coin.hash_decode(x)
+rev_hex = lambda s: util_coin.rev_hex(s)
+int_to_hex = lambda i, length=1: util_coin.int_to_hex(i, length)
+var_int = lambda i: util_coin.var_int(i)
+op_push = lambda i: util_coin.op_push(i)
 
 def bits_to_target(bits):
     """Convert a compact representation to a hex target."""
