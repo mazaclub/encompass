@@ -1,6 +1,7 @@
 import os, sys, re, json
 import platform
 import shutil
+import threading
 from datetime import datetime
 is_verbose = False
 
@@ -10,6 +11,34 @@ class MyEncoder(json.JSONEncoder):
         if isinstance(obj, Transaction):
             return obj.as_dict()
         return super(MyEncoder, self).default(obj)
+
+class DaemonThread(threading.Thread):
+    """ daemon thread that terminates cleanly """
+
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.parent_thread = threading.currentThread()
+        self.running = False
+        self.running_lock = threading.Lock()
+
+    def start(self):
+        with self.running_lock:
+            self.running = True
+        return threading.Thread.start(self)
+
+    def is_running(self):
+        with self.running_lock:
+            return self.running and self.parent_thread.is_alive()
+
+    def stop(self):
+        with self.running_lock:
+            self.running = False
+
+    def print_error(self, *msg):
+        print_error("[%s]" % self.__class__.__name__, *msg)
+
+    def print_msg(self, *msg):
+        print_msg("[%s]" % self.__class__.__name__, *msg)
 
 
 def set_verbosity(b):
