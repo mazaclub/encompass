@@ -154,7 +154,7 @@ class CryptoCur(object):
 
             prev_hash = self.hash_header(prev_header)
             if self.PoW:
-                bits, target = self.get_target(height/self.chunk_size, chain)
+                bits, target = self.get_target(height, chain)
             _hash = self.hash_header(header)
             try:
                 assert prev_hash == header.get('prev_block_hash')
@@ -176,6 +176,9 @@ class CryptoCur(object):
         data = hexdata.decode('hex')
         height = index*self.chunk_size
         num = len(data)/80
+        # we form a chain of headers so we don't need to save individual headers
+        # in cases where a chain uses recent headers in difficulty calculation.
+        chain = []
 
         if index == 0:
             previous_hash = ("0"*64)
@@ -192,7 +195,9 @@ class CryptoCur(object):
             _hash = self.hash_header(header)
 
             if self.PoW:
-                bits, target = self.get_target(height)
+                header['block_height'] = height
+                chain.append(header)
+                bits, target = self.get_target(height, chain)
 
             checkpoint_hash = self.checkpoints.get(height)
             if checkpoint_hash is not None:
