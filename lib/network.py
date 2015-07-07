@@ -79,7 +79,7 @@ def filter_protocol(hostmap = None, protocol = 's', active_chain = None):
     if hostmap is None:
         if active_chain is None:
             active_chain = chainparams.get_active_chain()
-        hostmap = active_chain.DEFAULT_PORTS
+        hostmap = active_chain.DEFAULT_SERVERS
     eligible = []
     for host, portmap in hostmap.items():
         port = portmap.get(protocol)
@@ -91,7 +91,7 @@ def pick_random_server(hostmap = None, protocol = 's', exclude_set = set(), acti
     if hostmap is None:
         if active_chain is None:
             active_chain = chainparams.get_active_chain()
-        hostmap = active_chain.DEFAULT_PORTS
+        hostmap = active_chain.DEFAULT_SERVERS
     eligible = list(set(filter_protocol(hostmap, protocol)) - exclude_set)
     return random.choice(eligible) if eligible else None
 
@@ -155,7 +155,7 @@ class Network(util.DaemonThread):
         self.active_chain = active_chain
 
         self.num_server = 8 if not self.config.get('oneserver') else 0
-        self.blockchain = Blockchain(self.config, self)
+        self.blockchain = Blockchain(self.config, self, self.active_chain)
         self.queue = Queue.Queue()
         self.requests_queue = pipe.send_queue
         self.response_queue = pipe.get_queue
