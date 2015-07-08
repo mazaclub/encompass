@@ -140,7 +140,7 @@ class ElectrumWindow(QMainWindow):
         self.completions = QStringListModel()
 
         self.tabs = tabs = QTabWidget(self)
-        self.column_widths = self.config.get("column_widths_2", default_column_widths )
+        self.column_widths = self.config.get_above_chain("column_widths_2", default_column_widths )
         tabs.addTab(self.create_history_tab(), self.actuator.get_icon("tab_history.png"), _('History') )
         tabs.addTab(self.create_send_tab(), self.actuator.get_icon("tab_send.png"), _('Send') )
         tabs.addTab(self.create_receive_tab(), self.actuator.get_icon("tab_receive.png"), _('Receive') )
@@ -154,9 +154,9 @@ class ElectrumWindow(QMainWindow):
         tabs.setIconSize(QSize(16,18))
         self.setCentralWidget(tabs)
 
-        g = self.config.get("winpos-qt",[100, 100, 840, 400])
+        g = self.config.get_above_chain("winpos-qt",[100, 100, 840, 400])
         self.setGeometry(g[0], g[1], g[2], g[3])
-        if self.config.get("is_maximized"):
+        if self.config.get_above_chain("is_maximized"):
             self.showMaximized()
 
         self.setWindowIcon(QIcon(":icons/encompass.png"))
@@ -455,18 +455,18 @@ class ElectrumWindow(QMainWindow):
 
     # custom wrappers for getOpenFileName and getSaveFileName, that remember the path selected by the user
     def getOpenFileName(self, title, filter = ""):
-        directory = self.config.get('io_dir', unicode(os.path.expanduser('~')))
+        directory = self.config.get_above_chain('io_dir', unicode(os.path.expanduser('~')))
         fileName = unicode( QFileDialog.getOpenFileName(self, title, directory, filter) )
         if fileName and directory != os.path.dirname(fileName):
-            self.config.set_key('io_dir', os.path.dirname(fileName), True)
+            self.config.set_key_above_chain('io_dir', os.path.dirname(fileName), True)
         return fileName
 
     def getSaveFileName(self, title, filename, filter = ""):
-        directory = self.config.get('io_dir', unicode(os.path.expanduser('~')))
+        directory = self.config.get_above_chain('io_dir', unicode(os.path.expanduser('~')))
         path = os.path.join( directory, filename )
         fileName = unicode( QFileDialog.getSaveFileName(self, title, path, filter) )
         if fileName and directory != os.path.dirname(fileName):
-            self.config.set_key('io_dir', os.path.dirname(fileName), True)
+            self.config.set_key_above_chain('io_dir', os.path.dirname(fileName), True)
         return fileName
 
     def close(self):
@@ -1401,7 +1401,7 @@ class ElectrumWindow(QMainWindow):
         for i in range(self.contacts_list.columnCount() - 1):
             self.column_widths["contacts"].append(self.contacts_list.columnWidth(i))
 
-        self.config.set_key("column_widths_2", self.column_widths, True)
+        self.config.set_key_above_chain("column_widths_2", self.column_widths, True)
 
 
     def create_contacts_tab(self):
@@ -2913,10 +2913,10 @@ class ElectrumWindow(QMainWindow):
         NetworkDialog(self.wallet.network, self.config, self).do_exec()
 
     def closeEvent(self, event):
-        self.config.set_key("is_maximized", self.isMaximized())
+        self.config.set_key_above_chain("is_maximized", self.isMaximized())
         if not self.isMaximized():
             g = self.geometry()
-            self.config.set_key("winpos-qt", [g.left(),g.top(),g.width(),g.height()])
+            self.config.set_key_above_chain("winpos-qt", [g.left(),g.top(),g.width(),g.height()])
         self.save_column_widths()
         self.config.set_key("console-history", self.console.history[-50:], True)
         self.wallet.storage.put('accounts_expanded', self.accounts_expanded)
