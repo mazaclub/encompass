@@ -8,6 +8,8 @@
  * Multisig wallets now use a different key derivation path that allows multi-coin multisig
  wallets to be used, while only requiring that master public keys be shared once.
 
+ ** NOTICE: As a result, Encompass multisig wallets are no longer BIP-44 compatible. **
+
  * Chainkey improvements
    - Chainhooks: Allow chains to 'hook' into functions, very similarly to how plugins
    do.
@@ -46,6 +48,7 @@
  * New daemon commands:
    - dumpconfig: Outputs the section of the config file for the active chain.
    - listchains: Outputs a list of blockchains that Encompass supports.
+   - getheader: Retrieves a block header for a given height, optionally deserialized.
 
  * Support for new blockchains
    - Blackcoin
