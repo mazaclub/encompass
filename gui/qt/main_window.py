@@ -2713,7 +2713,7 @@ class ElectrumWindow(QMainWindow):
         from chainkey.i18n import languages
         lang_combo.addItems(languages.values())
         try:
-            index = languages.keys().index(self.config.get("language",''))
+            index = languages.keys().index(self.config.get_above_chain("language",''))
         except Exception:
             index = 0
         lang_combo.setCurrentIndex(index)
@@ -2721,8 +2721,8 @@ class ElectrumWindow(QMainWindow):
             for w in [lang_combo, lang_label]: w.setEnabled(False)
         def on_lang(x):
             lang_request = languages.keys()[lang_combo.currentIndex()]
-            if lang_request != self.config.get('language'):
-                self.config.set_key("language", lang_request, True)
+            if lang_request != self.config.get_above_chain('language'):
+                self.config.set_key_above_chain("language", lang_request, True)
                 self.need_restart = True
         lang_combo.currentIndexChanged.connect(on_lang)
         widgets.append((lang_label, lang_combo, lang_help))
