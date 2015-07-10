@@ -149,6 +149,7 @@ class CryptoCur(object):
 
     # Called from blockchain.py when a chain of headers (arbitrary number of headers that's less than a chunk) needs verification.
     def verify_chain(self, chain):
+        """Returns whether a chain of headers is valid."""
         first_header = chain[0]
         prev_header = self.read_header(first_header.get('block_height') - 1)
         # if we don't verify PoW, just check that headers connect by previous_hash
@@ -176,6 +177,10 @@ class CryptoCur(object):
 
     # Called from blockchain.py when a chunk of headers needs verification.
     def verify_chunk(self, index, hexdata):
+        """Attempts to verify a chunk of headers.
+
+        Does not return a value. This either succeeds
+        or throws an error."""
         data = hexdata.decode('hex')
         height = index*self.chunk_size
         num = len(data)/80
@@ -220,6 +225,7 @@ class CryptoCur(object):
 
     # Most common header format. Reimplement in a derived class if header format differs.
     def header_to_string(self, res):
+        """Create a serialized string from a header dict."""
         s = int_to_hex(res.get('version'),4) \
             + rev_hex(res.get('prev_block_hash')) \
             + rev_hex(res.get('merkle_root')) \
@@ -230,6 +236,7 @@ class CryptoCur(object):
 
     # Most common header format. Reimplement in a derived class if header format differs.
     def header_from_string(self, s):
+        """Create a header dict from a serialized string."""
         hex_to_int = lambda s: int('0x' + s[::-1].encode('hex'), 16)
         h = {}
         h['version'] = hex_to_int(s[0:4])
