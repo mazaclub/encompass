@@ -24,10 +24,6 @@ class Mazacoin(CryptoCur):
         'Mazacha.in': 'https://mazacha.in/tx/'
     }
 
-    base_units = {
-        'MZC': 8
-    }
-
     chunk_size = 2016
 
     DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}
@@ -39,72 +35,10 @@ class Mazacoin(CryptoCur):
         'tate.cryptoadhd.com':DEFAULT_PORTS,
     }
 
-    def verify_chain(self, chain):
-
-        first_header = chain[0]
-        prev_header = self.read_header(first_header.get('block_height') -1)
-
-        for header in chain:
-
-            height = header.get('block_height')
-
-            prev_hash = self.hash_header(prev_header)
-            bits, target = self.get_target(height, chain)
-            _hash = self.hash_header(header)
-            try:
-                assert prev_hash == header.get('prev_block_hash')
-                assert bits == header.get('bits')
-                assert int('0x'+_hash,16) < target
-            except Exception:
-                return False
-
-            prev_header = header
-
-        return True
-
-    def verify_chunk(self, index, hexdata):
-        data = hexdata.decode('hex')
-        height = index*self.chunk_size
-        num = len(data)/80
-
-        if index == 0:
-            previous_hash = ("0"*64)
-        else:
-            prev_header = self.read_header(index*self.chunk_size-1)
-            if prev_header is None: raise
-            previous_hash = self.hash_header(prev_header)
-
-#        bits, target = self.get_target(index)
-
-        for i in range(num):
-            height = index*self.chunk_size + i
-            bits, target = self.get_target(height)
-            raw_header = data[i*80:(i+1)*80]
-            header = self.header_from_string(raw_header)
-            _hash = self.hash_header(header)
-            assert previous_hash == header.get('prev_block_hash')
-            assert bits == header.get('bits')
-            assert int('0x'+_hash,16) < target
-
-            self.save_header(header, height)
-            previous_header = header
-            previous_hash = _hash
-
-#        self.save_chunk(index, data)
-#        print_error("validated chunk %d"%height)
-
-    def hash_header(self, header):
-        return rev_hex(SHA256dHash(self.header_to_string(header).decode('hex')).encode('hex'))
-
-    def save_header(self, header, height=None):
-        data = self.header_to_string(header).decode('hex')
-        assert len(data) == 80
-        if height is None: height = header.get('block_height')
-        filename = self.path()
-        f = open(filename,'rb+')
-        f.seek(height*80)
-        h = f.write(data)
-        f.close()
+    checkpoints = {
+        0: "00000c7c73d8ce604178dae13f0fc6ec0be3275614366d44b1b4b5c6e238c60c",
+        183600: "0000000000000787f10fa4a547822f8170f1f182ca0de60ecd2de189471da885",
+    }
 
     def get_target_v1(self, block_height, chain=None):
         # params

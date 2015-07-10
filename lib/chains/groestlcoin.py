@@ -20,15 +20,12 @@ class Groestlcoin(CryptoCur):
     COINBASE_MATURITY = 100
 
     base58_hash = coinhash.GroestlHash
+    header_hash = coinhash.GroestlHash
     transaction_hash = coinhash.SHA256Hash
 
     block_explorers = {
         'cryptoID.info': 'https://chainz.cryptoid.info/grs/tx.dws?',
         'MultiFaucet.tk': 'http://www.multifaucet.tk/index.php?blockexplorer=GRS&txid='
-    }
-
-    base_units = {
-        'GRS': 8
     }
 
     chunk_size = 2016
@@ -38,6 +35,11 @@ class Groestlcoin(CryptoCur):
     DEFAULT_SERVERS = {
         'electrum1.groestlcoin.org':DEFAULT_PORTS,
         'electrum2.groestlcoin.org':DEFAULT_PORTS,
+    }
+
+    checkpoints = {
+        0: "00000ac5927c594d49cc0bdb81759d0da8297eb614683d3acb62f0703b639023",
+        111111: "00000000013de206275ee83f93bee57622335e422acbf126a37020484c6e113c",
     }
 
     def reorg_handler(self, local_height):
@@ -107,9 +109,6 @@ class Groestlcoin(CryptoCur):
 
         if self.PoW == False:
             self.save_chunk(index, data)
-
-    def hash_header(self, header):
-        return rev_hex(coinhash.GroestlHash(self.header_to_string(header).decode('hex')).encode('hex'))
 
     def save_header(self, header, height=None):
         data = self.header_to_string(header).decode('hex')
