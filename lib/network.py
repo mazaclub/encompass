@@ -241,7 +241,7 @@ class Network(util.DaemonThread):
         return host, port, protocol, self.proxy, self.auto_connect()
 
     def auto_connect(self):
-        return self.config.get('auto_connect', False)
+        return self.config.get('auto_connect', True)
 
     def get_interfaces(self):
         '''The interfaces that are in connected state'''
