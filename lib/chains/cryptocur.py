@@ -204,7 +204,10 @@ class CryptoCur(object):
 
             checkpoint_hash = self.checkpoints.get(height)
             if checkpoint_hash is not None:
-                assert checkpoint_hash == _hash
+                try:
+                    assert checkpoint_hash == _hash
+                except Exception:
+                    raise CheckpointError(height, checkpoint_hash, _hash)
             assert previous_hash == header.get('prev_block_hash')
             if self.PoW:
                 assert bits == header.get('bits')

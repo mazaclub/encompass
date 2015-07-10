@@ -20,6 +20,7 @@
 import os
 import util
 from bitcoin import *
+from chains import CheckpointError
 
 
 class Blockchain():
@@ -135,6 +136,9 @@ class Blockchain():
         try:
             self.verify_chunk(idx, chunk)
             return idx + 1
+        except CheckpointError as e:
+            self.print_error('verify_chunk failed: header {} hash does not match checkpoint'.format(e.height))
+            return False
         except Exception:
             self.print_error('verify_chunk failed')
             return idx - 1

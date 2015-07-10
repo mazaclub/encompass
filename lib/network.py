@@ -506,8 +506,11 @@ class Network(util.DaemonThread):
             if req_if == interface and req_idx == response['params'][0]:
                 idx = self.blockchain.connect_chunk(req_idx, response['result'])
                 # If not finished, get the next chunk
-                if idx < 0 or self.get_local_height() >= data['if_height']:
+                if idx < 0 or not idx or self.get_local_height() >= data['if_height']:
                     self.bc_requests.popleft()
+                    if not idx:
+                        interface.print_error("header didn't match checkpoint, dismissing interface")
+                        interface.stop()
                 else:
                     self.request_chunk(interface, data, idx)
 
