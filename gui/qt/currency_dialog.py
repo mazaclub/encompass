@@ -6,7 +6,7 @@ from chainkey.i18n import _
 from chainkey import chainparams
 from chainkey.util import print_error
 
-from util import HelpButton, ok_cancel_buttons
+from util import HelpButton, ok_cancel_buttons, close_button
 
 import functools
 import operator
@@ -34,7 +34,7 @@ class CurrenciesCheckboxDialog(QDialog):
         self.scroll_layout = scroll_layout = QVBoxLayout()
 
         self.coin_checkboxes = []
-        for coin in known_chains:
+        for coin in sorted(known_chains):
             checkbox = QCheckBox(coin)
             checkbox.stateChanged.connect(functools.partial(self.change_coin_state, checkbox))
             self.coin_checkboxes.append(checkbox)
@@ -46,6 +46,45 @@ class CurrenciesCheckboxDialog(QDialog):
 
     def change_coin_state(self, checkbox):
         pass
+
+class HideCurrenciesDialog(CurrenciesCheckboxDialog):
+    def __init__(self, parent):
+        CurrenciesCheckboxDialog.__init__(self, parent)
+        self.setWindowTitle(_('Hide Coins'))
+        known_chains = chainparams.known_chain_codes
+        self.hide_chains = self.parent.config.get_above_chain('hide_chains', [])
+
+        # sanity checking
+        active_chain_code = self.parent.active_chain.code
+        if active_chain_code in self.hide_chains:
+            self.hide_chains.remove(active_chain_code)
+
+        self.main_layout = vbox = QVBoxLayout()
+        hide_label = QLabel(_('You can select chains here that will be hidden from view in the currency selection dialog.'))
+        vbox.addWidget(hide_label)
+
+        for cbox in self.coin_checkboxes:
+            if str(cbox.text()) == active_chain_code:
+                cbox.setChecked(False)
+                cbox.setEnabled(False)
+                continue
+            cbox.setChecked(str(cbox.text()) in self.hide_chains)
+        vbox.addLayout(self.scroll_layout)
+
+        vbox.addLayout(close_button(self))
+        self.finished.connect(self.save_hide_chains)
+        self.setLayout(vbox)
+
+    def change_coin_state(self, checkbox):
+        code = str(checkbox.text())
+        is_hiding = checkbox.isChecked()
+        if is_hiding and code not in self.hide_chains:
+            self.hide_chains.append(code)
+        elif not is_hiding and code in self.hide_chains:
+            self.hide_chains.remove(code)
+
+    def save_hide_chains(self):
+        self.parent.config.set_key_above_chain('hide_chains', self.hide_chains, True)
 
 class FavoriteCurrenciesDialog(CurrenciesCheckboxDialog):
     def __init__(self, parent):
@@ -149,9 +188,12 @@ class ChangeCurrencyDialog(QDialog):
 
         chains = chainparams.known_chains
         favorites = self.parent.config.get_above_chain('favorite_chains', [])
+        hidden_chains = self.parent.config.get_above_chain('hide_chains', [])
         # Yes or No
         y_or_n = lambda x: 'Yes' if x==True else 'No'
         for ch in sorted(chains, key=operator.attrgetter('code')):
+            if ch.code in hidden_chains:
+                continue
 
             is_initialized = True
             dummy_key = self.parent.wallet.storage.get_chain_value(ch.code, 'accounts')
