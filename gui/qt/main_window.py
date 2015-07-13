@@ -1780,6 +1780,8 @@ class ElectrumWindow(QMainWindow):
 
     def get_coin_icon(self):
         coin_icon_name = ''.join([ ":icons/coin_", self.active_chain.code.lower(), ".png" ])
+        if not QFile(coin_icon_name).exists():
+            coin_icon_name = ":icons/coin_btc.png"
         return QIcon(coin_icon_name)
 
     def create_status_bar(self):
