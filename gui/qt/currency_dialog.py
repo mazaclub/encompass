@@ -12,10 +12,44 @@ import functools
 import operator
 import copy
 
-class FavoriteCurrenciesDialog(QDialog):
+class CurrenciesCheckboxDialog(QDialog):
     def __init__(self, parent):
         QDialog.__init__(self, parent)
         self.parent = parent
+        known_chains = chainparams.known_chain_codes
+
+        self.scroll_area = scroll = QScrollArea()
+        scroll.setEnabled(True)
+        scroll.setWidgetResizable(True)
+        scroll.setMinimumSize(25, 100)
+
+        self.coin_scroll_widget = scroll_widget = QWidget()
+        scroll_widget.setMinimumWidth(50)
+        scroll_widget.setMinimumHeight(len(known_chains) * 35)
+        scroll_widget.setObjectName("chains_area")
+
+        # layout containing the checkboxes
+        self.coin_boxes_layout = coin_vbox = QVBoxLayout()
+        # Contains the scrollarea, including coin_boxes_layout
+        self.scroll_layout = scroll_layout = QVBoxLayout()
+
+        self.coin_checkboxes = []
+        for coin in known_chains:
+            checkbox = QCheckBox(coin)
+            checkbox.stateChanged.connect(functools.partial(self.change_coin_state, checkbox))
+            self.coin_checkboxes.append(checkbox)
+            coin_vbox.addWidget(checkbox)
+
+        scroll_widget.setLayout(coin_vbox)
+        scroll.setWidget(scroll_widget)
+        scroll_layout.addWidget(scroll)
+
+    def change_coin_state(self, checkbox):
+        pass
+
+class FavoriteCurrenciesDialog(CurrenciesCheckboxDialog):
+    def __init__(self, parent):
+        CurrenciesCheckboxDialog.__init__(self, parent)
         self.setWindowTitle(_('Favorite Coins'))
         known_chains = chainparams.known_chain_codes
         self.favorites = copy.deepcopy(self.parent.config.get_above_chain('favorite_chains', []))
@@ -26,13 +60,9 @@ class FavoriteCurrenciesDialog(QDialog):
         limit_label = QLabel(_('Up to three coins may be selected as "favorites."\nThey will be listed before other coins in the currency selection dialog.'))
         vbox.addWidget(limit_label)
 
-        self.coin_checkboxes = []
-        for coin in known_chains:
-            checkbox = QCheckBox(coin)
-            checkbox.setChecked(coin in self.favorites)
-            checkbox.stateChanged.connect(functools.partial(self.change_coin_state, checkbox))
-            self.coin_checkboxes.append(checkbox)
-            vbox.addWidget(checkbox)
+        for cbox in self.coin_checkboxes:
+            cbox.setChecked(str(cbox.text()) in self.favorites)
+        vbox.addLayout(self.scroll_layout)
 
         vbox.addLayout(ok_cancel_buttons(self, ok_label=_('Save')))
         self.accepted.connect(self.save_favorites)
