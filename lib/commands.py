@@ -278,10 +278,10 @@ class Commands:
             domain = self.wallet.addresses(True)
         return [self.wallet.get_private_key(address, self.password) for address in domain]
 
-    @command('')
+    @command('c')
     def validateaddress(self, address):
         """Check that the address is valid. """
-        return is_valid(address)
+        return is_valid(address, chainparams.get_active_chain())
 
     @command('cw')
     def getpubkeys(self, address):
