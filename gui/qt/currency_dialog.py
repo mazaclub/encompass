@@ -10,6 +10,7 @@ from util import HelpButton, ok_cancel_buttons
 
 import functools
 import operator
+import copy
 
 class FavoriteCurrenciesDialog(QDialog):
     def __init__(self, parent):
@@ -17,7 +18,7 @@ class FavoriteCurrenciesDialog(QDialog):
         self.parent = parent
         self.setWindowTitle(_('Favorite Coins'))
         known_chains = chainparams.known_chain_codes
-        self.favorites = self.parent.config.get_above_chain('favorite_chains', [])
+        self.favorites = copy.deepcopy(self.parent.config.get_above_chain('favorite_chains', []))
         # sanity check, just in case. Main window should have already done this
         if len(self.favorites) > 3: self.favorites = self.favorites[:3]
 
