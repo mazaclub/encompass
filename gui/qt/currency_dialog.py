@@ -16,7 +16,7 @@ class CurrenciesCheckboxDialog(QDialog):
     def __init__(self, parent):
         QDialog.__init__(self, parent)
         self.parent = parent
-        known_chains = chainparams.known_chain_codes
+        known_chains = chainparams.known_chains
 
         self.scroll_area = scroll = QScrollArea()
         scroll.setEnabled(True)
@@ -24,7 +24,6 @@ class CurrenciesCheckboxDialog(QDialog):
         scroll.setMinimumSize(25, 100)
 
         self.coin_scroll_widget = scroll_widget = QWidget()
-        scroll_widget.setMinimumWidth(50)
         scroll_widget.setMinimumHeight(len(known_chains) * 35)
         scroll_widget.setObjectName("chains_area")
 
@@ -34,8 +33,9 @@ class CurrenciesCheckboxDialog(QDialog):
         self.scroll_layout = scroll_layout = QVBoxLayout()
 
         self.coin_checkboxes = []
-        for coin in sorted(known_chains):
-            checkbox = QCheckBox(coin)
+        for coin in sorted(known_chains, key=operator.attrgetter('code')):
+            box_label = ''.join([ coin.code, " (", coin.coin_name, ")" ])
+            checkbox = QCheckBox(box_label)
             checkbox.stateChanged.connect(functools.partial(self.change_coin_state, checkbox))
             self.coin_checkboxes.append(checkbox)
             coin_vbox.addWidget(checkbox)
@@ -51,7 +51,6 @@ class HideCurrenciesDialog(CurrenciesCheckboxDialog):
     def __init__(self, parent):
         CurrenciesCheckboxDialog.__init__(self, parent)
         self.setWindowTitle(_('Hide Coins'))
-        known_chains = chainparams.known_chain_codes
         self.hide_chains = self.parent.config.get_above_chain('hide_chains', [])
 
         # sanity checking
@@ -64,11 +63,12 @@ class HideCurrenciesDialog(CurrenciesCheckboxDialog):
         vbox.addWidget(hide_label)
 
         for cbox in self.coin_checkboxes:
-            if str(cbox.text()) == active_chain_code:
+            code = str(cbox.text()).split()[0]
+            if code == active_chain_code:
                 cbox.setChecked(False)
                 cbox.setEnabled(False)
                 continue
-            cbox.setChecked(str(cbox.text()) in self.hide_chains)
+            cbox.setChecked(code in self.hide_chains)
         vbox.addLayout(self.scroll_layout)
 
         vbox.addLayout(close_button(self))
@@ -76,7 +76,7 @@ class HideCurrenciesDialog(CurrenciesCheckboxDialog):
         self.setLayout(vbox)
 
     def change_coin_state(self, checkbox):
-        code = str(checkbox.text())
+        code = str(checkbox.text()).split()[0]
         is_hiding = checkbox.isChecked()
         if is_hiding and code not in self.hide_chains:
             self.hide_chains.append(code)
@@ -90,7 +90,6 @@ class FavoriteCurrenciesDialog(CurrenciesCheckboxDialog):
     def __init__(self, parent):
         CurrenciesCheckboxDialog.__init__(self, parent)
         self.setWindowTitle(_('Favorite Coins'))
-        known_chains = chainparams.known_chain_codes
         self.favorites = copy.deepcopy(self.parent.config.get_above_chain('favorite_chains', []))
         # sanity check, just in case. Main window should have already done this
         if len(self.favorites) > 3: self.favorites = self.favorites[:3]
@@ -100,7 +99,7 @@ class FavoriteCurrenciesDialog(CurrenciesCheckboxDialog):
         vbox.addWidget(limit_label)
 
         for cbox in self.coin_checkboxes:
-            cbox.setChecked(str(cbox.text()) in self.favorites)
+            cbox.setChecked(str(cbox.text()).split()[0] in self.favorites)
         vbox.addLayout(self.scroll_layout)
 
         vbox.addLayout(ok_cancel_buttons(self, ok_label=_('Save')))
@@ -120,7 +119,7 @@ class FavoriteCurrenciesDialog(CurrenciesCheckboxDialog):
                     box.setEnabled(False)
 
     def change_coin_state(self, checkbox):
-        code = str(checkbox.text())
+        code = str(checkbox.text()).split()[0]
         is_favorite = checkbox.isChecked()
         if is_favorite and code not in self.favorites:
             self.favorites.append(code)
