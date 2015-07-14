@@ -29,8 +29,9 @@ MSG_VERIFY_SEED       = _("Your seed is important!") + "\n" + _("To make sure th
 
 class InstallWizard(QDialog):
 
-    def __init__(self, config, network, storage):
+    def __init__(self, config, network, storage, app):
         QDialog.__init__(self)
+        self.app = app
         self.config = config
         self.network = network
         self.storage = storage

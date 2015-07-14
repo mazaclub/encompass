@@ -163,7 +163,7 @@ class ElectrumGui:
 
         if action is not None:
             import installwizard
-            wizard = installwizard.InstallWizard(self.config, self.network, storage)
+            wizard = installwizard.InstallWizard(self.config, self.network, storage, self.app)
             wallet = wizard.run(action)
             if not wallet:
                 return

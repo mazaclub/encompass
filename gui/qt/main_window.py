@@ -336,7 +336,7 @@ class ElectrumWindow(QMainWindow):
             QMessageBox.critical(None, "Error", _("File exists"))
             return
 
-        wizard = installwizard.InstallWizard(self.config, self.network, storage)
+        wizard = installwizard.InstallWizard(self.config, self.network, storage, self.app)
         wallet = wizard.run('new')
         if wallet:
             self.load_wallet(wallet)
@@ -1863,7 +1863,7 @@ class ElectrumWindow(QMainWindow):
         wallet = Wallet(storage)
         needed_action = wallet.get_action()
         if needed_action is not None:
-            wizard = installwizard.InstallWizard(self.config, self.network, storage)
+            wizard = installwizard.InstallWizard(self.config, self.network, storage, self.app)
             wallet = wizard.run(needed_action)
             # Unable to add chain (TODO: Make handling this less messy)
             if wallet is None:
