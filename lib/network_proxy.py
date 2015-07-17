@@ -133,7 +133,10 @@ class NetworkProxy(util.DaemonThread):
         error = response.get('error')
         if msg_id is not None:
             with self.lock:
-                method, params, callback = self.unanswered_requests.pop(msg_id)
+                try:
+                    method, params, callback = self.unanswered_requests.pop(msg_id)
+                except KeyError:
+                    return
         else:
             method = response.get('method')
             params = response.get('params')
