@@ -19,6 +19,8 @@ from collections import deque
 NODES_RETRY_INTERVAL = 60
 SERVER_RETRY_INTERVAL = 10
 
+def get_protocol_letter(use_ssl = True):
+    return 's' if use_ssl else 't'
 
 def parse_servers(result, active_chain=None):
     """ parse servers list into dict format"""
@@ -134,6 +136,7 @@ class Network(util.DaemonThread):
         if active_chain is None:
             active_chain = chainparams.get_active_chain()
         self.active_chain = active_chain
+        self.use_ssl = config.get('use_ssl', True)
 
         self.num_server = 8 if not self.config.get('oneserver') else 0
         self.blockchain = Blockchain(self.config, self, self.active_chain)
@@ -150,7 +153,7 @@ class Network(util.DaemonThread):
         except:
             self.default_server = None
         if not self.default_server:
-            self.default_server = pick_random_server(active_chain = self.active_chain)
+            self.default_server = pick_random_server(active_chain = self.active_chain, protocol = get_protocol_letter(self.use_ssl))
 
         self.irc_servers = {} # returned by interface (list from irc)
         self.recent_servers = self.read_recent_servers()
@@ -178,6 +181,52 @@ class Network(util.DaemonThread):
         # to or have an ongoing connection with
         self.interface = None
         self.interfaces = {}
+        self.start_network(deserialize_server(self.default_server)[2],
+                           deserialize_proxy(self.config.get('proxy')))
+
+    def switch_chains(self, chaincode=None):
+        if chaincode is None:
+            chain = chainparams.get_active_chain()
+        else:
+            chain = chainparams.get_chain_instance(chaincode)
+        self.active_chain = chain
+        if self.config.get_active_chain_code() != self.active_chain.code:
+            self.config.set_active_chain_code(self.active_chain.code)
+        self.print_error('switching chains to {}'.format(chain.code))
+        self.stop_network()
+        self.bc_requests.clear()
+        self.blockchain = Blockchain(self.config, self, self.active_chain)
+        self.queue = Queue.Queue()
+
+        self.default_server = self.config.get('server')
+        # Sanitize default server
+        try:
+            deserialize_server(self.default_server)
+        except:
+            self.default_server = None
+        if not self.default_server:
+            self.default_server = pick_random_server(active_chain = self.active_chain, protocol = get_protocol_letter(self.use_ssl))
+
+        self.irc_servers = {} # returned by interface (list from irc)
+        self.recent_servers = self.read_recent_servers()
+
+        self.banner = ''
+        self.heights = {}
+        self.merkle_roots = {}
+        self.utxo_roots = {}
+
+        self.interface = None
+        self.interfaces = {}
+
+        # subscriptions and requests
+        self.subscribed_addresses = set()
+        # cached address status
+        self.addr_responses = {}
+        # unanswered requests
+        self.unanswered_requests = {}
+
+        self.blockchain.init()
+        # Start the new network
         self.start_network(deserialize_server(self.default_server)[2],
                            deserialize_proxy(self.config.get('proxy')))
 

@@ -521,7 +521,7 @@ class ElectrumWindow(QMainWindow):
         elif self.network.is_connected():
             server_height = self.network.get_server_height()
             server_lag = self.network.get_local_height() - server_height
-            if not self.wallet.up_to_date or server_height == 0:
+            if not self.wallet.is_up_to_date() or server_height == 0:
                 text = ' - '.join([ self.active_chain.code, _("Synchronizing...") ])
                 icon = self.actuator.get_icon("status_waiting.png")
             elif server_lag > 1:
@@ -1870,7 +1870,18 @@ class ElectrumWindow(QMainWindow):
         time.sleep(0.3)
         self.config.set_active_chain_code(chaincode)
         self.network.switch_to_active_chain()
-        time.sleep(1)
+        time.sleep(0.5)
+
+        # network callbacks
+        if self.network:
+            self.network.register_callback('updated', lambda: self.need_update.set())
+            self.network.register_callback('banner', lambda: self.emit(QtCore.SIGNAL('banner_signal')))
+            self.network.register_callback('status', lambda: self.emit(QtCore.SIGNAL('update_status')))
+            self.network.register_callback('new_transaction', lambda: self.emit(QtCore.SIGNAL('transaction_signal')))
+            self.network.register_callback('stop', self.close)
+
+            # set initial message
+            self.console.showMessage(self.network.banner)
         print_error("Network switched to active chain: {}".format(chaincode))
 
         wallet_filepath = self.wallet.storage.path
@@ -1887,7 +1898,7 @@ class ElectrumWindow(QMainWindow):
                 self.network.switch_to_active_chain()
                 time.sleep(1)
                 wallet = self.wallet
-                wallet.start_threads(self.network)
+            wallet.start_threads(self.network)
         else:
             wallet.start_threads(self.network)
 
