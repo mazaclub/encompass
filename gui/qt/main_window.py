@@ -84,14 +84,15 @@ def format_status(x):
 
 
 class StatusBarButton(QPushButton):
-    def __init__(self, icon, tooltip, func):
+    def __init__(self, icon, tooltip, func, is_coin=False):
         QPushButton.__init__(self, icon, '')
+        dimension = 32 if is_coin else 25
         self.setToolTip(tooltip)
         self.setFlat(True)
-        self.setMaximumWidth(25)
+        self.setMaximumWidth(dimension)
         self.clicked.connect(func)
         self.func = func
-        self.setIconSize(QSize(25,25))
+        self.setIconSize(QSize(dimension,dimension))
 
     def keyPressEvent(self, e):
         if e.key() == QtCore.Qt.Key_Return:
@@ -254,6 +255,7 @@ class ElectrumWindow(QMainWindow):
         self.import_menu.setEnabled(self.wallet.can_import())
         self.export_menu.setEnabled(self.wallet.can_export())
 
+        self.update_coin_icon()
         self.update_lock_icon()
         self.update_buttons_on_seed()
         self.update_console()
@@ -1776,10 +1778,16 @@ class ElectrumWindow(QMainWindow):
         self.update_address_tab()
         self.update_receive_tab()
 
+    def get_coin_icon(self):
+        coin_icon_name = ''.join([ ":icons/coin_", self.active_chain.code.lower(), ".png" ])
+        if not QFile(coin_icon_name).exists():
+            coin_icon_name = ":icons/coin_btc.png"
+        return QIcon(coin_icon_name)
+
     def create_status_bar(self):
 
         sb = QStatusBar()
-        sb.setFixedHeight(35)
+        sb.setFixedHeight(38)
         qtVersion = qVersion()
 
         self.balance_label = QLabel("")
@@ -1806,10 +1814,16 @@ class ElectrumWindow(QMainWindow):
         self.status_button = StatusBarButton( self.actuator.get_icon("status_disconnected.png"), _("Network"), self.run_network_dialog )
         sb.addPermanentWidget( self.status_button )
 
+        self.change_currency_button = StatusBarButton( self.get_coin_icon(), _("Change Currency"), self.change_currency_dialog, is_coin=True)
+        sb.insertPermanentWidget(1, self.change_currency_button )
+
         run_hook('create_status_bar', (sb,))
 
         self.setStatusBar(sb)
 
+    def update_coin_icon(self):
+        icon = self.get_coin_icon()
+        self.change_currency_button.setIcon( icon )
 
     def update_lock_icon(self):
         icon = self.actuator.get_icon("lock.png") if self.wallet.use_encryption else self.actuator.get_icon("unlock.png")
