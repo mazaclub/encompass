@@ -12,5 +12,17 @@
     <file>icons/dark_background.png</file>
     <file>icons/qrcode.png</file>
     <file>icons/trustedcoin.png</file>
+    <file>icons/coin_blk.png</file>
+    <file>icons/coin_btc.png</file>
+    <file>icons/coin_clams.png</file>
+    <file>icons/coin_dash.png</file>
+    <file>icons/coin_doge.png</file>
+    <file>icons/coin_ftc.png</file>
+    <file>icons/coin_grs.png</file>
+    <file>icons/coin_ltc.png</file>
+    <file>icons/coin_mzc.png</file>
+    <file>icons/coin_nmc.png</file>
+    <file>icons/coin_ppc.png</file>
+    <file>icons/coin_via.png</file>
   </qresource>
 </RCC>

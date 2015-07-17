@@ -48,6 +48,11 @@ class Viacoin(CryptoCur):
         'vialectrum.viacoin.net': DEFAULT_PORTS,
     }
 
+    checkpoints = {
+        0: "4e9b54001f9976049830128ec0331515eaabe35a70970d79971da1539a400ba1",
+        44606: "5ceeec38564a36ee3e1e5404970f5715efe0420e92c8e92bedfdfef782c49320",
+    }
+
     def verify_chain(self, chain):
 
         first_header = chain[0]

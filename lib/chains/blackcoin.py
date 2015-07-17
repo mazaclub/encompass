@@ -26,10 +26,6 @@ class Blackcoin(CryptoCur):
         'Bchain.info': 'https://bchain.info/BC/tx/'
     }
 
-    base_units = {
-        'BLK': 8
-    }
-
     chunk_size = 2016
 
     # Network
@@ -40,77 +36,10 @@ class Blackcoin(CryptoCur):
         'blk-cce-2.coinomi.net':{'t':'5015','s':'5015','h':'8081','g':'8082'}
     }
 
-    def verify_chain(self, chain):
-
-        first_header = chain[0]
-        prev_header = self.read_header(first_header.get('block_height') -1)
-
-        if not self.PoW:
-            for header in chain:
-                prev_hash = self.hash_header(prev_header)
-                try:
-                    assert prev_hash == header.get('prev_block_hash')
-                except Exception:
-                    return False
-            return True
-
-        for header in chain:
-
-            height = header.get('block_height')
-
-            prev_hash = self.hash_header(prev_header)
-            bits, target = self.get_target(height/2016, chain)
-            _hash = self.hash_header(header)
-            try:
-                assert prev_hash == header.get('prev_block_hash')
-                assert bits == header.get('bits')
-                assert int('0x'+_hash,16) < target
-            except Exception:
-                return False
-
-            prev_header = header
-
-        return True
-
-
-    def verify_chunk(self, index, hexdata):
-        data = hexdata.decode('hex')
-        height = index*2016
-        num = len(data)/80
-
-        if index == 0:
-            previous_hash = ("0"*64)
-        else:
-            prev_header = self.read_header(index*2016-1)
-            if prev_header is None: raise
-            previous_hash = self.hash_header(prev_header)
-
-        if not self.PoW:
-            for i in range(num):
-                raw_header = data[i*80:(i+1)*80]
-                header = self.header_from_string(raw_header)
-                _hash = self.hash_header(header)
-                assert previous_hash == header.get('prev_block_hash')
-                previous_header = header
-                previous_hash = _hash
-            self.save_chunk(index, data)
-            return
-
-        bits, target = self.get_target(index)
-
-        for i in range(num):
-            height = index*2016 + i
-            raw_header = data[i*80:(i+1)*80]
-            header = self.header_from_string(raw_header)
-            _hash = self.hash_header(header)
-            assert previous_hash == header.get('prev_block_hash')
-            assert bits == header.get('bits')
-            assert int('0x'+_hash,16) < target
-
-            previous_header = header
-            previous_hash = _hash
-
-        self.save_chunk(index, data)
+    checkpoints = {
+        0: "000001faef25dec4fbcf906e6242621df2c183bf232f263d0ba5b101911e4563",
+        319002: "0011494d03b2cdf1ecfc8b0818f1e0ef7ee1d9e9b3d1279c10d35456bc3899ef",
+    }
 
     def hash_header(self, header):
         if header.get('version', 0) > 6:

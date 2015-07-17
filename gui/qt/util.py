@@ -187,7 +187,7 @@ def filename_field(parent, config, defaultname, select_msg, csv_default=True):
 
     hbox = QHBoxLayout()
 
-    directory = config.get('io_dir', unicode(os.path.expanduser('~')))
+    directory = config.get_above_chain('io_dir', unicode(os.path.expanduser('~')))
     path = os.path.join( directory, defaultname )
     filename_e = QLineEdit()
     filename_e.setText(path)

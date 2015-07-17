@@ -57,6 +57,11 @@ class Bitcoin(CryptoCur):
         'us.electrum.be':DEFAULT_PORTS,
     }
 
+    checkpoints = {
+        0: "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
+        295000: "00000000000000004d9b4ef50f0f9d686fd69db2e03af35a100370c64632a983",
+    }
+
     def verify_chain(self, chain):
 
         first_header = chain[0]

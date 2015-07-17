@@ -514,9 +514,9 @@ class Commands:
     @command('n')
     def getheader(self, height, deserialized=False):
         """Retrieve the block header at a given height."""
-        header = self.network.synchronous_get([('blockchain.block.get_header', [height])])[0]
+        header = self.network.get_header(int(height))
         if not header or isinstance(header, unicode):
-            raise BaseException("Unknown block")
+            return 'Error: Unknown block'
         # genesis block
         if header.get('prev_block_hash') is None and header.get('block_height') == 0:
             header['prev_block_hash'] = '0'*64
@@ -589,25 +589,37 @@ class Commands:
 #        """Remove a payment request"""
 #        return self.wallet.remove_payment_request(key, self.config)
 
-    @command('w')
+    @command('')
     def getchain(self):
         """Get the chain that your wallet is currently using."""
-        return self.wallet.active_chain_code
+        return self.config.get_active_chain_code()
 
-    @command('w')
+    @command('n')
     def setchain(self, chaincode):
         """Set the chain that your wallet is currently using."""
         if not chainparams.is_known_chain(chaincode):
             return 'Invalid chain: "{}"'.format(chaincode)
-        self.wallet.set_chain(chaincode)
-        return 'Active chain is now {}'.format(self.wallet.active_chain_code)
+        if self.config.get_active_chain_code() == chaincode:
+            return 'Active chain is already {}'.format(chaincode)
+        self.config.set_active_chain_code(chaincode)
+        self.network.switch_to_active_chain()
+        return 'Active chain is now {}'.format(self.config.get_active_chain_code())
 
     @command('')
     def listchains(self):
         """List the chains that Encompass supports."""
-        return chainparams.known_chain_codes
+        chains = ["{:8} ({})".format(c.code, c.coin_name) for c in chainparams.known_chains]
+        return sorted(chains)
 
-
+    @command('n')
+    def allownossl(self):
+        """Allow non-SSL connections to servers."""
+        host, port, protocol, proxy, auto_connect = self.network.get_parameters()
+        if protocol == 't':
+            return 'Non-SSL connections already allowed'
+        else:
+            self.network.set_parameters(host, port, 't', proxy, auto_connect)
+            return 'Now allowing non-SSL connections'
 
 param_descriptions = {
     'privkey': 'Private key. Type \'?\' to get a prompt.',

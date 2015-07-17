@@ -30,26 +30,26 @@ from network import Network
 from util import print_error, print_stderr, parse_json
 from simple_config import SimpleConfig
 
-DAEMON_PORT=8001
+DAEMON_SOCKET = 'daemon.sock'
 
 
 def do_start_daemon(config):
     import subprocess
+    args = [sys.executable, __file__, config.path]
     logfile = open(os.path.join(config.path, 'daemon.log'),'w')
-    p = subprocess.Popen(["python",__file__], stderr=logfile, stdout=logfile, close_fds=True)
+    p = subprocess.Popen(args, stderr=logfile, stdout=logfile, close_fds=(os.name=="posix"))
     print_stderr("starting daemon (PID %d)"%p.pid)
 
 
-def get_daemon(config, start_daemon=True):
+
+def get_daemon(config, start_daemon):
     import socket
-    daemon_port = config.get('daemon_port', DAEMON_PORT)
+    daemon_socket = os.path.join(config.path, DAEMON_SOCKET)
     daemon_started = False
     while True:
         try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect(('', daemon_port))
-            if not daemon_started:
-                print_stderr("Connected to daemon on port %d"%daemon_port)
+            s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            s.connect(daemon_socket)
             return s
         except socket.error:
             if not start_daemon:
@@ -59,21 +59,24 @@ def get_daemon(config, start_daemon=True):
                 daemon_started = True
             else:
                 time.sleep(0.1)
+        except:
+            # do not use daemon if AF_UNIX is not available (windows)
+            return False
 
 
 
-class ClientThread(threading.Thread):
+class ClientThread(util.DaemonThread):
 
     def __init__(self, server, s):
-        threading.Thread.__init__(self)
+        util.DaemonThread.__init__(self)
         self.server = server
-        self.daemon = True
         self.client_pipe = util.SocketPipe(s)
         self.response_queue = Queue.Queue()
         self.server.add_client(self)
+        self.subscriptions = set()
 
     def reading_thread(self):
-        while self.running:
+        while self.is_running():
             try:
                 request = self.client_pipe.get()
             except util.timeout:
@@ -81,15 +84,18 @@ class ClientThread(threading.Thread):
             if request is None:
                 self.running = False
                 break
-            if request.get('method') == 'daemon.stop':
+            method = request.get('method')
+            params = request.get('params')
+            if method == 'daemon.stop':
                 self.server.stop()
                 continue
+            if method[-10:] == '.subscribe':
+                self.subscriptions.add(repr((method, params)))
             self.server.send_request(self, request)
 
     def run(self):
-        self.running = True
         threading.Thread(target=self.reading_thread).start()
-        while self.running:
+        while self.is_running():
             try:
                 response = self.response_queue.get(timeout=0.1)
             except Queue.Empty:
@@ -105,39 +111,22 @@ class ClientThread(threading.Thread):
 
 
 
-class NetworkServer(threading.Thread):
+class NetworkServer(util.DaemonThread):
 
     def __init__(self, config):
-        threading.Thread.__init__(self)
-        self.daemon = True
+        util.DaemonThread.__init__(self)
         self.debug = False
         self.config = config
-        self.network = Network(config)
-        # network sends responses on that queue
-        self.network_queue = Queue.Queue()
-
-        self.running = False
+        self.pipe = util.QueuePipe()
+        self.network = Network(self.pipe, config)
         self.lock = threading.RLock()
-
         # each GUI is a client of the daemon
         self.clients = []
         self.request_id = 0
         self.requests = {}
 
-    def is_running(self):
-        with self.lock:
-            return self.running
-
-    def stop(self):
-        with self.lock:
-            self.running = False
-
-    def start(self):
-        self.running = True
-        threading.Thread.start(self)
-
     def add_client(self, client):
-        for key in ['status','banner','updated','servers','interfaces']:
+        for key in ['status', 'banner', 'updated', 'servers', 'interfaces']:
             value = self.network.get_status_value(key)
             client.response_queue.put({'method':'network.status', 'params':[key, value]})
         with self.lock:
@@ -154,18 +143,16 @@ class NetworkServer(threading.Thread):
             self.request_id += 1
             self.requests[self.request_id] = (request['id'], client)
             request['id'] = self.request_id
-
         if self.debug:
             print_error("-->", request)
-        self.network.requests_queue.put(request)
-
+        self.pipe.send(request)
 
     def run(self):
-        self.network.start(self.network_queue)
+        self.network.start()
         while self.is_running():
             try:
-                response = self.network_queue.get(timeout=0.1)
-            except Queue.Empty:
+                response = self.pipe.get()
+            except util.timeout:
                 continue
             if self.debug:
                 print_error("<--", response)
@@ -177,20 +164,23 @@ class NetworkServer(threading.Thread):
                 client.response_queue.put(response)
             else:
                 # notification
+                m = response.get('method')
+                v = response.get('params')
                 for client in self.clients:
-                    client.response_queue.put(response)
-
+                    if repr((m, v)) in client.subscriptions or m == 'network.status':
+                        client.response_queue.put(response)
         self.network.stop()
         print_error("server exiting")
 
 
-
 def daemon_loop(server):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    daemon_port = server.config.get('daemon_port', DAEMON_PORT)
-    daemon_timeout = server.config.get('daemon_timeout', 5*60)
-    s.bind(('', daemon_port))
+    daemon_socket = os.path.join(server.config.path, DAEMON_SOCKET)
+    if os.path.exists(daemon_socket):
+        os.remove(daemon_socket)
+    daemon_timeout = server.config.get('daemon_timeout', None)
+    s.bind(daemon_socket)
     s.listen(5)
     s.settimeout(1)
     t = time.time()
@@ -198,6 +188,8 @@ def daemon_loop(server):
         try:
             connection, address = s.accept()
         except socket.timeout:
+            if daemon_timeout is None:
+                continue
             if not server.clients:
                 if time.time() - t > daemon_timeout:
                     print_error("Daemon timeout")
@@ -216,7 +208,10 @@ def daemon_loop(server):
 
 if __name__ == '__main__':
     import simple_config, util
-    config = simple_config.SimpleConfig()
+    _config = {}
+    if len(sys.argv) > 1:
+        _config['electrum_path'] = sys.argv[1]
+    config = simple_config.SimpleConfig(_config)
     util.set_verbosity(True)
     server = NetworkServer(config)
     server.start()

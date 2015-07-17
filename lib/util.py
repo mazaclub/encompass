@@ -1,6 +1,7 @@
 import os, sys, re, json
 import platform
 import shutil
+import threading
 from datetime import datetime
 is_verbose = False
 
@@ -10,6 +11,34 @@ class MyEncoder(json.JSONEncoder):
         if isinstance(obj, Transaction):
             return obj.as_dict()
         return super(MyEncoder, self).default(obj)
+
+class DaemonThread(threading.Thread):
+    """ daemon thread that terminates cleanly """
+
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.parent_thread = threading.currentThread()
+        self.running = False
+        self.running_lock = threading.Lock()
+
+    def start(self):
+        with self.running_lock:
+            self.running = True
+        return threading.Thread.start(self)
+
+    def is_running(self):
+        with self.running_lock:
+            return self.running and self.parent_thread.is_alive()
+
+    def stop(self):
+        with self.running_lock:
+            self.running = False
+
+    def print_error(self, *msg):
+        print_error("[%s]" % self.__class__.__name__, *msg)
+
+    def print_msg(self, *msg):
+        print_msg("[%s]" % self.__class__.__name__, *msg)
 
 
 def set_verbosity(b):
@@ -258,9 +287,13 @@ class SocketPipe:
         self.socket = socket
         self.message = ''
         self.set_timeout(0.1)
+        self.recv_time = time.time()
 
     def set_timeout(self, t):
         self.socket.settimeout(t)
+
+    def idle_time(self):
+        return time.time() - self.recv_time
 
     def get(self):
         while True:
@@ -291,6 +324,7 @@ class SocketPipe:
                 self.socket.close()
                 return None
             self.message += data
+            self.recv_time = time.time()
 
     def send(self, request):
         out = json.dumps(request) + '\n'

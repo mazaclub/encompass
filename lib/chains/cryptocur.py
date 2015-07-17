@@ -3,16 +3,17 @@
 import os, hashlib
 import coinhash
 
-hash_encode = lambda x: x[::-1].encode('hex')
-hash_decode = lambda x: x.decode('hex')[::-1]
+try:
+    from chainkey import util_coin
+except Exception:
+    from .. import util_coin
 
-def rev_hex(s):
-    return s.decode('hex')[::-1].encode('hex')
-
-def int_to_hex(i, length=1):
-    s = hex(i)[2:].rstrip('L')
-    s = "0"*(2*length - len(s)) + s
-    return rev_hex(s)
+hash_encode = lambda x: util_coin.hash_encode(x)
+hash_decode = lambda x: util_coin.hash_decode(x)
+rev_hex = lambda s: util_coin.rev_hex(s)
+int_to_hex = lambda i, length=1: util_coin.int_to_hex(i, length)
+var_int = lambda i: util_coin.var_int(i)
+op_push = lambda i: util_coin.op_push(i)
 
 def bits_to_target(bits):
     """Convert a compact representation to a hex target."""
@@ -100,10 +101,7 @@ class CryptoCur(object):
     }
 
     # Currency units {name : decimal point}
-    base_units = {
-        'COIN': 8,
-        'mCOIN': 5
-    }
+    base_units = None
 
     ### Electrum constants ###
 
@@ -113,9 +111,19 @@ class CryptoCur(object):
     # URL where a header bootstrap can be downloaded
     headers_url = ''
 
+    # Dictionary of {height: hash} values for sanity checking.
+    checkpoints = None
+
     ### Methods ###
 
     def __init__(self):
+        if self.checkpoints is None: self.checkpoints = {}
+        # set base_units if not set
+        if self.base_units is None:
+            self.base_units = {}
+            if self.code:
+                self.base_units = {self.code : 8}
+        # add chainhooks
         for k in dir(self):
             if k in chainhook_names:
                 l = chainhooks.get(k, [])
@@ -141,27 +149,25 @@ class CryptoCur(object):
 
     # Called from blockchain.py when a chain of headers (arbitrary number of headers that's less than a chunk) needs verification.
     def verify_chain(self, chain):
+        """Returns whether a chain of headers is valid."""
         first_header = chain[0]
         prev_header = self.read_header(first_header.get('block_height') - 1)
         # if we don't verify PoW, just check that headers connect by previous_hash
-        if not self.PoW:
-            for header in chain:
-                prev_hash = self.hash_header(prev_header)
-                try:
-                    assert prev_hash == header.get('prev_block_hash')
-                except Exception:
-                    return False
-            return True
         for header in chain:
             height = header.get('block_height')
 
             prev_hash = self.hash_header(prev_header)
-            bits, target = self.get_target(height/self.chunk_size, chain)
+            if self.PoW:
+                bits, target = self.get_target(height, chain)
             _hash = self.hash_header(header)
             try:
                 assert prev_hash == header.get('prev_block_hash')
-                assert bits == header.get('bits')
-                assert int('0x'+_hash,16) < target
+                checkpoint_hash = self.checkpoints.get(height)
+                if checkpoint_hash is not None:
+                    assert checkpoint_hash == _hash
+                if self.PoW:
+                    assert bits == header.get('bits')
+                    assert int('0x'+_hash,16) < target
             except Exception:
                 return False
 
@@ -171,9 +177,16 @@ class CryptoCur(object):
 
     # Called from blockchain.py when a chunk of headers needs verification.
     def verify_chunk(self, index, hexdata):
+        """Attempts to verify a chunk of headers.
+
+        Does not return a value. This either succeeds
+        or throws an error."""
         data = hexdata.decode('hex')
         height = index*self.chunk_size
         num = len(data)/80
+        # we form a chain of headers so we don't need to save individual headers
+        # in cases where a chain uses recent headers in difficulty calculation.
+        chain = []
 
         if index == 0:
             previous_hash = ("0"*64)
@@ -183,27 +196,27 @@ class CryptoCur(object):
             previous_hash = self.hash_header(prev_header)
 
         # if we don't verify PoW, just check that headers connect by previous_hash
-        if not self.PoW:
-            for i in range(num):
-                raw_header = data[i*80:(i+1)*80]
-                header = self.header_from_string(raw_header)
-                _hash = self.hash_header(header)
-                assert previous_hash == header.get('prev_block_hash')
-                previous_header = header
-                previous_hash = _hash
-            self.save_chunk(index, data)
-            return
-
-        bits, target = self.get_target(index)
-
         for i in range(num):
             height = index*self.chunk_size + i
             raw_header = data[i*80:(i+1)*80]
             header = self.header_from_string(raw_header)
             _hash = self.hash_header(header)
+
+            if self.PoW:
+                header['block_height'] = height
+                chain.append(header)
+                bits, target = self.get_target(height, chain)
+
+            checkpoint_hash = self.checkpoints.get(height)
+            if checkpoint_hash is not None:
+                try:
+                    assert checkpoint_hash == _hash
+                except Exception:
+                    raise CheckpointError(height, checkpoint_hash, _hash)
             assert previous_hash == header.get('prev_block_hash')
-            assert bits == header.get('bits')
-            assert int('0x'+_hash,16) < target
+            if self.PoW:
+                assert bits == header.get('bits')
+                assert int('0x'+_hash,16) < target
 
             previous_header = header
             previous_hash = _hash
@@ -212,6 +225,7 @@ class CryptoCur(object):
 
     # Most common header format. Reimplement in a derived class if header format differs.
     def header_to_string(self, res):
+        """Create a serialized string from a header dict."""
         s = int_to_hex(res.get('version'),4) \
             + rev_hex(res.get('prev_block_hash')) \
             + rev_hex(res.get('merkle_root')) \
@@ -222,6 +236,7 @@ class CryptoCur(object):
 
     # Most common header format. Reimplement in a derived class if header format differs.
     def header_from_string(self, s):
+        """Create a header dict from a serialized string."""
         hex_to_int = lambda s: int('0x' + s[::-1].encode('hex'), 16)
         h = {}
         h['version'] = hex_to_int(s[0:4])
@@ -267,7 +282,7 @@ class CryptoCur(object):
                 return h
 
     # Calculate the difficulty target
-    def get_target(self, index, chain=None):
+    def get_target(self, height, chain=None):
         pass
 
 

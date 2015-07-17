@@ -47,7 +47,7 @@ from amountedit import AmountEdit, BTCAmountEdit, MyLineEdit
 from network_dialog import NetworkDialog
 from qrcodewidget import QRCodeWidget, QRDialog
 from qrtextedit import ScanQRTextEdit, ShowQRTextEdit
-from currency_dialog import ChangeCurrencyDialog, FavoriteCurrenciesDialog
+from currency_dialog import ChangeCurrencyDialog, FavoriteCurrenciesDialog, HideCurrenciesDialog
 import style
 
 from decimal import Decimal
@@ -84,14 +84,15 @@ def format_status(x):
 
 
 class StatusBarButton(QPushButton):
-    def __init__(self, icon, tooltip, func):
+    def __init__(self, icon, tooltip, func, is_coin=False):
         QPushButton.__init__(self, icon, '')
+        dimension = 32 if is_coin else 25
         self.setToolTip(tooltip)
         self.setFlat(True)
-        self.setMaximumWidth(25)
+        self.setMaximumWidth(dimension)
         self.clicked.connect(func)
         self.func = func
-        self.setIconSize(QSize(25,25))
+        self.setIconSize(QSize(dimension,dimension))
 
     def keyPressEvent(self, e):
         if e.key() == QtCore.Qt.Key_Return:
@@ -140,7 +141,7 @@ class ElectrumWindow(QMainWindow):
         self.completions = QStringListModel()
 
         self.tabs = tabs = QTabWidget(self)
-        self.column_widths = self.config.get("column_widths_2", default_column_widths )
+        self.column_widths = self.config.get_above_chain("column_widths_2", default_column_widths )
         tabs.addTab(self.create_history_tab(), self.actuator.get_icon("tab_history.png"), _('History') )
         tabs.addTab(self.create_send_tab(), self.actuator.get_icon("tab_send.png"), _('Send') )
         tabs.addTab(self.create_receive_tab(), self.actuator.get_icon("tab_receive.png"), _('Receive') )
@@ -154,9 +155,9 @@ class ElectrumWindow(QMainWindow):
         tabs.setIconSize(QSize(16,18))
         self.setCentralWidget(tabs)
 
-        g = self.config.get("winpos-qt",[100, 100, 840, 400])
+        g = self.config.get_above_chain("winpos-qt",[100, 100, 840, 400])
         self.setGeometry(g[0], g[1], g[2], g[3])
-        if self.config.get("is_maximized"):
+        if self.config.get_above_chain("is_maximized"):
             self.showMaximized()
 
         self.setWindowIcon(QIcon(":icons/encompass.png"))
@@ -254,6 +255,7 @@ class ElectrumWindow(QMainWindow):
         self.import_menu.setEnabled(self.wallet.can_import())
         self.export_menu.setEnabled(self.wallet.can_export())
 
+        self.update_coin_icon()
         self.update_lock_icon()
         self.update_buttons_on_seed()
         self.update_console()
@@ -455,18 +457,18 @@ class ElectrumWindow(QMainWindow):
 
     # custom wrappers for getOpenFileName and getSaveFileName, that remember the path selected by the user
     def getOpenFileName(self, title, filter = ""):
-        directory = self.config.get('io_dir', unicode(os.path.expanduser('~')))
+        directory = self.config.get_above_chain('io_dir', unicode(os.path.expanduser('~')))
         fileName = unicode( QFileDialog.getOpenFileName(self, title, directory, filter) )
         if fileName and directory != os.path.dirname(fileName):
-            self.config.set_key('io_dir', os.path.dirname(fileName), True)
+            self.config.set_key_above_chain('io_dir', os.path.dirname(fileName), True)
         return fileName
 
     def getSaveFileName(self, title, filename, filter = ""):
-        directory = self.config.get('io_dir', unicode(os.path.expanduser('~')))
+        directory = self.config.get_above_chain('io_dir', unicode(os.path.expanduser('~')))
         path = os.path.join( directory, filename )
         fileName = unicode( QFileDialog.getSaveFileName(self, title, path, filter) )
         if fileName and directory != os.path.dirname(fileName):
-            self.config.set_key('io_dir', os.path.dirname(fileName), True)
+            self.config.set_key_above_chain('io_dir', os.path.dirname(fileName), True)
         return fileName
 
     def close(self):
@@ -513,16 +515,17 @@ class ElectrumWindow(QMainWindow):
             return
 
         if self.network is None or not self.network.is_running():
-            text = _("Offline")
+            text = ' - '.join([ self.active_chain.code, _("Offline") ])
             icon = self.actuator.get_icon("status_disconnected.png")
 
         elif self.network.is_connected():
-            server_lag = self.network.get_local_height() - self.network.get_server_height()
-            if not self.wallet.up_to_date:
-                text = _("Synchronizing...")
+            server_height = self.network.get_server_height()
+            server_lag = self.network.get_local_height() - server_height
+            if not self.wallet.is_up_to_date() or server_height == 0:
+                text = ' - '.join([ self.active_chain.code, _("Synchronizing...") ])
                 icon = self.actuator.get_icon("status_waiting.png")
             elif server_lag > 1:
-                text = _("Server is lagging (%d blocks)"%server_lag)
+                text = ' - '.join([ self.active_chain.code, _("Server is lagging (%d blocks)"%server_lag) ])
                 icon = self.actuator.get_icon("status_lagging.png")
             else:
                 c, u = self.wallet.get_account_balance(self.current_account)
@@ -1401,7 +1404,7 @@ class ElectrumWindow(QMainWindow):
         for i in range(self.contacts_list.columnCount() - 1):
             self.column_widths["contacts"].append(self.contacts_list.columnWidth(i))
 
-        self.config.set_key("column_widths_2", self.column_widths, True)
+        self.config.set_key_above_chain("column_widths_2", self.column_widths, True)
 
 
     def create_contacts_tab(self):
@@ -1775,10 +1778,16 @@ class ElectrumWindow(QMainWindow):
         self.update_address_tab()
         self.update_receive_tab()
 
+    def get_coin_icon(self):
+        coin_icon_name = ''.join([ ":icons/coin_", self.active_chain.code.lower(), ".png" ])
+        if not QFile(coin_icon_name).exists():
+            coin_icon_name = ":icons/coin_btc.png"
+        return QIcon(coin_icon_name)
+
     def create_status_bar(self):
 
         sb = QStatusBar()
-        sb.setFixedHeight(35)
+        sb.setFixedHeight(38)
         qtVersion = qVersion()
 
         self.balance_label = QLabel("")
@@ -1805,10 +1814,16 @@ class ElectrumWindow(QMainWindow):
         self.status_button = StatusBarButton( self.actuator.get_icon("status_disconnected.png"), _("Network"), self.run_network_dialog )
         sb.addPermanentWidget( self.status_button )
 
+        self.change_currency_button = StatusBarButton( self.get_coin_icon(), _("Change Currency"), self.change_currency_dialog, is_coin=True)
+        sb.insertPermanentWidget(1, self.change_currency_button )
+
         run_hook('create_status_bar', (sb,))
 
         self.setStatusBar(sb)
 
+    def update_coin_icon(self):
+        icon = self.get_coin_icon()
+        self.change_currency_button.setIcon( icon )
 
     def update_lock_icon(self):
         icon = self.actuator.get_icon("lock.png") if self.wallet.use_encryption else self.actuator.get_icon("unlock.png")
@@ -1855,7 +1870,18 @@ class ElectrumWindow(QMainWindow):
         time.sleep(0.3)
         self.config.set_active_chain_code(chaincode)
         self.network.switch_to_active_chain()
-        time.sleep(1)
+        time.sleep(0.5)
+
+        # network callbacks
+        if self.network:
+            self.network.register_callback('updated', lambda: self.need_update.set())
+            self.network.register_callback('banner', lambda: self.emit(QtCore.SIGNAL('banner_signal')))
+            self.network.register_callback('status', lambda: self.emit(QtCore.SIGNAL('update_status')))
+            self.network.register_callback('new_transaction', lambda: self.emit(QtCore.SIGNAL('transaction_signal')))
+            self.network.register_callback('stop', self.close)
+
+            # set initial message
+            self.console.showMessage(self.network.banner)
         print_error("Network switched to active chain: {}".format(chaincode))
 
         wallet_filepath = self.wallet.storage.path
@@ -1872,7 +1898,7 @@ class ElectrumWindow(QMainWindow):
                 self.network.switch_to_active_chain()
                 time.sleep(1)
                 wallet = self.wallet
-                wallet.start_threads(self.network)
+            wallet.start_threads(self.network)
         else:
             wallet.start_threads(self.network)
 
@@ -2713,7 +2739,7 @@ class ElectrumWindow(QMainWindow):
         from chainkey.i18n import languages
         lang_combo.addItems(languages.values())
         try:
-            index = languages.keys().index(self.config.get("language",''))
+            index = languages.keys().index(self.config.get_above_chain("language",''))
         except Exception:
             index = 0
         lang_combo.setCurrentIndex(index)
@@ -2721,8 +2747,8 @@ class ElectrumWindow(QMainWindow):
             for w in [lang_combo, lang_label]: w.setEnabled(False)
         def on_lang(x):
             lang_request = languages.keys()[lang_combo.currentIndex()]
-            if lang_request != self.config.get('language'):
-                self.config.set_key("language", lang_request, True)
+            if lang_request != self.config.get_above_chain('language'):
+                self.config.set_key_above_chain("language", lang_request, True)
                 self.need_restart = True
         lang_combo.currentIndexChanged.connect(on_lang)
         widgets.append((lang_label, lang_combo, lang_help))
@@ -2747,10 +2773,18 @@ class ElectrumWindow(QMainWindow):
         if not fav_chains_list: fav_chains_list = 'None'
         fav_chains_list = str(fav_chains_list).replace("'", "")
         favs_label = QLabel(_( 'Favorite coins:' + fav_chains_list ))
-        favs_button = QPushButton(_('Change'))
+        favs_button = QPushButton(_('Change Favorites'))
         favs_help = HelpButton(_('Favorite coins appear before others in the currency selection window.'))
         favs_button.clicked.connect(lambda: FavoriteCurrenciesDialog(self).exec_())
         widgets.append((favs_label, favs_button, favs_help))
+
+        hidden_chains_list = self.config.get_above_chain('hide_chains', [])
+        hidden_chains_number = len(hidden_chains_list)
+        hiddens_label = QLabel(_('Hidden coins: ' + str(hidden_chains_number)))
+        hiddens_button = QPushButton(_('Change Hidden Coins'))
+        hiddens_help = HelpButton(_('Hidden coins do not appear in the currency selection window.'))
+        hiddens_button.clicked.connect(lambda: HideCurrenciesDialog(self).exec_())
+        widgets.append((hiddens_label, hiddens_button, hiddens_help))
 
         nz_label = QLabel(_('Zeros after decimal point') + ':')
         nz_help = HelpButton(_('Number of zeros displayed after the decimal point. For example, if this is set to 2, "1." will be displayed as "1.00"'))
@@ -2913,10 +2947,10 @@ class ElectrumWindow(QMainWindow):
         NetworkDialog(self.wallet.network, self.config, self).do_exec()
 
     def closeEvent(self, event):
-        self.config.set_key("is_maximized", self.isMaximized())
+        self.config.set_key_above_chain("is_maximized", self.isMaximized())
         if not self.isMaximized():
             g = self.geometry()
-            self.config.set_key("winpos-qt", [g.left(),g.top(),g.width(),g.height()])
+            self.config.set_key_above_chain("winpos-qt", [g.left(),g.top(),g.width(),g.height()])
         self.save_column_widths()
         self.config.set_key("console-history", self.console.history[-50:], True)
         self.wallet.storage.put('accounts_expanded', self.accounts_expanded)

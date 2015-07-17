@@ -70,7 +70,7 @@ class OpenFileEventFilter(QObject):
 class ElectrumGui:
 
     def __init__(self, config, network, app=None):
-        set_language(config.get('language'))
+        set_language(config.get_above_chain('language'))
         self.network = network
         self.config = config
         self.windows = []

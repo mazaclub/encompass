@@ -245,6 +245,7 @@ class Abstract_Wallet(object):
         if result == False:
             return False # Invalid chain
         self.__init__(self.storage)
+        return True
 
     def load_transactions(self):
         self.transactions = {}
@@ -1035,8 +1036,10 @@ class Abstract_Wallet(object):
 
     def stop_threads(self):
         if self.network:
-            self.verifier.stop()
-            self.synchronizer.stop()
+            if self.verifier:
+                self.verifier.stop()
+            if self.synchronizer:
+                self.synchronizer.stop()
 
     def restore(self, cb):
         pass
@@ -1412,7 +1415,7 @@ class BIP32_Wallet(Deterministic_Wallet):
          return Mnemonic.mnemonic_to_seed(seed, password)
 
     def make_seed(self):
-        lang = self.storage.config.get('language')
+        lang = self.storage.config.get_above_chain('language')
         return Mnemonic(lang).make_seed()
 
     def format_seed(self, seed):

@@ -152,7 +152,7 @@ class Test_SimpleConfig(unittest.TestCase):
         with open(os.path.join(self.electrum_dir, "config"), "r") as f:
             contents = f.read()
         result = ast.literal_eval(contents)
-        self.assertEqual({"something": "a"}, result)
+        self.assertEqual({"something": "a", "MZC": {}}, result)
 
 
 class TestSystemConfig(unittest.TestCase):

@@ -114,3 +114,7 @@ class TestChainParams(ChainParamsTestCase):
             for k, v in chain.base_units.items():
                 self.assertTrue(isinstance(k, str), "Base unit is not a string.")
                 self.assertTrue(isinstance(v, int), "Base unit decimal point is not an int.")
+            if len(chain.checkpoints) > 0:
+                for k, v in chain.checkpoints.items():
+                    self.assertTrue(isinstance(k, int), "Checkpoint height is not an int.")
+                    self.assertTrue(len(v) == 64, "Checkpoint hash is not 64 characters.")
