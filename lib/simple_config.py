@@ -82,6 +82,13 @@ class SimpleConfig(object):
         # user config.
         self.user_config = read_user_config_function(self.path)
 
+        # rare case in which there's no config section for the active chain
+        # since this is accounted for in set_active_chain_code, the following accounts for
+        # when the active_chain is set manually in the config fiile.
+        chaincode = self.get_active_chain_code(default=chainparams.get_active_chain().code)
+        if self.get_chain_config(chaincode) is None:
+            self.set_chain_config(chaincode, {})
+
         if not self.dormant: set_config(self)  # Make a singleton instance of 'self'
 
     def init_path(self):
