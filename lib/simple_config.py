@@ -85,7 +85,7 @@ class SimpleConfig(object):
         # rare case in which there's no config section for the active chain
         # since this is accounted for in set_active_chain_code, the following accounts for
         # when the active_chain is set manually in the config fiile.
-        chaincode = self.get_active_chain_code(default=chainparams.get_active_chain().code)
+        chaincode = self.get_active_chain_code(default='MZC')
         if self.get_chain_config(chaincode) is None:
             self.set_chain_config(chaincode, {})
 
