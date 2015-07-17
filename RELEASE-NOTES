@@ -24,6 +24,8 @@
    - Some chains may be specified as "favorites" - these chains appear before others in
    the currency selection dialog.
    - The main window's tabs now have icons.
+   - There are now icons for all chains. The active chain's icon is displayed in the status bar.
+   - Specified chains can be hidden from the currency selection dialog.
 
  * Theme System: Themes for the lite window have been removed. Themes now apply to the
  entire program. Themes can be installed by placing them in the application data
@@ -38,6 +40,8 @@
 
  * Plugin code has been updated with upstream Electrum's improvements.
 
+ * Network-related code has been updated with upstream Electrum's improvements.
+
  * A new plugin, "Auto History Export," automatically exports the wallet's history when
  a transaction is received, as well as doing so on command.
 
@@ -49,6 +53,7 @@
    - dumpconfig: Outputs the section of the config file for the active chain.
    - listchains: Outputs a list of blockchains that Encompass supports.
    - getheader: Retrieves a block header for a given height, optionally deserialized.
+   - allownossl: Convenience command to allow non-SSL server connections.
 
  * Support for new blockchains
    - Blackcoin
