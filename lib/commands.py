@@ -589,23 +589,21 @@ class Commands:
 #        """Remove a payment request"""
 #        return self.wallet.remove_payment_request(key, self.config)
 
-    @command('w')
+    @command('')
     def getchain(self):
         """Get the chain that your wallet is currently using."""
-        return self.wallet.active_chain_code
+        return self.config.get_active_chain_code()
 
-    @command('nw')
+    @command('n')
     def setchain(self, chaincode):
         """Set the chain that your wallet is currently using."""
         if not chainparams.is_known_chain(chaincode):
             return 'Invalid chain: "{}"'.format(chaincode)
-        # this results in chainparams.set_active_chain being called
-        success = self.wallet.set_chain(chaincode)
-        if not success:
-            return 'Error: Could not switch to chain {}'.format(chaincode)
-        # network knows to get_active_chain
+        if self.config.get_active_chain_code() == chaincode:
+            return 'Active chain is already {}'.format(chaincode)
+        self.config.set_active_chain_code(chaincode)
         self.network.switch_to_active_chain()
-        return 'Active chain is now {}'.format(self.wallet.active_chain_code)
+        return 'Active chain is now {}'.format(self.config.get_active_chain_code())
 
     @command('')
     def listchains(self):
