@@ -189,7 +189,7 @@ class Network(util.DaemonThread):
         self.active_chain = chain
         if self.config.get_active_chain_code() != self.active_chain.code:
             self.config.set_active_chain_code(self.active_chain.code)
-        print("Network: Switching chains to {}".format(chain.code))
+        self.print_error('switching chains to {}'.format(chain.code))
         self.stop_network()
         self.bc_requests.clear()
         self.blockchain = Blockchain(self.config, self, self.active_chain)
@@ -224,7 +224,6 @@ class Network(util.DaemonThread):
         # Start the new network
         self.start_network(deserialize_server(self.default_server)[2],
                            deserialize_proxy(self.config.get('proxy')))
-        print("Network: Switched chains to {}".format(chain.code))
 
     def read_recent_servers(self):
         return self.config.get('recent_servers', [])
