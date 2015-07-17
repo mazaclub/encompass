@@ -514,9 +514,9 @@ class Commands:
     @command('n')
     def getheader(self, height, deserialized=False):
         """Retrieve the block header at a given height."""
-        header = self.network.synchronous_get([('blockchain.block.get_header', [height])])[0]
+        header = self.network.get_header(int(height))
         if not header or isinstance(header, unicode):
-            raise BaseException("Unknown block")
+            return 'Error: Unknown block'
         # genesis block
         if header.get('prev_block_hash') is None and header.get('block_height') == 0:
             header['prev_block_hash'] = '0'*64
