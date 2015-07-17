@@ -247,6 +247,5 @@ class NetworkDialog(QDialog):
 
         auto_connect = self.autocycle_cb.isChecked()
 
-        self.config.set_key('use_ssl', self.use_ssl_box.isChecked())
         self.network.set_parameters(host, port, protocol, proxy, auto_connect)
         return True
