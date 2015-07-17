@@ -608,7 +608,8 @@ class Commands:
     @command('')
     def listchains(self):
         """List the chains that Encompass supports."""
-        return chainparams.known_chain_codes
+        chains = ["{:8} ({})".format(c.code, c.coin_name) for c in chainparams.known_chains]
+        return sorted(chains)
 
 
 
