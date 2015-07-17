@@ -6,18 +6,91 @@ from chainkey.i18n import _
 from chainkey import chainparams
 from chainkey.util import print_error
 
-from util import HelpButton, ok_cancel_buttons
+from util import HelpButton, ok_cancel_buttons, close_button
 
 import functools
 import operator
+import copy
 
-class FavoriteCurrenciesDialog(QDialog):
+class CurrenciesCheckboxDialog(QDialog):
     def __init__(self, parent):
         QDialog.__init__(self, parent)
         self.parent = parent
+        known_chains = chainparams.known_chains
+
+        self.scroll_area = scroll = QScrollArea()
+        scroll.setEnabled(True)
+        scroll.setWidgetResizable(True)
+        scroll.setMinimumSize(25, 100)
+
+        self.coin_scroll_widget = scroll_widget = QWidget()
+        scroll_widget.setMinimumHeight(len(known_chains) * 35)
+        scroll_widget.setObjectName("chains_area")
+
+        # layout containing the checkboxes
+        self.coin_boxes_layout = coin_vbox = QVBoxLayout()
+        # Contains the scrollarea, including coin_boxes_layout
+        self.scroll_layout = scroll_layout = QVBoxLayout()
+
+        self.coin_checkboxes = []
+        for coin in sorted(known_chains, key=operator.attrgetter('code')):
+            box_label = ''.join([ coin.code, " (", coin.coin_name, ")" ])
+            checkbox = QCheckBox(box_label)
+            checkbox.stateChanged.connect(functools.partial(self.change_coin_state, checkbox))
+            self.coin_checkboxes.append(checkbox)
+            coin_vbox.addWidget(checkbox)
+
+        scroll_widget.setLayout(coin_vbox)
+        scroll.setWidget(scroll_widget)
+        scroll_layout.addWidget(scroll)
+
+    def change_coin_state(self, checkbox):
+        pass
+
+class HideCurrenciesDialog(CurrenciesCheckboxDialog):
+    def __init__(self, parent):
+        CurrenciesCheckboxDialog.__init__(self, parent)
+        self.setWindowTitle(_('Hide Coins'))
+        self.hide_chains = self.parent.config.get_above_chain('hide_chains', [])
+
+        # sanity checking
+        active_chain_code = self.parent.active_chain.code
+        if active_chain_code in self.hide_chains:
+            self.hide_chains.remove(active_chain_code)
+
+        self.main_layout = vbox = QVBoxLayout()
+        hide_label = QLabel(_('You can select chains here that will be hidden from view in the currency selection dialog.'))
+        vbox.addWidget(hide_label)
+
+        for cbox in self.coin_checkboxes:
+            code = str(cbox.text()).split()[0]
+            if code == active_chain_code:
+                cbox.setChecked(False)
+                cbox.setEnabled(False)
+                continue
+            cbox.setChecked(code in self.hide_chains)
+        vbox.addLayout(self.scroll_layout)
+
+        vbox.addLayout(close_button(self))
+        self.finished.connect(self.save_hide_chains)
+        self.setLayout(vbox)
+
+    def change_coin_state(self, checkbox):
+        code = str(checkbox.text()).split()[0]
+        is_hiding = checkbox.isChecked()
+        if is_hiding and code not in self.hide_chains:
+            self.hide_chains.append(code)
+        elif not is_hiding and code in self.hide_chains:
+            self.hide_chains.remove(code)
+
+    def save_hide_chains(self):
+        self.parent.config.set_key_above_chain('hide_chains', self.hide_chains, True)
+
+class FavoriteCurrenciesDialog(CurrenciesCheckboxDialog):
+    def __init__(self, parent):
+        CurrenciesCheckboxDialog.__init__(self, parent)
         self.setWindowTitle(_('Favorite Coins'))
-        known_chains = chainparams.known_chain_codes
-        self.favorites = self.parent.config.get_above_chain('favorite_chains', [])
+        self.favorites = copy.deepcopy(self.parent.config.get_above_chain('favorite_chains', []))
         # sanity check, just in case. Main window should have already done this
         if len(self.favorites) > 3: self.favorites = self.favorites[:3]
 
@@ -25,13 +98,9 @@ class FavoriteCurrenciesDialog(QDialog):
         limit_label = QLabel(_('Up to three coins may be selected as "favorites."\nThey will be listed before other coins in the currency selection dialog.'))
         vbox.addWidget(limit_label)
 
-        self.coin_checkboxes = []
-        for coin in known_chains:
-            checkbox = QCheckBox(coin)
-            checkbox.setChecked(coin in self.favorites)
-            checkbox.stateChanged.connect(functools.partial(self.change_coin_state, checkbox))
-            self.coin_checkboxes.append(checkbox)
-            vbox.addWidget(checkbox)
+        for cbox in self.coin_checkboxes:
+            cbox.setChecked(str(cbox.text()).split()[0] in self.favorites)
+        vbox.addLayout(self.scroll_layout)
 
         vbox.addLayout(ok_cancel_buttons(self, ok_label=_('Save')))
         self.accepted.connect(self.save_favorites)
@@ -50,7 +119,7 @@ class FavoriteCurrenciesDialog(QDialog):
                     box.setEnabled(False)
 
     def change_coin_state(self, checkbox):
-        code = str(checkbox.text())
+        code = str(checkbox.text()).split()[0]
         is_favorite = checkbox.isChecked()
         if is_favorite and code not in self.favorites:
             self.favorites.append(code)
@@ -118,9 +187,12 @@ class ChangeCurrencyDialog(QDialog):
 
         chains = chainparams.known_chains
         favorites = self.parent.config.get_above_chain('favorite_chains', [])
+        hidden_chains = self.parent.config.get_above_chain('hide_chains', [])
         # Yes or No
         y_or_n = lambda x: 'Yes' if x==True else 'No'
         for ch in sorted(chains, key=operator.attrgetter('code')):
+            if ch.code in hidden_chains:
+                continue
 
             is_initialized = True
             dummy_key = self.parent.wallet.storage.get_chain_value(ch.code, 'accounts')

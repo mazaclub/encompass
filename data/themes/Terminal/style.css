@@ -1,4 +1,4 @@
-QDialog, QStatusBar, #plugins_area,
+QDialog, QStatusBar, #plugins_area, #chains_area,
 #main_window, #send_tab, #receive_tab, #console_tab
 {
   background-color: #333;

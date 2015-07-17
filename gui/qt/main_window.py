@@ -47,7 +47,7 @@ from amountedit import AmountEdit, BTCAmountEdit, MyLineEdit
 from network_dialog import NetworkDialog
 from qrcodewidget import QRCodeWidget, QRDialog
 from qrtextedit import ScanQRTextEdit, ShowQRTextEdit
-from currency_dialog import ChangeCurrencyDialog, FavoriteCurrenciesDialog
+from currency_dialog import ChangeCurrencyDialog, FavoriteCurrenciesDialog, HideCurrenciesDialog
 import style
 
 from decimal import Decimal
@@ -2762,10 +2762,18 @@ class ElectrumWindow(QMainWindow):
         if not fav_chains_list: fav_chains_list = 'None'
         fav_chains_list = str(fav_chains_list).replace("'", "")
         favs_label = QLabel(_( 'Favorite coins:' + fav_chains_list ))
-        favs_button = QPushButton(_('Change'))
+        favs_button = QPushButton(_('Change Favorites'))
         favs_help = HelpButton(_('Favorite coins appear before others in the currency selection window.'))
         favs_button.clicked.connect(lambda: FavoriteCurrenciesDialog(self).exec_())
         widgets.append((favs_label, favs_button, favs_help))
+
+        hidden_chains_list = self.config.get_above_chain('hide_chains', [])
+        hidden_chains_number = len(hidden_chains_list)
+        hiddens_label = QLabel(_('Hidden coins: ' + str(hidden_chains_number)))
+        hiddens_button = QPushButton(_('Change Hidden Coins'))
+        hiddens_help = HelpButton(_('Hidden coins do not appear in the currency selection window.'))
+        hiddens_button.clicked.connect(lambda: HideCurrenciesDialog(self).exec_())
+        widgets.append((hiddens_label, hiddens_button, hiddens_help))
 
         nz_label = QLabel(_('Zeros after decimal point') + ':')
         nz_help = HelpButton(_('Number of zeros displayed after the decimal point. For example, if this is set to 2, "1." will be displayed as "1.00"'))
