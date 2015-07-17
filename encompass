@@ -315,9 +315,18 @@ def run_cmdline(config):
             sys.exit(1)
         network = NetworkProxy(s, config)
         network.start()
+        network_start_time = time.time()
         while network.is_connecting():
             time.sleep(0.1)
-        if not network.is_connected():
+            # special case for downgrading connection from SSL
+            if cmd.name == 'allownossl':
+                break
+            # advise using allownossl
+            if time.time() - network_start_time > 5 and config.get('use_ssl', True):
+                print_msg('\n'.join([ 'Network does not appear to be connecting. If this problem persists,',
+                                    'use the command "encompass allownossl".' ]))
+                sys.exit(1)
+        if not network.is_connected() and cmd.name != 'allownossl':
             print_msg("daemon is not connected")
             sys.exit(1)
         if wallet:

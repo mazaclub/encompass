@@ -611,7 +611,15 @@ class Commands:
         chains = ["{:8} ({})".format(c.code, c.coin_name) for c in chainparams.known_chains]
         return sorted(chains)
 
-
+    @command('n')
+    def allownossl(self):
+        """Allow non-SSL connections to servers."""
+        host, port, protocol, proxy, auto_connect = self.network.get_parameters()
+        if protocol == 't':
+            return 'Non-SSL connections already allowed'
+        else:
+            self.network.set_parameters(host, port, 't', proxy, auto_connect)
+            return 'Now allowing non-SSL connections'
 
 param_descriptions = {
     'privkey': 'Private key. Type \'?\' to get a prompt.',
