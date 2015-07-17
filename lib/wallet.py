@@ -244,7 +244,6 @@ class Abstract_Wallet(object):
         result = self.storage.config.set_active_chain_code(chaincode)
         if result == False:
             return False # Invalid chain
-        self.stop_threads()
         self.__init__(self.storage)
         return True
 
@@ -1037,8 +1036,10 @@ class Abstract_Wallet(object):
 
     def stop_threads(self):
         if self.network:
-            self.verifier.stop()
-            self.synchronizer.stop()
+            if self.verifier:
+                self.verifier.stop()
+            if self.synchronizer:
+                self.synchronizer.stop()
 
     def restore(self, cb):
         pass

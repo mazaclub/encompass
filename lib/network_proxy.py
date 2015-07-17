@@ -21,6 +21,7 @@ import threading
 import Queue
 
 import util
+import chainparams
 from network import Network, serialize_proxy, serialize_server
 from util import print_error
 from simple_config import SimpleConfig
@@ -62,18 +63,16 @@ class NetworkProxy(util.DaemonThread):
         self.interfaces = []
 
     def switch_to_active_chain(self):
-        """Create a new Network instance."""
+        """Create a new Network instance or send message to daemon."""
         with self.lock:
+            # for the network.switch_chains request
+            message_id = self.message_id
+
             self.message_id = 0
             self.unanswered_requests = {}
             self.subscriptions = {}
             self.pending_transactions_for_notifications = []
-            self.network.stop()
-            time.sleep(0.3)
-
-            self.pipe = util.QueuePipe()
-            self.network = Network(self.pipe, self.config)
-            self.network.start()
+            self.callbacks = {}
 
             self.status = 'connecting'
             self.servers = {}
@@ -82,9 +81,23 @@ class NetworkProxy(util.DaemonThread):
             self.server_height = 0
             self.interfaces = []
 
-            for key in ['status','banner','updated','servers','interfaces']:
-                value = self.network.get_status_value(key)
-                self.pipe.get_queue.put({'method':'network.status', 'params':[key, value]})
+            # Not daemon, probably running GUI
+            if self.network:
+                self.network.stop()
+                time.sleep(0.3)
+
+                self.pipe = util.QueuePipe()
+                self.network = Network(self.pipe, self.config)
+                self.network.start()
+
+                for key in ['status','banner','updated','servers','interfaces']:
+                    value = self.network.get_status_value(key)
+                    self.pipe.get_queue.put({'method':'network.status', 'params':[key, value]})
+            # Daemon is running
+            else:
+                req = {'id': message_id, 'method': 'network.switch_chains', 'params':[chainparams.get_active_chain().code]}
+                self.pipe.send(req)
+
 
     def run(self):
         while self.is_running():
