@@ -193,6 +193,7 @@ class Network(util.DaemonThread):
         self.stop_network()
         self.bc_requests.clear()
         self.blockchain = Blockchain(self.config, self, self.active_chain)
+        self.queue = Queue.Queue()
 
         self.default_server = self.config.get('server')
         # Sanitize default server
@@ -221,6 +222,7 @@ class Network(util.DaemonThread):
         # unanswered requests
         self.unanswered_requests = {}
 
+        self.blockchain.init()
         # Start the new network
         self.start_network(deserialize_server(self.default_server)[2],
                            deserialize_proxy(self.config.get('proxy')))

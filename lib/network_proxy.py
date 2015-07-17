@@ -83,12 +83,7 @@ class NetworkProxy(util.DaemonThread):
 
             # Not daemon, probably running GUI
             if self.network:
-                self.network.stop()
-                time.sleep(0.3)
-
-                self.pipe = util.QueuePipe()
-                self.network = Network(self.pipe, self.config)
-                self.network.start()
+                self.network.switch_chains()
 
                 for key in ['status','banner','updated','servers','interfaces']:
                     value = self.network.get_status_value(key)
