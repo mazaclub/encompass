@@ -594,12 +594,18 @@ class Commands:
         """Get the chain that your wallet is currently using."""
         return self.wallet.active_chain_code
 
-    @command('w')
+    @command('nw')
     def setchain(self, chaincode):
         """Set the chain that your wallet is currently using."""
         if not chainparams.is_known_chain(chaincode):
             return 'Invalid chain: "{}"'.format(chaincode)
-        self.wallet.set_chain(chaincode)
+        # this results in chainparams.set_active_chain being called
+        success = self.wallet.set_chain(chaincode)
+        if not success:
+            return 'Error: Could not switch to chain {}'.format(chaincode)
+        # network knows to get_active_chain
+        self.network.switch_chains()
+        self.wallet.start_threads(self.network)
         return 'Active chain is now {}'.format(self.wallet.active_chain_code)
 
     @command('')

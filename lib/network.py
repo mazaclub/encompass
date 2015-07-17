@@ -181,6 +181,49 @@ class Network(util.DaemonThread):
         self.start_network(deserialize_server(self.default_server)[2],
                            deserialize_proxy(self.config.get('proxy')))
 
+    def switch_chains(self, chain=None):
+        if chain is None:
+            chain = chainparams.get_active_chain()
+        self.active_chain = chain
+        if self.config.get_active_chain_code() != self.active_chain.code:
+            self.config.set_active_chain_code(self.active_chain.code)
+        print("Switching chains to {}".format(chain.code))
+        self.stop_network()
+        self.bc_requests.clear()
+        self.blockchain = Blockchain(self.config, self, self.active_chain)
+
+        self.default_server = self.config.get('server')
+        # Sanitize default server
+        try:
+            deserialize_server(self.default_server)
+        except:
+            self.default_server = None
+        if not self.default_server:
+            self.default_server = pick_random_server(active_chain = self.active_chain)
+
+        self.irc_servers = {} # returned by interface (list from irc)
+        self.recent_servers = self.read_recent_servers()
+
+        self.banner = ''
+        self.heights = {}
+        self.merkle_roots = {}
+        self.utxo_roots = {}
+
+        self.interface = None
+        self.interfaces = {}
+
+        # subscriptions and requests
+        self.subscribed_addresses = set()
+        # cached address status
+        self.addr_responses = {}
+        # unanswered requests
+        self.unanswered_requests = {}
+
+        # Start the new network
+        self.start_network(deserialize_server(self.default_server)[2],
+                           deserialize_proxy(self.config.get('proxy')))
+        print("Switched chains to {}".format(chain.code))
+
     def read_recent_servers(self):
         return self.config.get('recent_servers', [])
 

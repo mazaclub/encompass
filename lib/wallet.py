@@ -244,7 +244,9 @@ class Abstract_Wallet(object):
         result = self.storage.config.set_active_chain_code(chaincode)
         if result == False:
             return False # Invalid chain
+        self.stop_threads()
         self.__init__(self.storage)
+        return True
 
     def load_transactions(self):
         self.transactions = {}
