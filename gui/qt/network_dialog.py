@@ -29,8 +29,8 @@ from chainkey.chainparams import get_chain_instance
 
 #protocol_names = ['TCP', 'HTTP', 'SSL', 'HTTPS']
 #protocol_letters = 'thsg'
-protocol_names = ['TCP', 'SSL']
-protocol_letters = 'ts'
+#protocol_names = ['TCP', 'SSL']
+#protocol_letters = 'ts'
 
 class NetworkDialog(QDialog):
     def __init__(self, network, config, parent):
@@ -85,16 +85,16 @@ class NetworkDialog(QDialog):
         vbox.addLayout(grid)
 
         # protocol
-        self.server_protocol = QComboBox()
+        self.use_ssl_box = QCheckBox("Use SSL")
         self.server_host = QLineEdit()
         self.server_host.setFixedWidth(200)
         self.server_port = QLineEdit()
         self.server_port.setFixedWidth(60)
-        self.server_protocol.addItems(protocol_names)
-        self.server_protocol.connect(self.server_protocol, SIGNAL('currentIndexChanged(int)'), self.change_protocol)
+        self.use_ssl_box.setChecked(protocol == 's')
+        self.use_ssl_box.stateChanged.connect(self.change_protocol)
 
         grid.addWidget(QLabel(_('Protocol') + ':'), 3, 0)
-        grid.addWidget(self.server_protocol, 3, 1)
+        grid.addWidget(self.use_ssl_box, 3, 1)
 
         # server
         grid.addWidget(QLabel(_('Server') + ':'), 0, 0)
@@ -125,7 +125,7 @@ class NetworkDialog(QDialog):
         grid.addWidget(self.servers_list_widget, 1, 1, 1, 3)
 
         if not config.is_modifiable('server'):
-            for w in [self.server_host, self.server_port, self.server_protocol, self.servers_list_widget]: w.setEnabled(False)
+            for w in [self.server_host, self.server_port, self.use_ssl_box, self.servers_list_widget]: w.setEnabled(False)
 
         def enable_set_server():
             enabled = not self.autocycle_cb.isChecked()
@@ -185,8 +185,8 @@ class NetworkDialog(QDialog):
             self.protocol = protocol
             self.init_servers_list()
 
-    def change_protocol(self, index):
-        p = protocol_letters[index]
+    def change_protocol(self):
+        p = 's' if self.use_ssl_box.isChecked() else 't'
         host = unicode(self.server_host.text())
         pp = self.servers.get(host, self.active_chain.DEFAULT_PORTS)
         if p not in pp.keys():
@@ -217,12 +217,12 @@ class NetworkDialog(QDialog):
 
         self.server_host.setText( host )
         self.server_port.setText( port )
-        self.server_protocol.setCurrentIndex(protocol_letters.index(protocol))
+        self.use_ssl_box.setChecked(protocol == 's')
 
         if not self.servers: return
-        for p in protocol_letters:
-            i = protocol_letters.index(p)
-            j = self.server_protocol.model().index(i,0)
+        #for p in protocol_letters:
+            #i = protocol_letters.index(p)
+            #j = self.server_protocol.model().index(i,0)
             #if p not in pp.keys(): # and self.interface.is_connected:
             #    self.server_protocol.model().setData(j, QVariant(0), Qt.UserRole-1)
             #else:
@@ -236,7 +236,7 @@ class NetworkDialog(QDialog):
 
         host = str( self.server_host.text() )
         port = str( self.server_port.text() )
-        protocol = protocol_letters[self.server_protocol.currentIndex()]
+        protocol = 's' if self.use_ssl_box.isChecked() else 't'
 
         if self.proxy_mode.currentText() != 'NONE':
             proxy = { 'mode':str(self.proxy_mode.currentText()).lower(),
@@ -247,5 +247,6 @@ class NetworkDialog(QDialog):
 
         auto_connect = self.autocycle_cb.isChecked()
 
+        self.config.set_key('use_ssl', self.use_ssl_box.isChecked())
         self.network.set_parameters(host, port, protocol, proxy, auto_connect)
         return True
