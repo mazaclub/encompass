@@ -28,6 +28,11 @@ from simple_config import SimpleConfig
 
 
 class NetworkProxy(util.DaemonThread):
+    """Proxy for communicating with the daemon or Network.
+
+    If the daemon is running when this is initialized,
+    this will create a socket pipe.
+    Otherwise, this will create a new Network instance."""
 
     def __init__(self, socket, config=None):
 
