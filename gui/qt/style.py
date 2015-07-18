@@ -81,15 +81,22 @@ class Actuator:
     def get_brush(self, name, default='black'):
         """Get the brush specified by the current theme's stylesheet for name.
 
+        Args:
+            name (str): Brush to retrieve
+            default (str): Fallback if no brush is found.
+                This can be another brush name, or the name of a color.
+
         This is a hack around the limitations on using stylesheets for
         QTreeWidgetItem rows."""
         w = self.brushes.get(name)
-        if not w:
-            if type(default) == str:
-                return QBrush(QColor(default))
-            else:
-                return default
-        return w.palette().foreground()
+        if w:
+            return w.palette().foreground()
+        # try default
+        w = self.brushes.get(default)
+        if w:
+            return w.palette().foreground()
+        else:
+            return QBrush(QColor(default))
 
     def load_theme(self):
         """Load theme retrieved from wallet file."""

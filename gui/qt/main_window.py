@@ -624,11 +624,11 @@ class ElectrumWindow(QMainWindow):
         text = unicode( item.text(2) )
         self.wallet.set_label(tx_hash, text)
         if text:
-            item.setForeground(2, self.actuator.get_brush('tx_label_col'))
+            item.setForeground(2, self.actuator.get_brush('tx_label_col', 'text_column'))
         else:
             text = self.wallet.get_default_label(tx_hash)
             item.setText(2, text)
-            item.setForeground(2, self.actuator.get_brush('default_label_col'))
+            item.setForeground(2, self.actuator.get_brush('default_label_col', 'text_column'))
         self.is_edit=False
 
 
@@ -716,19 +716,19 @@ class ElectrumWindow(QMainWindow):
             item.setFont(2, QFont(MONOSPACE_FONT))
             item.setFont(3, QFont(MONOSPACE_FONT))
             item.setFont(4, QFont(MONOSPACE_FONT))
-            item.setForeground(1, self.actuator.get_brush('tx_date_col'))
-            item.setForeground(4, self.actuator.get_brush('balance_col'))
+            item.setForeground(1, self.actuator.get_brush('tx_date_col', 'text_column'))
+            item.setForeground(4, self.actuator.get_brush('balance_col', 'text_column'))
             if value < 0:
-                item.setForeground(3, self.actuator.get_brush('negative_amount_col'))
+                item.setForeground(3, self.actuator.get_brush('negative_amount_col', 'text_column'))
             else:
-                item.setForeground(3, self.actuator.get_brush('tx_amount_col'))
+                item.setForeground(3, self.actuator.get_brush('tx_amount_col', 'text_column'))
             if tx_hash:
                 item.setData(0, Qt.UserRole, tx_hash)
                 item.setToolTip(0, "%d %s\nTxId:%s" % (conf, _('Confirmations'), tx_hash) )
             if is_default_label:
-                item.setForeground(2, self.actuator.get_brush('default_label_col'))
+                item.setForeground(2, self.actuator.get_brush('default_label_col', 'text_column'))
             else:
-                item.setForeground(2, self.actuator.get_brush('tx_label_col'))
+                item.setForeground(2, self.actuator.get_brush('tx_label_col', 'text_column'))
 
             item.setIcon(0, icon)
             self.history_list.insertTopLevelItem(0,item)
@@ -1697,10 +1697,10 @@ class ElectrumWindow(QMainWindow):
                     item = QTreeWidgetItem( [ address, label, balance, "%d"%num] )
                     item.setFont(0, QFont(MONOSPACE_FONT))
                     item.setData(0, 32, True) # label can be edited
-                    item.setForeground(0, self.actuator.get_brush('address_col', self.actuator.get_brush('text_column')))
-                    item.setForeground(1, self.actuator.get_brush('tx_label_col'))
-                    item.setForeground(2, self.actuator.get_brush('balance_col'))
-                    item.setForeground(3, self.actuator.get_brush('address_txs_col', self.actuator.get_brush('text_column')))
+                    item.setForeground(0, self.actuator.get_brush('address_col', 'text_column'))
+                    item.setForeground(1, self.actuator.get_brush('tx_label_col', 'text_column'))
+                    item.setForeground(2, self.actuator.get_brush('balance_col', 'text_column'))
+                    item.setForeground(3, self.actuator.get_brush('address_txs_col', 'text_column'))
                     if address in self.wallet.frozen_addresses:
                         item.setBackgroundColor(0, QColor('lightblue'))
                     if self.wallet.is_beyond_limit(address, account, is_change):
@@ -1725,9 +1725,9 @@ class ElectrumWindow(QMainWindow):
             label = self.wallet.labels.get(address,'')
             n = self.wallet.get_num_tx(address)
             item = QTreeWidgetItem( [ address, label, "%d"%n] )
-            item.setForeground(0, self.actuator.get_brush('address_col', self.actuator.get_brush('text_column')))
+            item.setForeground(0, self.actuator.get_brush('address_col', 'text_column'))
             item.setForeground(1, self.actuator.get_brush('text_column'))
-            item.setForeground(2, self.actuator.get_brush('address_txs_col', self.actuator.get_brush('text_column')))
+            item.setForeground(2, self.actuator.get_brush('address_txs_col', 'text_column'))
             item.setFont(0, QFont(MONOSPACE_FONT))
             # 32 = label can be edited (bool)
             item.setData(0,32, True)
