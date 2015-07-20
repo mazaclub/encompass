@@ -1,5 +1,6 @@
 QDialog, QStatusBar, #plugins_area, #chains_area,
-#main_window, #send_tab, #receive_tab, #console_tab
+#main_window, #send_tab, #receive_tab, #console_tab,
+#qr_window
 {
   background-color: #333;
 }
@@ -9,9 +10,10 @@ QDialog, QStatusBar, #plugins_area, #chains_area,
   color: #4CD93F;
 }
 
-QTextEdit
+QTextEdit, QPlainTextEdit
 {
   background-color: #212121;
+  border: 1px solid #3CA832;
   color: #4CD93F;
 }
 
@@ -73,18 +75,24 @@ QMenuBar, QMenuBar::item, QMenu
   color: #4CD93F;
 }
 
-#text_column, #tx_label_col, #tx_date_col, #balance_col, #tx_amount_col,
-#address_col, #address_txs_col
+Item[role="text_item"], Item[role="no"],
+Item[role="date"], Item[role="balance"], Item[role="address"],
+Item[role="tx_count"], Item[role="amount"], Item[role="label"]
 {
   color: #BFBFBF;
 }
 
-#default_label_col
-{
-  color: #ABABAB;
-}
-
-#negative_amount_col
+Item[role="amount_negative"]
 {
   color: #E81E1E;
+}
+
+Item[role="label_default"]
+{
+  color: #8A8A8A;
+}
+
+Item[role="yes"]
+{
+  color: #4CD93F;
 }
