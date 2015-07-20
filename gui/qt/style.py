@@ -93,6 +93,10 @@ class MyStyleDelegate(QStyledItemDelegate):
             self.column_types = ['address', 'label', 'tx_count']
         elif role == 'invoices':
             self.column_types = ['requestor', 'memo', 'date', 'amount', 'status']
+        elif role == 'chains':
+            self.column_types = ['text_item', 'text_item', 'boolean', 'boolean']
+        elif role == 'chains_verbose':
+            self.column_types = ['text_item', 'text_item', 'boolean', 'boolean', 'boolean', 'text_item']
         # If an int is given, use the generic color for all columns.
         elif isinstance(role, int):
             self.column_types = ['text_item' for i in range(role)]
@@ -129,6 +133,13 @@ class MyStyleDelegate(QStyledItemDelegate):
                 txt = Item('label_default')
             else:
                 txt = Item('label')
+        elif col_type == 'boolean':
+            if data in [True, False]:
+                data = 'yes' if data == True else 'no'
+            # "Yes" or "No"
+            else:
+                data = str(data.toString()).lower()
+            txt = Item(data)
         else:
             txt = Item('text_item')
 

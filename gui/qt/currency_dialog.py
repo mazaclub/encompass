@@ -182,7 +182,8 @@ class ChangeCurrencyDialog(QDialog):
             chains_view.setColumnWidth(3, 80)
             chains_view.setMinimumWidth(430)
 
-        chains_view.setItemDelegate(MyStyleDelegate(self, chains_view.columnCount()))
+        role_name = 'chains_verbose' if self.verbose_view else 'chains'
+        chains_view.setItemDelegate(MyStyleDelegate(self, role_name))
 
     def refresh_chains(self):
         chains_view = self.chains_view
