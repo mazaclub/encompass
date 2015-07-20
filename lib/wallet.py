@@ -689,7 +689,7 @@ class Abstract_Wallet(object):
                         try:
                             default_label = self.labels[o_addr]
                         except KeyError:
-                            default_label = '>' + o_addr
+                            default_label = ''.join([ '>', o_addr ])
                         break
                 else:
                     default_label = '(internal)'
@@ -718,8 +718,9 @@ class Abstract_Wallet(object):
                     try:
                         default_label = self.labels[o_addr]
                     except KeyError:
-                        default_label = '<' + o_addr
+                        default_label = ''.join([ '<', o_addr ])
 
+        default_label = ''.join([ default_label, ' [{}...]'.format(tx_hash[0:8]) ])
         return default_label
 
     def get_tx_fee(self, tx):
