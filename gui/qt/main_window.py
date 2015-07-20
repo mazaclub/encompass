@@ -70,7 +70,8 @@ PR_ERROR   = 4     # could not parse
 from chainkey import ELECTRUM_VERSION
 import re
 
-from util import MyTreeWidget, HelpButton, EnterButton, line_dialog, text_dialog, ok_cancel_buttons, close_button, WaitingDialog
+from style import MyTreeWidget, MyStyleDelegate
+from util import HelpButton, EnterButton, line_dialog, text_dialog, ok_cancel_buttons, close_button, WaitingDialog
 from util import filename_field, ok_cancel_buttons2, address_field
 from util import MONOSPACE_FONT
 
@@ -574,6 +575,7 @@ class ElectrumWindow(QMainWindow):
         l.itemChanged.connect(self.tx_label_changed)
         l.customContextMenuRequested.connect(self.create_history_menu)
         l.setObjectName("history_tab")
+        l.setItemDelegate(MyStyleDelegate(self, 'history'))
         return l
 
 
@@ -623,12 +625,9 @@ class ElectrumWindow(QMainWindow):
         tx = self.wallet.transactions.get(tx_hash)
         text = unicode( item.text(2) )
         self.wallet.set_label(tx_hash, text)
-        if text:
-            item.setForeground(2, self.actuator.get_brush('tx_label_col', 'text_column'))
-        else:
+        if not text:
             text = self.wallet.get_default_label(tx_hash)
             item.setText(2, text)
-            item.setForeground(2, self.actuator.get_brush('default_label_col', 'text_column'))
         self.is_edit=False
 
 
@@ -716,19 +715,9 @@ class ElectrumWindow(QMainWindow):
             item.setFont(2, QFont(MONOSPACE_FONT))
             item.setFont(3, QFont(MONOSPACE_FONT))
             item.setFont(4, QFont(MONOSPACE_FONT))
-            item.setForeground(1, self.actuator.get_brush('tx_date_col', 'text_column'))
-            item.setForeground(4, self.actuator.get_brush('balance_col', 'text_column'))
-            if value < 0:
-                item.setForeground(3, self.actuator.get_brush('negative_amount_col', 'text_column'))
-            else:
-                item.setForeground(3, self.actuator.get_brush('tx_amount_col', 'text_column'))
             if tx_hash:
                 item.setData(0, Qt.UserRole, tx_hash)
                 item.setToolTip(0, "%d %s\nTxId:%s" % (conf, _('Confirmations'), tx_hash) )
-            if is_default_label:
-                item.setForeground(2, self.actuator.get_brush('default_label_col', 'text_column'))
-            else:
-                item.setForeground(2, self.actuator.get_brush('tx_label_col', 'text_column'))
 
             item.setIcon(0, icon)
             self.history_list.insertTopLevelItem(0,item)
@@ -1386,6 +1375,7 @@ class ElectrumWindow(QMainWindow):
         l.currentItemChanged.connect(lambda a,b: self.current_item_changed(a))
         self.address_list = l
         w.setObjectName("addresses_tab")
+        l.setItemDelegate(MyStyleDelegate(self, 'addresses'))
         return w
 
 
@@ -1417,6 +1407,7 @@ class ElectrumWindow(QMainWindow):
         l.itemChanged.connect(lambda a,b: self.address_label_changed(a,b,l,0,1))
         self.contacts_list = l
         w.setObjectName("contacts_tab")
+        l.setItemDelegate(MyStyleDelegate(self, 'contacts'))
         return w
 
 
@@ -1432,6 +1423,7 @@ class ElectrumWindow(QMainWindow):
         l.customContextMenuRequested.connect(self.create_invoice_menu)
         self.invoices_list = l
         w.setObjectName("invoices_tab")
+        l.setItemDelegate(MyStyleDelegate(self, 'invoices'))
         return w
 
     def update_invoices_tab(self):
@@ -1447,8 +1439,6 @@ class ElectrumWindow(QMainWindow):
             item.setData(0, 32, key)
             item.setFont(0, QFont(MONOSPACE_FONT))
             item.setFont(3, QFont(MONOSPACE_FONT))
-            for i in range(l.columnCount()):
-                item.setForeground(i, self.actuator.get_brush('text_column'))
             l.addTopLevelItem(item)
         l.setCurrentItem(l.topLevelItem(0))
 
@@ -1677,7 +1667,6 @@ class ElectrumWindow(QMainWindow):
                 if len(sequences) > 1:
                     name = _("Receiving") if not is_change else _("Change")
                     seq_item = QTreeWidgetItem( [ name, '', '', '', ''] )
-                    seq_item.setForeground(0, self.actuator.get_brush('text_column'))
                     account_item.addChild(seq_item)
                     if not is_change:
                         seq_item.setExpanded(True)
@@ -1685,7 +1674,6 @@ class ElectrumWindow(QMainWindow):
                     seq_item = account_item
 
                 used_item = QTreeWidgetItem( [ _("Used"), '', '', '', ''] )
-                used_item.setForeground(0, self.actuator.get_brush('text_column'))
                 used_flag = False
 
                 addr_list = account.get_addresses(is_change)
@@ -1697,10 +1685,6 @@ class ElectrumWindow(QMainWindow):
                     item = QTreeWidgetItem( [ address, label, balance, "%d"%num] )
                     item.setFont(0, QFont(MONOSPACE_FONT))
                     item.setData(0, 32, True) # label can be edited
-                    item.setForeground(0, self.actuator.get_brush('address_col', 'text_column'))
-                    item.setForeground(1, self.actuator.get_brush('tx_label_col', 'text_column'))
-                    item.setForeground(2, self.actuator.get_brush('balance_col', 'text_column'))
-                    item.setForeground(3, self.actuator.get_brush('address_txs_col', 'text_column'))
                     if address in self.wallet.frozen_addresses:
                         item.setBackgroundColor(0, QColor('lightblue'))
                     if self.wallet.is_beyond_limit(address, account, is_change):
@@ -1725,9 +1709,6 @@ class ElectrumWindow(QMainWindow):
             label = self.wallet.labels.get(address,'')
             n = self.wallet.get_num_tx(address)
             item = QTreeWidgetItem( [ address, label, "%d"%n] )
-            item.setForeground(0, self.actuator.get_brush('address_col', 'text_column'))
-            item.setForeground(1, self.actuator.get_brush('text_column'))
-            item.setForeground(2, self.actuator.get_brush('address_txs_col', 'text_column'))
             item.setFont(0, QFont(MONOSPACE_FONT))
             # 32 = label can be edited (bool)
             item.setData(0,32, True)

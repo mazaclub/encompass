@@ -50,6 +50,92 @@ def load_theme_paths():
     theme_paths.update(theme_dirs_from_prefix(theme_dir))
     return theme_paths
 
+class Item(QWidget):
+    """Allows stylesheets to affect items in views.
+
+    See docs/theming.md for detailed information."""
+    def __init__(self, role=None):
+        super(Item, self).__init__()
+        self.setProperty("role", role)
+
+class MyTreeWidget(QTreeWidget):
+    def __init__(self, parent):
+        QTreeWidget.__init__(self, parent)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.itemActivated.connect(self.on_activated)
+        self.header_labels = None
+
+    def on_activated(self, item):
+        if not item: return
+        for i in range(0,self.viewport().height()/5):
+            if self.itemAt(QPoint(0,i*5)) == item:
+                break
+        else:
+            return
+        for j in range(0,30):
+            if self.itemAt(QPoint(0,i*5 + j)) != item:
+                break
+        self.emit(SIGNAL('customContextMenuRequested(const QPoint&)'), QPoint(50, i*5 + j - 1))
+
+# See docs/theming.html
+class MyStyleDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None, role=None):
+        """Initialize the delegate.
+
+        role can be a string, or an int representing the number
+        of columns the table has."""
+        # roles define which view we're displaying (e.g. history, addresses)
+        if role == 'history':
+            self.column_types = ['', 'date', 'label', 'amount', 'balance']
+        elif role == 'addresses':
+            self.column_types = ['address', 'label', 'balance', 'tx_count']
+        elif role == 'contacts':
+            self.column_types = ['address', 'label', 'tx_count']
+        elif role == 'invoices':
+            self.column_types = ['requestor', 'memo', 'date', 'amount', 'status']
+        # If an int is given, use the generic color for all columns.
+        elif isinstance(role, int):
+            self.column_types = ['text_item' for i in range(role)]
+        else:
+            self.column_types = []
+        super(MyStyleDelegate, self).__init__(parent)
+
+    def paint(self, painter, option, index):
+        self.apply_style(option, index, index.column())
+        super(MyStyleDelegate, self).paint(painter, option, index)
+
+    def apply_style(self, option, index, column):
+        if self.column_types:
+            col_type = self.column_types[column]
+        data = index.data()
+
+        if col_type in ['address', 'tx_count', 'date', 'balance', 'text_item']:
+            txt = Item(col_type)
+        elif col_type == 'amount':
+            # There are two different rules for positive and negative amounts
+            data, _ = data.toFloat()
+            if data < 0:
+                txt = Item('amount_negative')
+            else:
+                txt = Item('amount')
+        elif col_type == 'label':
+            # There are two different rules for default labels and labels
+            default_label = False
+            for prefix in ['<', '>', '(internal)']:
+                if str(data.toString()).startswith(prefix):
+                    default_label = True
+
+            if default_label:
+                txt = Item('label_default')
+            else:
+                txt = Item('label')
+        else:
+            txt = Item('text_item')
+
+        qApp.style().polish(txt)
+        option.palette.setBrush(QPalette.Text, txt.palette().foreground())
+
+
 
 class Actuator:
     """Initialize the definitions relating to themes."""
@@ -62,41 +148,6 @@ class Actuator:
         self.theme_name = self.g.config.get_above_chain(self.gui_type, self.default_gui_theme)
         self.themes = load_theme_paths()
         self.load_theme()
-        # There's no easy way to use stylesheets to change the color of individual columns
-        # in a TreeWidgetItem. Therefore, this hack is used.
-        self.brushes = {'text_column': None,        # Generic text
-                    'tx_date_col': None,
-                    'tx_amount_col': None,          # Transaction coin amount
-                    'negative_amount_col': None,    # Transaction coin amount, negative
-                    'default_label_col': None,
-                    'tx_label_col': None,
-                    'balance_col': None,
-                    'address_col': None,            # Address
-                    'address_txs_col': None}        # Txs sent to address
-        for k in self.brushes.keys():
-            v = QWidget()
-            v.setObjectName(k)
-            self.brushes[k] = v
-
-    def get_brush(self, name, default='black'):
-        """Get the brush specified by the current theme's stylesheet for name.
-
-        Args:
-            name (str): Brush to retrieve
-            default (str): Fallback if no brush is found.
-                This can be another brush name, or the name of a color.
-
-        This is a hack around the limitations on using stylesheets for
-        QTreeWidgetItem rows."""
-        w = self.brushes.get(name)
-        if w:
-            return w.palette().foreground()
-        # try default
-        w = self.brushes.get(default)
-        if w:
-            return w.palette().foreground()
-        else:
-            return QBrush(QColor(default))
 
     def load_theme(self):
         """Load theme retrieved from wallet file."""
