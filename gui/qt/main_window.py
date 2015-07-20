@@ -128,6 +128,7 @@ class ElectrumWindow(QMainWindow):
         self.lite = None
         if actuator is not None:
             self.actuator = actuator
+            qApp.actuator = actuator
         else:
             self.actuator = None
 
