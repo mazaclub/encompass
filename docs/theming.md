@@ -3,15 +3,11 @@
 Encompass uses a theming system for customization. This document details
 some specifics about it.
 
-## Brush Color Hacks
+## Brush Color Workaround
 
 Becuse there is no easy way to set the color of text in columns of a
 table widget, we use a workaround. Rules for text in tables are set
 using the CSS rule for properties of the class `Item`.
-
-## Brush Names
-
-These are the names that one might define a color for in a stylesheet.
 
 ## Customizable Objects
 
