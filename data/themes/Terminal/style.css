@@ -35,7 +35,7 @@ QTabBar::tab:selected
   background-color: #1D1F1D;
 }
 
-QLineEdit, QLabel, QRadioButton, QCheckBox, QSpinBox
+QLineEdit, QLabel, QRadioButton, QCheckBox, QSpinBox, QGroupBox, QListView
 {
   color: #4CD93F;
   background-color: #333;
@@ -61,7 +61,7 @@ QTreeView, QTableView
   selection-color: white;
 }
 
-QTreeView::item:selected, QTreeView::branch:selected
+QTreeView::item:selected, QTreeView::branch:selected, QListView::item:selected
 {
   background-color: #279630;
   color: white;
@@ -74,6 +74,19 @@ QMenuBar, QMenuBar::item, QMenu
   selection-color: white;
   color: #4CD93F;
 }
+
+QGroupBox
+{
+  border: 1px solid #298A25;
+  border-radius: 6px;
+  margin-top: 20px;
+}
+QGroupBox::title
+{
+  subcontrol-position: top center;
+  subcontrol-origin: margin;
+}
+
 
 Item[role="text_item"], Item[role="no"],
 Item[role="date"], Item[role="balance"], Item[role="address"],

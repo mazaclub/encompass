@@ -150,6 +150,7 @@ setup(
         'chainkey_gui.qt.main_window',
         'chainkey_gui.qt.mofn_dialog',
         'chainkey_gui.qt.network_dialog',
+        'chainkey_gui.qt.options_dialog',
         'chainkey_gui.qt.password_dialog',
         'chainkey_gui.qt.paytoedit',
         'chainkey_gui.qt.qrcodewidget',

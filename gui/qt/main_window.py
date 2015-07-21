@@ -48,6 +48,7 @@ from network_dialog import NetworkDialog
 from qrcodewidget import QRCodeWidget, QRDialog
 from qrtextedit import ScanQRTextEdit, ShowQRTextEdit
 from currency_dialog import ChangeCurrencyDialog, FavoriteCurrenciesDialog, HideCurrenciesDialog
+from options_dialog import SettingsDialog
 import style
 
 from decimal import Decimal
@@ -200,6 +201,7 @@ class ElectrumWindow(QMainWindow):
         self.qr_window = None
         self.not_enough_funds = False
         self.change_currency_window = None
+        self.need_restart = False
 
         self.setObjectName("main_window")
 
@@ -1760,12 +1762,6 @@ class ElectrumWindow(QMainWindow):
         self.update_address_tab()
         self.update_receive_tab()
 
-    def get_coin_icon(self):
-        coin_icon_name = ''.join([ ":icons/coin_", self.active_chain.code.lower(), ".png" ])
-        if not QFile(coin_icon_name).exists():
-            coin_icon_name = ":icons/coin_btc.png"
-        return QIcon(coin_icon_name)
-
     def create_status_bar(self):
 
         sb = QStatusBar()
@@ -1796,7 +1792,7 @@ class ElectrumWindow(QMainWindow):
         self.status_button = StatusBarButton( self.actuator.get_icon("status_disconnected.png"), _("Network"), self.run_network_dialog )
         sb.addPermanentWidget( self.status_button )
 
-        self.change_currency_button = StatusBarButton( self.get_coin_icon(), _("Change Currency"), self.change_currency_dialog, is_coin=True)
+        self.change_currency_button = StatusBarButton( self.actuator.get_coin_icon(self.active_chain.code), _("Change Currency"), self.change_currency_dialog, is_coin=True)
         sb.insertPermanentWidget(1, self.change_currency_button )
 
         run_hook('create_status_bar', (sb,))
@@ -1804,7 +1800,7 @@ class ElectrumWindow(QMainWindow):
         self.setStatusBar(sb)
 
     def update_coin_icon(self):
-        icon = self.get_coin_icon()
+        icon = self.actuator.get_coin_icon(self.active_chain.code)
         self.change_currency_button.setIcon( icon )
 
     def update_lock_icon(self):
@@ -2706,216 +2702,8 @@ class ElectrumWindow(QMainWindow):
 
 
     def settings_dialog(self):
-        self.need_restart = False
-        d = QDialog(self)
-        d.setWindowTitle(_('Encompass Settings'))
-        d.setModal(1)
-        vbox = QVBoxLayout()
-        grid = QGridLayout()
-        grid.setColumnStretch(0,1)
-        widgets = []
-
-        lang_label = QLabel(_('Language') + ':')
-        lang_help = HelpButton(_('Select which language is used in the GUI (after restart).'))
-        lang_combo = QComboBox()
-        from chainkey.i18n import languages
-        lang_combo.addItems(languages.values())
-        try:
-            index = languages.keys().index(self.config.get_above_chain("language",''))
-        except Exception:
-            index = 0
-        lang_combo.setCurrentIndex(index)
-        if not self.config.is_modifiable('language'):
-            for w in [lang_combo, lang_label]: w.setEnabled(False)
-        def on_lang(x):
-            lang_request = languages.keys()[lang_combo.currentIndex()]
-            if lang_request != self.config.get_above_chain('language'):
-                self.config.set_key_above_chain("language", lang_request, True)
-                self.need_restart = True
-        lang_combo.currentIndexChanged.connect(on_lang)
-        widgets.append((lang_label, lang_combo, lang_help))
-
-        current_theme = self.actuator.selected_theme()
-        theme_label = QLabel(_('Theme: ') + _(current_theme))
-        theme_button = QPushButton(_('Change Theme'))
-        theme_help = HelpButton(_('Themes change how Encompass looks.'))
-        def on_theme_button():
-            style.ThemeDialog(self).exec_()
-            current_theme = self.actuator.selected_theme()
-            theme_label.setText(_('Theme: ') + _(current_theme))
-        theme_button.clicked.connect(on_theme_button)
-        widgets.append((theme_label, theme_button, theme_help))
-
-        fav_chains_list = map(lambda x: x.encode('ascii', 'ignore'), self.config.get_above_chain('favorite_chains', []))
-        # Maximum of three favorite chains
-        if len(fav_chains_list) > 3:
-            fav_chains_list = fav_chains_list[:3]
-            self.config.set_key_above_chain('favorite_chains', fav_chains_list)
-        # Replace an empty list with the string 'None'
-        if not fav_chains_list: fav_chains_list = 'None'
-        fav_chains_list = str(fav_chains_list).replace("'", "")
-        favs_label = QLabel(_( 'Favorite coins:' + fav_chains_list ))
-        favs_button = QPushButton(_('Change Favorites'))
-        favs_help = HelpButton(_('Favorite coins appear before others in the currency selection window.'))
-        favs_button.clicked.connect(lambda: FavoriteCurrenciesDialog(self).exec_())
-        widgets.append((favs_label, favs_button, favs_help))
-
-        hidden_chains_list = self.config.get_above_chain('hide_chains', [])
-        hidden_chains_number = len(hidden_chains_list)
-        hiddens_label = QLabel(_('Hidden coins: ' + str(hidden_chains_number)))
-        hiddens_button = QPushButton(_('Change Hidden Coins'))
-        hiddens_help = HelpButton(_('Hidden coins do not appear in the currency selection window.'))
-        hiddens_button.clicked.connect(lambda: HideCurrenciesDialog(self).exec_())
-        widgets.append((hiddens_label, hiddens_button, hiddens_help))
-
-        nz_label = QLabel(_('Zeros after decimal point') + ':')
-        nz_help = HelpButton(_('Number of zeros displayed after the decimal point. For example, if this is set to 2, "1." will be displayed as "1.00"'))
-        nz = QSpinBox()
-        nz.setMinimum(0)
-        nz.setMaximum(self.decimal_point)
-        nz.setValue(self.num_zeros)
-        if not self.config.is_modifiable('num_zeros'):
-            for w in [nz, nz_label]: w.setEnabled(False)
-        def on_nz():
-            value = nz.value()
-            if self.num_zeros != value:
-                self.num_zeros = value
-                self.config.set_key('num_zeros', value, True)
-                self.update_history_tab()
-                self.update_address_tab()
-        nz.valueChanged.connect(on_nz)
-        widgets.append((nz_label, nz, nz_help))
-
-        fee_label = QLabel(_('Transaction fee per kb') + ':')
-        fee_help = HelpButton(_('Fee per kilobyte of transaction.') + '\n' \
-                              + _('Recommended value') + ': ' + self.format_amount(self.active_chain.RECOMMENDED_FEE) + ' ' + self.base_unit())
-        fee_e = BTCAmountEdit(self.get_decimal_point)
-        fee_e.setAmount(self.wallet.fee_per_kb)
-        if not self.config.is_modifiable('fee_per_kb'):
-            for w in [fee_e, fee_label]: w.setEnabled(False)
-        def on_fee():
-            fee = fee_e.get_amount()
-            self.wallet.set_fee(fee)
-        fee_e.editingFinished.connect(on_fee)
-        widgets.append((fee_label, fee_e, fee_help))
-
-        units = self.base_units.keys()
-        unit_label = QLabel(_('Base unit') + ':')
-        unit_combo = QComboBox()
-        unit_combo.addItems(units)
-        unit_combo.setCurrentIndex(units.index(self.base_unit()))
-        msg = _('Base unit of your wallet.')\
-              + '\n1BTC=1000mBTC.\n' \
-              + _(' These settings affects the fields in the Send tab')+' '
-        unit_help = HelpButton(msg)
-        def on_unit(x):
-            unit_result = units[unit_combo.currentIndex()]
-            if self.base_unit() == unit_result:
-                return
-            self.decimal_point = self.base_units[unit_result]
-#            if unit_result == 'BTC':
-#                self.decimal_point = 8
-#            elif unit_result == 'mBTC':
-#                self.decimal_point = 5
-#            elif unit_result == 'bits':
-#                self.decimal_point = 2
-#            else:
-#                raise Exception('Unknown base unit')
-            self.config.set_key('decimal_point', self.decimal_point, True)
-            self.update_history_tab()
-            self.update_receive_tab()
-            self.update_address_tab()
-            self.update_invoices_tab()
-            fee_e.setAmount(self.wallet.fee_per_kb)
-            self.update_status()
-        unit_combo.currentIndexChanged.connect(on_unit)
-        widgets.append((unit_label, unit_combo, unit_help))
-
-        block_explorers = self.block_explorers.keys()
-#        block_explorers = ['Blockchain.info', 'Blockr.io', 'Insight.is', "Blocktrail.com"]
-        block_ex_label = QLabel(_('Online Block Explorer') + ':')
-        block_ex_combo = QComboBox()
-        block_ex_combo.addItems(block_explorers)
-        block_ex_combo.setCurrentIndex(block_explorers.index(self.config.get('block_explorer', block_explorers[0])))
-        block_ex_help = HelpButton(_('Choose which online block explorer to use for functions that open a web browser'))
-        def on_be(x):
-            be_result = block_explorers[block_ex_combo.currentIndex()]
-            self.config.set_key('block_explorer', be_result, True)
-        block_ex_combo.currentIndexChanged.connect(on_be)
-        widgets.append((block_ex_label, block_ex_combo, block_ex_help))
-
-        from chainkey import qrscanner
-        system_cameras = qrscanner._find_system_cameras()
-        qr_combo = QComboBox()
-        qr_combo.addItem("Default","default")
-        for camera, device in system_cameras.items():
-            qr_combo.addItem(camera, device)
-        #combo.addItem("Manually specify a device", config.get("video_device"))
-        index = qr_combo.findData(self.config.get("video_device"))
-        qr_combo.setCurrentIndex(index)
-        qr_label = QLabel(_('Video Device') + ':')
-        qr_combo.setEnabled(qrscanner.zbar is not None)
-        qr_help = HelpButton(_("Install the zbar package to enable this.\nOn linux, type: 'apt-get install python-zbar'"))
-        on_video_device = lambda x: self.config.set_key("video_device", str(qr_combo.itemData(x).toString()), True)
-        qr_combo.currentIndexChanged.connect(on_video_device)
-        widgets.append((qr_label, qr_combo, qr_help))
-
-        usechange_cb = QCheckBox(_('Use change addresses'))
-        usechange_cb.setChecked(self.wallet.use_change)
-        usechange_help = HelpButton(_('Using change addresses makes it more difficult for other people to track your transactions.'))
-        if not self.config.is_modifiable('use_change'): usechange_cb.setEnabled(False)
-        def on_usechange(x):
-            usechange_result = x == Qt.Checked
-            if self.wallet.use_change != usechange_result:
-                self.wallet.use_change = usechange_result
-                self.wallet.storage.put('use_change', self.wallet.use_change)
-        usechange_cb.stateChanged.connect(on_usechange)
-        widgets.append((usechange_cb, None, usechange_help))
-
-        showtx_cb = QCheckBox(_('Show transaction before broadcast'))
-        showtx_cb.setChecked(self.config.get('show_before_broadcast', False))
-        showtx_cb.stateChanged.connect(lambda x: self.config.set_key('show_before_broadcast', showtx_cb.isChecked()))
-        showtx_help = HelpButton(_('Display the details of your transactions before broadcasting it.'))
-        widgets.append((showtx_cb, None, showtx_help))
-
-        can_edit_fees_cb = QCheckBox(_('Set transaction fees manually'))
-        can_edit_fees_cb.setChecked(self.config.get('can_edit_fees', False))
-        def on_editfees(x):
-            self.config.set_key('can_edit_fees', x == Qt.Checked)
-            self.update_fee_edit()
-        can_edit_fees_cb.stateChanged.connect(on_editfees)
-        can_edit_fees_help = HelpButton(_('This option lets you edit fees in the send tab.'))
-        widgets.append((can_edit_fees_cb, None, can_edit_fees_help))
-
-        verbose_currency_dialog = QCheckBox(_('Show verbose info in Change Currency window'))
-        verbose_currency_dialog.setChecked(self.config.get_above_chain('verbose_currency_dialog', False))
-        verbose_currency_dialog.stateChanged.connect(lambda x: self.config.set_key_above_chain('verbose_currency_dialog', verbose_currency_dialog.isChecked()))
-        verbose_currency_dialog_help = HelpButton(_('Show verbose information about currencies, such as the number of default servers.'))
-        widgets.append((verbose_currency_dialog, None, verbose_currency_dialog_help))
-
-        use_def_wallet_cb = QCheckBox(_('Open default_wallet on wallet start'))
-        use_def_wallet_cb.setChecked(self.config.get_above_chain('use_default_wallet', True))
-        use_def_wallet_cb.stateChanged.connect(lambda x: self.config.set_key_above_chain('use_default_wallet', use_def_wallet_cb.isChecked()))
-        use_def_wallet_help = HelpButton(_('Open default_wallet when Encompass starts. Otherwise, open the last wallet that was open.'))
-        widgets.append((use_def_wallet_cb, None, use_def_wallet_help))
-
-        for a,b,c in widgets:
-            i = grid.rowCount()
-            if b:
-                grid.addWidget(a, i, 0)
-                grid.addWidget(b, i, 1)
-            else:
-                grid.addWidget(a, i, 0, 1, 2)
-            grid.addWidget(c, i, 2)
-
-        vbox.addLayout(grid)
-        vbox.addStretch(1)
-        vbox.addLayout(close_button(d))
-        d.setLayout(vbox)
-
-        # run the dialog
+        d = SettingsDialog(self)
         d.exec_()
-
         run_hook('close_settings_dialog')
         if self.need_restart:
             QMessageBox.warning(self, _('Success'), _('Please restart Encompass to activate the new GUI settings'), _('OK'))

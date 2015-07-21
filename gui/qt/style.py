@@ -185,6 +185,12 @@ class Actuator:
             theme_dir = QDir(":theme/Default")
         return QIcon(theme_dir.filePath(name))
 
+    def get_coin_icon(self, chaincode='BTC'):
+        coin_icon_name = ''.join([ ":icons/coin_", chaincode.lower(), ".png" ])
+        if not QFile(coin_icon_name).exists():
+            coin_icon_name = ":icons/coin_btc.png"
+        return QIcon(coin_icon_name)
+
     def theme_names(self):
         """Sort themes."""
         return sorted(self.themes.keys())

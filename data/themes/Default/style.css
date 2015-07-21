@@ -18,6 +18,18 @@ Item[role="label_default"]
   color: grey;
 }
 
+QGroupBox
+{
+  border: 1px solid gray;
+  border-radius: 6px;
+  margin-top: 20px;
+}
+QGroupBox::title
+{
+  subcontrol-position: top center;
+  subcontrol-origin: margin;
+}
+
 /* Lite window styles */
 
 #lite_window
