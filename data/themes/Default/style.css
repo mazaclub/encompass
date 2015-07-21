@@ -3,25 +3,31 @@
   color: red;
 }
 
-/* This is a hack for when a row in the history tab
-has a transaction label. */
-#tx_label_col
+Item[role="label"]
 {
   color: black;
 }
 
-/* This is a hack for when a row in the history tab
-has a negative amount. */
-#negative_amount_col
+Item[role="amount_negative"]
 {
   color: #BC1E1E;
 }
 
-/* This is a hack for when a row in the history tab
-uses the default label. */
-#default_label_col
+Item[role="label_default"]
 {
   color: grey;
+}
+
+QGroupBox
+{
+  border: 1px solid gray;
+  border-radius: 6px;
+  margin-top: 20px;
+}
+QGroupBox::title
+{
+  subcontrol-position: top center;
+  subcontrol-origin: margin;
 }
 
 /* Lite window styles */

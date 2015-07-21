@@ -21,5 +21,10 @@
     <file alias="tab_invoices.png">Default/icons/tab_invoices.png</file>
     <file alias="tab_receive.png">Default/icons/tab_receive.png</file>
     <file alias="tab_send.png">Default/icons/tab_send.png</file>
+    <file alias="qrcode.png">Default/icons/qrcode.png</file>
+  </qresource>
+
+  <qresource prefix="/theme/Terminal" >
+    <file alias="qrcode.png">Terminal/icons/qrcode.png</file>
   </qresource>
 </RCC>

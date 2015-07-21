@@ -36,7 +36,7 @@ import PyQt4.QtCore as QtCore
 from chainkey import transaction
 from chainkey.plugins import run_hook
 
-from util import MyTreeWidget
+from style import MyTreeWidget
 from util import MONOSPACE_FONT
 
 class TxDialog(QDialog):

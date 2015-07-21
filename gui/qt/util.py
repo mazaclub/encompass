@@ -217,27 +217,6 @@ def filename_field(parent, config, defaultname, select_msg, csv_default=True):
 
 
 
-class MyTreeWidget(QTreeWidget):
-    def __init__(self, parent):
-        QTreeWidget.__init__(self, parent)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.itemActivated.connect(self.on_activated)
-
-    def on_activated(self, item):
-        if not item: return
-        for i in range(0,self.viewport().height()/5):
-            if self.itemAt(QPoint(0,i*5)) == item:
-                break
-        else:
-            return
-        for j in range(0,30):
-            if self.itemAt(QPoint(0,i*5 + j)) != item:
-                break
-        self.emit(SIGNAL('customContextMenuRequested(const QPoint&)'), QPoint(50, i*5 + j - 1))
-
-
-
-
 if __name__ == "__main__":
     app = QApplication([])
     t = WaitingDialog(None, 'testing ...', lambda: [time.sleep(1)], lambda x: QMessageBox.information(None, 'done', "done", _('OK')))
