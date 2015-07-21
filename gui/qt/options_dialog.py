@@ -148,13 +148,15 @@ class SettingsDialog(QDialog):
         favs_label = QLabel(_( 'Favorite coins:'))
         favs_value = QLabel(fav_chains_list)
         favs_button = QPushButton(_('Change Favorites'))
-        favs_help = HelpButton(_('Favorite coins appear before others in the currency selection window.'))
+        favs_help = HelpButton(_('Favorite coins are in the status bar\'s coin menu, and appear before others in the currency selection window.'))
         def do_fav():
             FavoriteCurrenciesDialog(self).exec_()
             fav_chains_list = map(lambda x: x.encode('ascii', 'ignore'), self.config.get_above_chain('favorite_chains', []))
             if not fav_chains_list: fav_chains_list = 'None'
             fav_chains_list = str(fav_chains_list).replace("'", "")
             favs_value.setText(fav_chains_list)
+            # update the coin menu
+            self.gui.update_status()
 
         favs_button.clicked.connect(do_fav)
         rows.append(SettingsRow(self,'full', (favs_label, favs_value, favs_button, favs_help)))

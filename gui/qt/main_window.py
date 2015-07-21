@@ -47,7 +47,7 @@ from amountedit import AmountEdit, BTCAmountEdit, MyLineEdit
 from network_dialog import NetworkDialog
 from qrcodewidget import QRCodeWidget, QRDialog
 from qrtextedit import ScanQRTextEdit, ShowQRTextEdit
-from currency_dialog import ChangeCurrencyDialog, FavoriteCurrenciesDialog, HideCurrenciesDialog
+from currency_dialog import ChangeCurrencyDialog, FavoriteCurrenciesDialog
 from options_dialog import SettingsDialog
 import style
 
@@ -100,10 +100,22 @@ class StatusBarButton(QPushButton):
         if e.key() == QtCore.Qt.Key_Return:
             apply(self.func,())
 
+class StatusBarMenu(QToolButton):
+    def __init__(self, icon, tooltip, func, is_coin=False):
+        QToolButton.__init__(self)
+        dimension = 32 if is_coin else 25
+        self.setIcon(icon)
+        self.setToolTip(tooltip)
+        self.setMaximumWidth(60)
+        self.clicked.connect(func)
+        self.func = func
+        self.setIconSize(QSize(dimension+10,dimension))
+        # used if we need to keep track of what the menu is working with
+        self.menu_data = None
 
-
-
-
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Return:
+            apply(self.func,())
 
 
 
@@ -514,6 +526,10 @@ class ElectrumWindow(QMainWindow):
 #            return 'BTC'
         raise Exception('Unknown base unit')
 
+    def change_favorites(self):
+        FavoriteCurrenciesDialog(self).exec_()
+        self.update_status()
+
     def update_status(self):
         if not self.wallet:
             return
@@ -553,6 +569,22 @@ class ElectrumWindow(QMainWindow):
         self.balance_label.setText(text)
         self.status_button.setIcon( icon )
 
+        fav_chains = self.config.get_above_chain('favorite_chains', [])
+        if fav_chains != self.change_currency_button.menu_data:
+            self.change_currency_menu.clear()
+            if fav_chains:
+                for c in sorted(fav_chains):
+                    self.change_currency_menu.addAction(self.actuator.get_coin_icon(c), c, lambda signal_c=c: self.emit(QtCore.SIGNAL('change_currency'), signal_c))
+            if self.change_currency_menu.isEmpty():
+                self.change_currency_menu.addAction('Set favorites...', self.change_favorites)
+            self.change_currency_button.menu_data = fav_chains
+
+        # Disable action if it's the active chain
+        for a in self.change_currency_menu.actions():
+            if str(a.text()) == self.active_chain.code:
+                a.setEnabled(False)
+            else:
+                a.setEnabled(True)
 
     def update_wallet(self):
         self.update_status()
@@ -1792,7 +1824,17 @@ class ElectrumWindow(QMainWindow):
         self.status_button = StatusBarButton( self.actuator.get_icon("status_disconnected.png"), _("Network"), self.run_network_dialog )
         sb.addPermanentWidget( self.status_button )
 
-        self.change_currency_button = StatusBarButton( self.actuator.get_coin_icon(self.active_chain.code), _("Change Currency"), self.change_currency_dialog, is_coin=True)
+        self.change_currency_button = StatusBarMenu( self.actuator.get_coin_icon(self.active_chain.code), _("Change Currency"), self.change_currency_dialog, is_coin=True)
+        fav_chains = self.config.get_above_chain('favorite_chains', [])
+        self.change_currency_menu = QMenu()
+        self.change_currency_button.setMenu(self.change_currency_menu)
+        if fav_chains:
+            for c in sorted(fav_chains):
+                self.change_currency_menu.addAction(self.actuator.get_coin_icon(c), c, lambda signal_c=c: self.emit(QtCore.SIGNAL('change_currency'), signal_c))
+            self.change_currency_button.menu_data = fav_chains
+
+        if self.change_currency_menu.isEmpty():
+            self.change_currency_menu.addAction('Set favorites...', self.change_favorites)
         sb.insertPermanentWidget(1, self.change_currency_button )
 
         run_hook('create_status_bar', (sb,))
@@ -1850,16 +1892,17 @@ class ElectrumWindow(QMainWindow):
         self.network.switch_to_active_chain()
         time.sleep(0.5)
 
-        # network callbacks
-        if self.network:
-            self.network.register_callback('updated', lambda: self.need_update.set())
-            self.network.register_callback('banner', lambda: self.emit(QtCore.SIGNAL('banner_signal')))
-            self.network.register_callback('status', lambda: self.emit(QtCore.SIGNAL('update_status')))
-            self.network.register_callback('new_transaction', lambda: self.emit(QtCore.SIGNAL('transaction_signal')))
-            self.network.register_callback('stop', self.close)
+        def setup_network_callbacks():
+            if self.network:
+                self.network.register_callback('updated', lambda: self.need_update.set())
+                self.network.register_callback('banner', lambda: self.emit(QtCore.SIGNAL('banner_signal')))
+                self.network.register_callback('status', lambda: self.emit(QtCore.SIGNAL('update_status')))
+                self.network.register_callback('new_transaction', lambda: self.emit(QtCore.SIGNAL('transaction_signal')))
+                self.network.register_callback('stop', self.close)
+                # set initial message
+                self.console.showMessage(self.network.banner)
 
-            # set initial message
-            self.console.showMessage(self.network.banner)
+        setup_network_callbacks()
         print_error("Network switched to active chain: {}".format(chaincode))
 
         wallet_filepath = self.wallet.storage.path
@@ -1874,7 +1917,8 @@ class ElectrumWindow(QMainWindow):
                 print_error("Adding new currency failed due to incorrect password.")
                 self.config.set_active_chain_code(current_chain_code)
                 self.network.switch_to_active_chain()
-                time.sleep(1)
+                time.sleep(0.5)
+                setup_network_callbacks()
                 wallet = self.wallet
             wallet.start_threads(self.network)
         else:

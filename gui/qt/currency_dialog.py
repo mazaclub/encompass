@@ -96,7 +96,11 @@ class FavoriteCurrenciesDialog(CurrenciesCheckboxDialog):
         if len(self.favorites) > 3: self.favorites = self.favorites[:3]
 
         self.main_layout = vbox = QVBoxLayout()
-        limit_label = QLabel(_('Up to three coins may be selected as "favorites."\nThey will be listed before other coins in the currency selection dialog.'))
+        limit_label = QLabel(_('\n'.join([
+            'Up to three coins may be selected as "favorites."',
+            '\nHolding down the coin icon in the wallet status bar will show you your favorite coins and allow you to quickly switch between them.',
+            'They will also be listed before other coins in the currency selection dialog.'])))
+        limit_label.setWordWrap(True)
         vbox.addWidget(limit_label)
 
         for cbox in self.coin_checkboxes:
