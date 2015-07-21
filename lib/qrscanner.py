@@ -14,7 +14,7 @@ def scan_qr(config):
     if not zbar:
         raise BaseException("\n".join([_("Cannot start QR scanner."),_("The zbar package is not available."),_("On Linux, try 'sudo apt-get install python-zbar'")]))
     if proc is None:
-        device = config.get("video_device", "default")
+        device = config.get_above_chain("video_device", "default")
         if device == 'default':
             device = ''
         proc = zbar.Processor()

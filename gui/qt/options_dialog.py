@@ -173,6 +173,23 @@ class SettingsDialog(QDialog):
         hiddens_button.clicked.connect(do_hiddens)
         rows.append(SettingsRow(self,'full', (hiddens_label, hiddens_value, hiddens_button, hiddens_help)))
 
+        # QR Device #
+        from chainkey import qrscanner
+        system_cameras = qrscanner._find_system_cameras()
+        qr_combo = QComboBox()
+        qr_combo.addItem("Default","default")
+        for camera, device in system_cameras.items():
+            qr_combo.addItem(camera, device)
+        #combo.addItem("Manually specify a device", config.get("video_device"))
+        index = qr_combo.findData(self.config.get_above_chain("video_device"))
+        qr_combo.setCurrentIndex(index)
+        qr_label = QLabel(_('Video Device') + ':')
+        qr_combo.setEnabled(qrscanner.zbar is not None)
+        qr_help = HelpButton(_("Install the zbar package to enable this.\nOn linux, type: 'apt-get install python-zbar'"))
+        on_video_device = lambda x: self.config.set_key_above_chain("video_device", str(qr_combo.itemData(x).toString()), True)
+        qr_combo.currentIndexChanged.connect(on_video_device)
+        rows.append(SettingsRow(self,'combobox', (qr_label, qr_combo, qr_help)))
+
         # Currency Dialog Verbosity #
         verbose_currency_dialog = QCheckBox(_('Show verbose info in Change Currency window'))
         verbose_currency_dialog.setChecked(self.config.get_above_chain('verbose_currency_dialog', False))
@@ -192,23 +209,6 @@ class SettingsDialog(QDialog):
     def create_chain_options(self):
         rows = []
         gui = self.gui
-
-        # QR Device #
-        from chainkey import qrscanner
-        system_cameras = qrscanner._find_system_cameras()
-        qr_combo = QComboBox()
-        qr_combo.addItem("Default","default")
-        for camera, device in system_cameras.items():
-            qr_combo.addItem(camera, device)
-        #combo.addItem("Manually specify a device", config.get("video_device"))
-        index = qr_combo.findData(self.config.get("video_device"))
-        qr_combo.setCurrentIndex(index)
-        qr_label = QLabel(_('Video Device') + ':')
-        qr_combo.setEnabled(qrscanner.zbar is not None)
-        qr_help = HelpButton(_("Install the zbar package to enable this.\nOn linux, type: 'apt-get install python-zbar'"))
-        on_video_device = lambda x: self.config.set_key("video_device", str(qr_combo.itemData(x).toString()), True)
-        qr_combo.currentIndexChanged.connect(on_video_device)
-        rows.append(SettingsRow(self,'combobox', (qr_label, qr_combo, qr_help)))
 
         # Number of Zeroes
         nz_label = QLabel(_('Zeros after decimal point') + ':')
