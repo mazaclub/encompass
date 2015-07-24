@@ -518,12 +518,6 @@ class ElectrumWindow(QMainWindow):
         for k, v in self.base_units.iteritems():
             if v == self.decimal_point:
                 return k
-#        if self.decimal_point == 2:
-#            return 'bits'
-#        if self.decimal_point == 5:
-#            return 'mBTC'
-#        if self.decimal_point == 8:
-#            return 'BTC'
         raise Exception('Unknown base unit')
 
     def change_favorites(self):
@@ -619,14 +613,6 @@ class ElectrumWindow(QMainWindow):
         item = self.history_list.currentItem()
         be = self.config.get('block_explorer', self.block_explorers.keys()[0])
         block_explorer = self.block_explorers[be]
-#        if be == 'Blockchain.info':
-#            block_explorer = 'https://blockchain.info/tx/'
-#        elif be == 'Blockr.io':
-#            block_explorer = 'https://blockr.io/tx/info/'
-#        elif be == 'Insight.is':
-#            block_explorer = 'http://live.insight.is/tx/'
-#        elif be == "Blocktrail.com":
-#            block_explorer = 'https://www.blocktrail.com/tx/'
 
         if not item: return
         tx_hash = str(item.data(0, Qt.UserRole).toString())
