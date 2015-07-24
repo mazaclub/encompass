@@ -788,6 +788,7 @@ class ElectrumWindow(QMainWindow):
         self.receive_list.itemClicked.connect(self.receive_item_changed)
         self.receive_list.setHeaderLabels( [_('Address'), _('Message'), _('Amount')] )
         self.receive_list.setColumnWidth(0, 340)
+        self.receive_list.setItemDelegate(MyStyleDelegate(self, 'receive'))
         h = self.receive_list.header()
         h.setStretchLastSection(False)
         h.setResizeMode(1, QHeaderView.Stretch)
@@ -893,7 +894,6 @@ class ElectrumWindow(QMainWindow):
         for address, v in self.receive_requests.items():
             amount, message = v
             item = QTreeWidgetItem( [ address, message, self.format_amount(amount) if amount else ""] )
-            item.setFont(0, QFont(MONOSPACE_FONT))
             self.receive_list.addTopLevelItem(item)
 
 

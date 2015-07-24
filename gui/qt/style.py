@@ -87,6 +87,8 @@ class MyStyleDelegate(QStyledItemDelegate):
         # roles define which view we're displaying (e.g. history, addresses)
         if role == 'history':
             self.column_types = ['', 'date', 'label', 'amount', 'balance']
+        elif role == 'receive':
+            self.column_types = ['address', 'message', 'amount']
         elif role == 'addresses':
             self.column_types = ['address', 'label', 'balance', 'tx_count']
         elif role == 'contacts':
