@@ -733,9 +733,6 @@ class ElectrumWindow(QMainWindow):
                 is_default_label = False
 
             item = QTreeWidgetItem( [ '', time_str, label, v_str, balance_str] )
-            item.setFont(2, QFont(MONOSPACE_FONT))
-            item.setFont(3, QFont(MONOSPACE_FONT))
-            item.setFont(4, QFont(MONOSPACE_FONT))
             if tx_hash:
                 item.setData(0, Qt.UserRole, tx_hash)
                 item.setToolTip(0, "%d %s\nTxId:%s" % (conf, _('Confirmations'), tx_hash) )
@@ -1458,8 +1455,6 @@ class ElectrumWindow(QMainWindow):
             date_str = datetime.datetime.fromtimestamp(expiration_date).isoformat(' ')[:-3]
             item = QTreeWidgetItem( [ domain, memo, date_str, self.format_amount(amount, whitespaces=True), format_status(status)] )
             item.setData(0, 32, key)
-            item.setFont(0, QFont(MONOSPACE_FONT))
-            item.setFont(3, QFont(MONOSPACE_FONT))
             l.addTopLevelItem(item)
         l.setCurrentItem(l.topLevelItem(0))
 
@@ -1704,7 +1699,6 @@ class ElectrumWindow(QMainWindow):
                     c, u = self.wallet.get_addr_balance(address)
                     balance = self.format_amount(c + u)
                     item = QTreeWidgetItem( [ address, label, balance, "%d"%num] )
-                    item.setFont(0, QFont(MONOSPACE_FONT))
                     item.setData(0, 32, True) # label can be edited
                     if address in self.wallet.frozen_addresses:
                         item.setBackgroundColor(0, QColor('lightblue'))
@@ -1730,7 +1724,6 @@ class ElectrumWindow(QMainWindow):
             label = self.wallet.labels.get(address,'')
             n = self.wallet.get_num_tx(address)
             item = QTreeWidgetItem( [ address, label, "%d"%n] )
-            item.setFont(0, QFont(MONOSPACE_FONT))
             # 32 = label can be edited (bool)
             item.setData(0,32, True)
             # 33 = payto string

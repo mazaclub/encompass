@@ -143,8 +143,13 @@ class MyStyleDelegate(QStyledItemDelegate):
         else:
             txt = Item('text_item')
 
+        # monospace columns
+        if col_type in ['label', 'amount', 'balance', 'address', 'requestor']:
+            txt.setFont(QFont(MONOSPACE_FONT))
+
         qApp.style().polish(txt)
         option.palette.setBrush(QPalette.Text, txt.palette().foreground())
+        option.font = txt.font()
 
 
 
