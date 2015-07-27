@@ -47,7 +47,8 @@ from amountedit import AmountEdit, BTCAmountEdit, MyLineEdit
 from network_dialog import NetworkDialog
 from qrcodewidget import QRCodeWidget, QRDialog
 from qrtextedit import ScanQRTextEdit, ShowQRTextEdit
-from currency_dialog import ChangeCurrencyDialog, FavoriteCurrenciesDialog, HideCurrenciesDialog
+from currency_dialog import ChangeCurrencyDialog, FavoriteCurrenciesDialog
+from options_dialog import SettingsDialog
 import style
 
 from decimal import Decimal
@@ -70,7 +71,8 @@ PR_ERROR   = 4     # could not parse
 from chainkey import ELECTRUM_VERSION
 import re
 
-from util import MyTreeWidget, HelpButton, EnterButton, line_dialog, text_dialog, ok_cancel_buttons, close_button, WaitingDialog
+from style import MyTreeWidget, MyStyleDelegate
+from util import HelpButton, EnterButton, line_dialog, text_dialog, ok_cancel_buttons, close_button, WaitingDialog
 from util import filename_field, ok_cancel_buttons2, address_field
 from util import MONOSPACE_FONT
 
@@ -98,10 +100,22 @@ class StatusBarButton(QPushButton):
         if e.key() == QtCore.Qt.Key_Return:
             apply(self.func,())
 
+class StatusBarMenu(QToolButton):
+    def __init__(self, icon, tooltip, func, is_coin=False):
+        QToolButton.__init__(self)
+        dimension = 32 if is_coin else 25
+        self.setIcon(icon)
+        self.setToolTip(tooltip)
+        self.setMaximumWidth(60)
+        self.clicked.connect(func)
+        self.func = func
+        self.setIconSize(QSize(dimension+10,dimension))
+        # used if we need to keep track of what the menu is working with
+        self.menu_data = None
 
-
-
-
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Return:
+            apply(self.func,())
 
 
 
@@ -127,6 +141,7 @@ class ElectrumWindow(QMainWindow):
         self.lite = None
         if actuator is not None:
             self.actuator = actuator
+            qApp.actuator = actuator
         else:
             self.actuator = None
 
@@ -198,6 +213,7 @@ class ElectrumWindow(QMainWindow):
         self.qr_window = None
         self.not_enough_funds = False
         self.change_currency_window = None
+        self.need_restart = False
 
         self.setObjectName("main_window")
 
@@ -510,6 +526,10 @@ class ElectrumWindow(QMainWindow):
 #            return 'BTC'
         raise Exception('Unknown base unit')
 
+    def change_favorites(self):
+        FavoriteCurrenciesDialog(self).exec_()
+        self.update_status()
+
     def update_status(self):
         if not self.wallet:
             return
@@ -549,6 +569,22 @@ class ElectrumWindow(QMainWindow):
         self.balance_label.setText(text)
         self.status_button.setIcon( icon )
 
+        fav_chains = self.config.get_above_chain('favorite_chains', [])
+        if fav_chains != self.change_currency_button.menu_data:
+            self.change_currency_menu.clear()
+            if fav_chains:
+                for c in sorted(fav_chains):
+                    self.change_currency_menu.addAction(self.actuator.get_coin_icon(c), c, lambda signal_c=c: self.emit(QtCore.SIGNAL('change_currency'), signal_c))
+            if self.change_currency_menu.isEmpty():
+                self.change_currency_menu.addAction('Set favorites...', self.change_favorites)
+            self.change_currency_button.menu_data = fav_chains
+
+        # Disable action if it's the active chain
+        for a in self.change_currency_menu.actions():
+            if str(a.text()) == self.active_chain.code:
+                a.setEnabled(False)
+            else:
+                a.setEnabled(True)
 
     def update_wallet(self):
         self.update_status()
@@ -574,6 +610,7 @@ class ElectrumWindow(QMainWindow):
         l.itemChanged.connect(self.tx_label_changed)
         l.customContextMenuRequested.connect(self.create_history_menu)
         l.setObjectName("history_tab")
+        l.setItemDelegate(MyStyleDelegate(self, 'history'))
         return l
 
 
@@ -623,12 +660,9 @@ class ElectrumWindow(QMainWindow):
         tx = self.wallet.transactions.get(tx_hash)
         text = unicode( item.text(2) )
         self.wallet.set_label(tx_hash, text)
-        if text:
-            item.setForeground(2, self.actuator.get_brush('tx_label_col'))
-        else:
+        if not text:
             text = self.wallet.get_default_label(tx_hash)
             item.setText(2, text)
-            item.setForeground(2, self.actuator.get_brush('default_label_col'))
         self.is_edit=False
 
 
@@ -716,19 +750,9 @@ class ElectrumWindow(QMainWindow):
             item.setFont(2, QFont(MONOSPACE_FONT))
             item.setFont(3, QFont(MONOSPACE_FONT))
             item.setFont(4, QFont(MONOSPACE_FONT))
-            item.setForeground(1, self.actuator.get_brush('tx_date_col'))
-            item.setForeground(4, self.actuator.get_brush('balance_col'))
-            if value < 0:
-                item.setForeground(3, self.actuator.get_brush('negative_amount_col'))
-            else:
-                item.setForeground(3, self.actuator.get_brush('tx_amount_col'))
             if tx_hash:
                 item.setData(0, Qt.UserRole, tx_hash)
                 item.setToolTip(0, "%d %s\nTxId:%s" % (conf, _('Confirmations'), tx_hash) )
-            if is_default_label:
-                item.setForeground(2, self.actuator.get_brush('default_label_col'))
-            else:
-                item.setForeground(2, self.actuator.get_brush('tx_label_col'))
 
             item.setIcon(0, icon)
             self.history_list.insertTopLevelItem(0,item)
@@ -1386,6 +1410,7 @@ class ElectrumWindow(QMainWindow):
         l.currentItemChanged.connect(lambda a,b: self.current_item_changed(a))
         self.address_list = l
         w.setObjectName("addresses_tab")
+        l.setItemDelegate(MyStyleDelegate(self, 'addresses'))
         return w
 
 
@@ -1417,6 +1442,7 @@ class ElectrumWindow(QMainWindow):
         l.itemChanged.connect(lambda a,b: self.address_label_changed(a,b,l,0,1))
         self.contacts_list = l
         w.setObjectName("contacts_tab")
+        l.setItemDelegate(MyStyleDelegate(self, 'contacts'))
         return w
 
 
@@ -1432,6 +1458,7 @@ class ElectrumWindow(QMainWindow):
         l.customContextMenuRequested.connect(self.create_invoice_menu)
         self.invoices_list = l
         w.setObjectName("invoices_tab")
+        l.setItemDelegate(MyStyleDelegate(self, 'invoices'))
         return w
 
     def update_invoices_tab(self):
@@ -1447,8 +1474,6 @@ class ElectrumWindow(QMainWindow):
             item.setData(0, 32, key)
             item.setFont(0, QFont(MONOSPACE_FONT))
             item.setFont(3, QFont(MONOSPACE_FONT))
-            for i in range(l.columnCount()):
-                item.setForeground(i, self.actuator.get_brush('text_column'))
             l.addTopLevelItem(item)
         l.setCurrentItem(l.topLevelItem(0))
 
@@ -1677,7 +1702,6 @@ class ElectrumWindow(QMainWindow):
                 if len(sequences) > 1:
                     name = _("Receiving") if not is_change else _("Change")
                     seq_item = QTreeWidgetItem( [ name, '', '', '', ''] )
-                    seq_item.setForeground(0, self.actuator.get_brush('text_column'))
                     account_item.addChild(seq_item)
                     if not is_change:
                         seq_item.setExpanded(True)
@@ -1685,7 +1709,6 @@ class ElectrumWindow(QMainWindow):
                     seq_item = account_item
 
                 used_item = QTreeWidgetItem( [ _("Used"), '', '', '', ''] )
-                used_item.setForeground(0, self.actuator.get_brush('text_column'))
                 used_flag = False
 
                 addr_list = account.get_addresses(is_change)
@@ -1697,10 +1720,6 @@ class ElectrumWindow(QMainWindow):
                     item = QTreeWidgetItem( [ address, label, balance, "%d"%num] )
                     item.setFont(0, QFont(MONOSPACE_FONT))
                     item.setData(0, 32, True) # label can be edited
-                    item.setForeground(0, self.actuator.get_brush('address_col', self.actuator.get_brush('text_column')))
-                    item.setForeground(1, self.actuator.get_brush('tx_label_col'))
-                    item.setForeground(2, self.actuator.get_brush('balance_col'))
-                    item.setForeground(3, self.actuator.get_brush('address_txs_col', self.actuator.get_brush('text_column')))
                     if address in self.wallet.frozen_addresses:
                         item.setBackgroundColor(0, QColor('lightblue'))
                     if self.wallet.is_beyond_limit(address, account, is_change):
@@ -1725,9 +1744,6 @@ class ElectrumWindow(QMainWindow):
             label = self.wallet.labels.get(address,'')
             n = self.wallet.get_num_tx(address)
             item = QTreeWidgetItem( [ address, label, "%d"%n] )
-            item.setForeground(0, self.actuator.get_brush('address_col', self.actuator.get_brush('text_column')))
-            item.setForeground(1, self.actuator.get_brush('text_column'))
-            item.setForeground(2, self.actuator.get_brush('address_txs_col', self.actuator.get_brush('text_column')))
             item.setFont(0, QFont(MONOSPACE_FONT))
             # 32 = label can be edited (bool)
             item.setData(0,32, True)
@@ -1778,12 +1794,6 @@ class ElectrumWindow(QMainWindow):
         self.update_address_tab()
         self.update_receive_tab()
 
-    def get_coin_icon(self):
-        coin_icon_name = ''.join([ ":icons/coin_", self.active_chain.code.lower(), ".png" ])
-        if not QFile(coin_icon_name).exists():
-            coin_icon_name = ":icons/coin_btc.png"
-        return QIcon(coin_icon_name)
-
     def create_status_bar(self):
 
         sb = QStatusBar()
@@ -1814,7 +1824,17 @@ class ElectrumWindow(QMainWindow):
         self.status_button = StatusBarButton( self.actuator.get_icon("status_disconnected.png"), _("Network"), self.run_network_dialog )
         sb.addPermanentWidget( self.status_button )
 
-        self.change_currency_button = StatusBarButton( self.get_coin_icon(), _("Change Currency"), self.change_currency_dialog, is_coin=True)
+        self.change_currency_button = StatusBarMenu( self.actuator.get_coin_icon(self.active_chain.code), _("Change Currency"), self.change_currency_dialog, is_coin=True)
+        fav_chains = self.config.get_above_chain('favorite_chains', [])
+        self.change_currency_menu = QMenu()
+        self.change_currency_button.setMenu(self.change_currency_menu)
+        if fav_chains:
+            for c in sorted(fav_chains):
+                self.change_currency_menu.addAction(self.actuator.get_coin_icon(c), c, lambda signal_c=c: self.emit(QtCore.SIGNAL('change_currency'), signal_c))
+            self.change_currency_button.menu_data = fav_chains
+
+        if self.change_currency_menu.isEmpty():
+            self.change_currency_menu.addAction('Set favorites...', self.change_favorites)
         sb.insertPermanentWidget(1, self.change_currency_button )
 
         run_hook('create_status_bar', (sb,))
@@ -1822,7 +1842,7 @@ class ElectrumWindow(QMainWindow):
         self.setStatusBar(sb)
 
     def update_coin_icon(self):
-        icon = self.get_coin_icon()
+        icon = self.actuator.get_coin_icon(self.active_chain.code)
         self.change_currency_button.setIcon( icon )
 
     def update_lock_icon(self):
@@ -1872,16 +1892,17 @@ class ElectrumWindow(QMainWindow):
         self.network.switch_to_active_chain()
         time.sleep(0.5)
 
-        # network callbacks
-        if self.network:
-            self.network.register_callback('updated', lambda: self.need_update.set())
-            self.network.register_callback('banner', lambda: self.emit(QtCore.SIGNAL('banner_signal')))
-            self.network.register_callback('status', lambda: self.emit(QtCore.SIGNAL('update_status')))
-            self.network.register_callback('new_transaction', lambda: self.emit(QtCore.SIGNAL('transaction_signal')))
-            self.network.register_callback('stop', self.close)
+        def setup_network_callbacks():
+            if self.network:
+                self.network.register_callback('updated', lambda: self.need_update.set())
+                self.network.register_callback('banner', lambda: self.emit(QtCore.SIGNAL('banner_signal')))
+                self.network.register_callback('status', lambda: self.emit(QtCore.SIGNAL('update_status')))
+                self.network.register_callback('new_transaction', lambda: self.emit(QtCore.SIGNAL('transaction_signal')))
+                self.network.register_callback('stop', self.close)
+                # set initial message
+                self.console.showMessage(self.network.banner)
 
-            # set initial message
-            self.console.showMessage(self.network.banner)
+        setup_network_callbacks()
         print_error("Network switched to active chain: {}".format(chaincode))
 
         wallet_filepath = self.wallet.storage.path
@@ -1896,7 +1917,8 @@ class ElectrumWindow(QMainWindow):
                 print_error("Adding new currency failed due to incorrect password.")
                 self.config.set_active_chain_code(current_chain_code)
                 self.network.switch_to_active_chain()
-                time.sleep(1)
+                time.sleep(0.5)
+                setup_network_callbacks()
                 wallet = self.wallet
             wallet.start_threads(self.network)
         else:
@@ -2724,216 +2746,8 @@ class ElectrumWindow(QMainWindow):
 
 
     def settings_dialog(self):
-        self.need_restart = False
-        d = QDialog(self)
-        d.setWindowTitle(_('Encompass Settings'))
-        d.setModal(1)
-        vbox = QVBoxLayout()
-        grid = QGridLayout()
-        grid.setColumnStretch(0,1)
-        widgets = []
-
-        lang_label = QLabel(_('Language') + ':')
-        lang_help = HelpButton(_('Select which language is used in the GUI (after restart).'))
-        lang_combo = QComboBox()
-        from chainkey.i18n import languages
-        lang_combo.addItems(languages.values())
-        try:
-            index = languages.keys().index(self.config.get_above_chain("language",''))
-        except Exception:
-            index = 0
-        lang_combo.setCurrentIndex(index)
-        if not self.config.is_modifiable('language'):
-            for w in [lang_combo, lang_label]: w.setEnabled(False)
-        def on_lang(x):
-            lang_request = languages.keys()[lang_combo.currentIndex()]
-            if lang_request != self.config.get_above_chain('language'):
-                self.config.set_key_above_chain("language", lang_request, True)
-                self.need_restart = True
-        lang_combo.currentIndexChanged.connect(on_lang)
-        widgets.append((lang_label, lang_combo, lang_help))
-
-        current_theme = self.actuator.selected_theme()
-        theme_label = QLabel(_('Theme: ') + _(current_theme))
-        theme_button = QPushButton(_('Change Theme'))
-        theme_help = HelpButton(_('Themes change how Encompass looks.'))
-        def on_theme_button():
-            style.ThemeDialog(self).exec_()
-            current_theme = self.actuator.selected_theme()
-            theme_label.setText(_('Theme: ') + _(current_theme))
-        theme_button.clicked.connect(on_theme_button)
-        widgets.append((theme_label, theme_button, theme_help))
-
-        fav_chains_list = map(lambda x: x.encode('ascii', 'ignore'), self.config.get_above_chain('favorite_chains', []))
-        # Maximum of three favorite chains
-        if len(fav_chains_list) > 3:
-            fav_chains_list = fav_chains_list[:3]
-            self.config.set_key_above_chain('favorite_chains', fav_chains_list)
-        # Replace an empty list with the string 'None'
-        if not fav_chains_list: fav_chains_list = 'None'
-        fav_chains_list = str(fav_chains_list).replace("'", "")
-        favs_label = QLabel(_( 'Favorite coins:' + fav_chains_list ))
-        favs_button = QPushButton(_('Change Favorites'))
-        favs_help = HelpButton(_('Favorite coins appear before others in the currency selection window.'))
-        favs_button.clicked.connect(lambda: FavoriteCurrenciesDialog(self).exec_())
-        widgets.append((favs_label, favs_button, favs_help))
-
-        hidden_chains_list = self.config.get_above_chain('hide_chains', [])
-        hidden_chains_number = len(hidden_chains_list)
-        hiddens_label = QLabel(_('Hidden coins: ' + str(hidden_chains_number)))
-        hiddens_button = QPushButton(_('Change Hidden Coins'))
-        hiddens_help = HelpButton(_('Hidden coins do not appear in the currency selection window.'))
-        hiddens_button.clicked.connect(lambda: HideCurrenciesDialog(self).exec_())
-        widgets.append((hiddens_label, hiddens_button, hiddens_help))
-
-        nz_label = QLabel(_('Zeros after decimal point') + ':')
-        nz_help = HelpButton(_('Number of zeros displayed after the decimal point. For example, if this is set to 2, "1." will be displayed as "1.00"'))
-        nz = QSpinBox()
-        nz.setMinimum(0)
-        nz.setMaximum(self.decimal_point)
-        nz.setValue(self.num_zeros)
-        if not self.config.is_modifiable('num_zeros'):
-            for w in [nz, nz_label]: w.setEnabled(False)
-        def on_nz():
-            value = nz.value()
-            if self.num_zeros != value:
-                self.num_zeros = value
-                self.config.set_key('num_zeros', value, True)
-                self.update_history_tab()
-                self.update_address_tab()
-        nz.valueChanged.connect(on_nz)
-        widgets.append((nz_label, nz, nz_help))
-
-        fee_label = QLabel(_('Transaction fee per kb') + ':')
-        fee_help = HelpButton(_('Fee per kilobyte of transaction.') + '\n' \
-                              + _('Recommended value') + ': ' + self.format_amount(self.active_chain.RECOMMENDED_FEE) + ' ' + self.base_unit())
-        fee_e = BTCAmountEdit(self.get_decimal_point)
-        fee_e.setAmount(self.wallet.fee_per_kb)
-        if not self.config.is_modifiable('fee_per_kb'):
-            for w in [fee_e, fee_label]: w.setEnabled(False)
-        def on_fee():
-            fee = fee_e.get_amount()
-            self.wallet.set_fee(fee)
-        fee_e.editingFinished.connect(on_fee)
-        widgets.append((fee_label, fee_e, fee_help))
-
-        units = self.base_units.keys()
-        unit_label = QLabel(_('Base unit') + ':')
-        unit_combo = QComboBox()
-        unit_combo.addItems(units)
-        unit_combo.setCurrentIndex(units.index(self.base_unit()))
-        msg = _('Base unit of your wallet.')\
-              + '\n1BTC=1000mBTC.\n' \
-              + _(' These settings affects the fields in the Send tab')+' '
-        unit_help = HelpButton(msg)
-        def on_unit(x):
-            unit_result = units[unit_combo.currentIndex()]
-            if self.base_unit() == unit_result:
-                return
-            self.decimal_point = self.base_units[unit_result]
-#            if unit_result == 'BTC':
-#                self.decimal_point = 8
-#            elif unit_result == 'mBTC':
-#                self.decimal_point = 5
-#            elif unit_result == 'bits':
-#                self.decimal_point = 2
-#            else:
-#                raise Exception('Unknown base unit')
-            self.config.set_key('decimal_point', self.decimal_point, True)
-            self.update_history_tab()
-            self.update_receive_tab()
-            self.update_address_tab()
-            self.update_invoices_tab()
-            fee_e.setAmount(self.wallet.fee_per_kb)
-            self.update_status()
-        unit_combo.currentIndexChanged.connect(on_unit)
-        widgets.append((unit_label, unit_combo, unit_help))
-
-        block_explorers = self.block_explorers.keys()
-#        block_explorers = ['Blockchain.info', 'Blockr.io', 'Insight.is', "Blocktrail.com"]
-        block_ex_label = QLabel(_('Online Block Explorer') + ':')
-        block_ex_combo = QComboBox()
-        block_ex_combo.addItems(block_explorers)
-        block_ex_combo.setCurrentIndex(block_explorers.index(self.config.get('block_explorer', block_explorers[0])))
-        block_ex_help = HelpButton(_('Choose which online block explorer to use for functions that open a web browser'))
-        def on_be(x):
-            be_result = block_explorers[block_ex_combo.currentIndex()]
-            self.config.set_key('block_explorer', be_result, True)
-        block_ex_combo.currentIndexChanged.connect(on_be)
-        widgets.append((block_ex_label, block_ex_combo, block_ex_help))
-
-        from chainkey import qrscanner
-        system_cameras = qrscanner._find_system_cameras()
-        qr_combo = QComboBox()
-        qr_combo.addItem("Default","default")
-        for camera, device in system_cameras.items():
-            qr_combo.addItem(camera, device)
-        #combo.addItem("Manually specify a device", config.get("video_device"))
-        index = qr_combo.findData(self.config.get("video_device"))
-        qr_combo.setCurrentIndex(index)
-        qr_label = QLabel(_('Video Device') + ':')
-        qr_combo.setEnabled(qrscanner.zbar is not None)
-        qr_help = HelpButton(_("Install the zbar package to enable this.\nOn linux, type: 'apt-get install python-zbar'"))
-        on_video_device = lambda x: self.config.set_key("video_device", str(qr_combo.itemData(x).toString()), True)
-        qr_combo.currentIndexChanged.connect(on_video_device)
-        widgets.append((qr_label, qr_combo, qr_help))
-
-        usechange_cb = QCheckBox(_('Use change addresses'))
-        usechange_cb.setChecked(self.wallet.use_change)
-        usechange_help = HelpButton(_('Using change addresses makes it more difficult for other people to track your transactions.'))
-        if not self.config.is_modifiable('use_change'): usechange_cb.setEnabled(False)
-        def on_usechange(x):
-            usechange_result = x == Qt.Checked
-            if self.wallet.use_change != usechange_result:
-                self.wallet.use_change = usechange_result
-                self.wallet.storage.put('use_change', self.wallet.use_change)
-        usechange_cb.stateChanged.connect(on_usechange)
-        widgets.append((usechange_cb, None, usechange_help))
-
-        showtx_cb = QCheckBox(_('Show transaction before broadcast'))
-        showtx_cb.setChecked(self.config.get('show_before_broadcast', False))
-        showtx_cb.stateChanged.connect(lambda x: self.config.set_key('show_before_broadcast', showtx_cb.isChecked()))
-        showtx_help = HelpButton(_('Display the details of your transactions before broadcasting it.'))
-        widgets.append((showtx_cb, None, showtx_help))
-
-        can_edit_fees_cb = QCheckBox(_('Set transaction fees manually'))
-        can_edit_fees_cb.setChecked(self.config.get('can_edit_fees', False))
-        def on_editfees(x):
-            self.config.set_key('can_edit_fees', x == Qt.Checked)
-            self.update_fee_edit()
-        can_edit_fees_cb.stateChanged.connect(on_editfees)
-        can_edit_fees_help = HelpButton(_('This option lets you edit fees in the send tab.'))
-        widgets.append((can_edit_fees_cb, None, can_edit_fees_help))
-
-        verbose_currency_dialog = QCheckBox(_('Show verbose info in Change Currency window'))
-        verbose_currency_dialog.setChecked(self.config.get_above_chain('verbose_currency_dialog', False))
-        verbose_currency_dialog.stateChanged.connect(lambda x: self.config.set_key_above_chain('verbose_currency_dialog', verbose_currency_dialog.isChecked()))
-        verbose_currency_dialog_help = HelpButton(_('Show verbose information about currencies, such as the number of default servers.'))
-        widgets.append((verbose_currency_dialog, None, verbose_currency_dialog_help))
-
-        use_def_wallet_cb = QCheckBox(_('Open default_wallet on wallet start'))
-        use_def_wallet_cb.setChecked(self.config.get_above_chain('use_default_wallet', True))
-        use_def_wallet_cb.stateChanged.connect(lambda x: self.config.set_key_above_chain('use_default_wallet', use_def_wallet_cb.isChecked()))
-        use_def_wallet_help = HelpButton(_('Open default_wallet when Encompass starts. Otherwise, open the last wallet that was open.'))
-        widgets.append((use_def_wallet_cb, None, use_def_wallet_help))
-
-        for a,b,c in widgets:
-            i = grid.rowCount()
-            if b:
-                grid.addWidget(a, i, 0)
-                grid.addWidget(b, i, 1)
-            else:
-                grid.addWidget(a, i, 0, 1, 2)
-            grid.addWidget(c, i, 2)
-
-        vbox.addLayout(grid)
-        vbox.addStretch(1)
-        vbox.addLayout(close_button(d))
-        d.setLayout(vbox)
-
-        # run the dialog
+        d = SettingsDialog(self)
         d.exec_()
-
         run_hook('close_settings_dialog')
         if self.need_restart:
             QMessageBox.warning(self, _('Success'), _('Please restart Encompass to activate the new GUI settings'), _('OK'))

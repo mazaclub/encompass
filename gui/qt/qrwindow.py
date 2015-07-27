@@ -70,6 +70,7 @@ class QR_Window(QWidget):
 
         vbox.addStretch(1)
         self.setLayout(main_box)
+        self.setObjectName("qr_window")
 
 
     def set_content(self, address, amount, message, url):

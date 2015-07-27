@@ -34,6 +34,7 @@ DAEMON_SOCKET = 'daemon.sock'
 
 
 def do_start_daemon(config):
+    """Start a subprocess running this file."""
     import subprocess
     args = [sys.executable, __file__, config.path]
     logfile = open(os.path.join(config.path, 'daemon.log'),'w')
@@ -43,6 +44,10 @@ def do_start_daemon(config):
 
 
 def get_daemon(config, start_daemon):
+    """Get the daemon socket, optionally start the daemon if no socket exists.
+
+    If the socket.AF_UNIX address family is unavailable (e.g. on Windows),
+    the daemon cannot be used."""
     import socket
     daemon_socket = os.path.join(config.path, DAEMON_SOCKET)
     daemon_started = False
@@ -66,8 +71,19 @@ def get_daemon(config, start_daemon):
 
 
 class ClientThread(util.DaemonThread):
+    """Thread for a connection to the daemon.
+
+    In addition to sending/receiving requests to/from the server,
+    this also holds a set of subscriptions and uses a
+    Queue to hold responses to them."""
 
     def __init__(self, server, s):
+        """Create a new client connection.
+
+        Args:
+            server (NetworkServer): Server handling all connections.
+            s (socket): Socket for the daemon connection.
+        """
         util.DaemonThread.__init__(self)
         self.server = server
         self.client_pipe = util.SocketPipe(s)
@@ -76,6 +92,7 @@ class ClientThread(util.DaemonThread):
         self.subscriptions = set()
 
     def reading_thread(self):
+        """Read from the socket pipe and send requests to the server."""
         while self.is_running():
             try:
                 request = self.client_pipe.get()
@@ -100,6 +117,7 @@ class ClientThread(util.DaemonThread):
                 response = self.response_queue.get(timeout=0.1)
             except Queue.Empty:
                 continue
+            # send subscription response
             try:
                 self.client_pipe.send(response)
             except socket.error:
@@ -112,6 +130,11 @@ class ClientThread(util.DaemonThread):
 
 
 class NetworkServer(util.DaemonThread):
+    """Server that the daemon sends connections to.
+
+    Handles requests/responses to/from the Network
+    from ClientThreads. Also handles notifying
+    ClientThreads of responses to their subscriptions."""
 
     def __init__(self, config):
         util.DaemonThread.__init__(self)
@@ -123,6 +146,7 @@ class NetworkServer(util.DaemonThread):
         # each GUI is a client of the daemon
         self.clients = []
         self.request_id = 0
+        # dict of {request_id: client}
         self.requests = {}
 
     def add_client(self, client):
@@ -163,7 +187,8 @@ class NetworkServer(util.DaemonThread):
                 response['id'] = client_id
                 client.response_queue.put(response)
             else:
-                # notification
+                # responses with no id are notifications (e.g. to subscriptions)
+                # and are sent to whichever clients have the subscription.
                 m = response.get('method')
                 v = response.get('params')
                 for client in self.clients:
@@ -174,6 +199,7 @@ class NetworkServer(util.DaemonThread):
 
 
 def daemon_loop(server):
+    """Bind a socket and handle connections to server with it."""
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     daemon_socket = os.path.join(server.config.path, DAEMON_SOCKET)

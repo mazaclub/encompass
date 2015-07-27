@@ -7,6 +7,7 @@ from chainkey import chainparams
 from chainkey.util import print_error
 
 from util import HelpButton, ok_cancel_buttons, close_button
+from style import MyTreeWidget, MyStyleDelegate
 
 import functools
 import operator
@@ -95,7 +96,11 @@ class FavoriteCurrenciesDialog(CurrenciesCheckboxDialog):
         if len(self.favorites) > 3: self.favorites = self.favorites[:3]
 
         self.main_layout = vbox = QVBoxLayout()
-        limit_label = QLabel(_('Up to three coins may be selected as "favorites."\nThey will be listed before other coins in the currency selection dialog.'))
+        limit_label = QLabel(_('\n'.join([
+            'Up to three coins may be selected as "favorites."',
+            '\nHolding down the coin icon in the wallet status bar will show you your favorite coins and allow you to quickly switch between them.',
+            'They will also be listed before other coins in the currency selection dialog.'])))
+        limit_label.setWordWrap(True)
         vbox.addWidget(limit_label)
 
         for cbox in self.coin_checkboxes:
@@ -161,7 +166,7 @@ class ChangeCurrencyDialog(QDialog):
         self.setLayout(main_layout)
 
     def create_chains_view(self):
-        self.chains_view = chains_view = QTreeWidget()
+        self.chains_view = chains_view = MyTreeWidget(self)
         if self.verbose_view:
             chains_view.setColumnCount(6)
             chains_view.setHeaderLabels([ _('Code'), _('Currency'), _('Initialized'), _('Favorite'), _('PoW'), _('Servers') ])
@@ -180,6 +185,9 @@ class ChangeCurrencyDialog(QDialog):
             chains_view.setColumnWidth(2, 80)
             chains_view.setColumnWidth(3, 80)
             chains_view.setMinimumWidth(430)
+
+        role_name = 'chains_verbose' if self.verbose_view else 'chains'
+        chains_view.setItemDelegate(MyStyleDelegate(self, role_name))
 
     def refresh_chains(self):
         chains_view = self.chains_view
@@ -207,8 +215,6 @@ class ChangeCurrencyDialog(QDialog):
                 item = QTreeWidgetItem([ch.code, ch.coin_name, y_or_n(is_initialized), y_or_n(is_favorite), y_or_n(uses_pow), str(num_servers)])
             else:
                 item = QTreeWidgetItem([ch.code, ch.coin_name, y_or_n(is_initialized), y_or_n(is_favorite)])
-            for i in range(chains_view.columnCount()):
-                item.setForeground(i, self.parent.actuator.get_brush('text_column'))
             chains_view.addTopLevelItem(item)
         chains_view.setCurrentItem(chains_view.topLevelItem(0))
         # Sort by favorite chains, then by code
