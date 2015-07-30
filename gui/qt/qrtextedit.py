@@ -7,7 +7,7 @@ class QRTextEdit(QPlainTextEdit):
     def __init__(self, text=None):
         super(QRTextEdit, self).__init__(text)
         self.button = QToolButton(self)
-        self.button.setIcon(qApp.actuator.get_icon("qrcode.png"))
+        self.button.setIcon(QIcon(":icons/qrcode.png"))
         self.button.setStyleSheet("QToolButton { border: none; padding: 0px; }")
         self.button.setVisible(True)
         self.setText = self.setPlainText
