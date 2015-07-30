@@ -3,14 +3,20 @@
   color: red;
 }
 
-Item[role="label"]
+Item
 {
-  color: black;
+  color: #313739;
+  background: transparent;
 }
 
 Item[role="amount_negative"]
 {
   color: #BC1E1E;
+}
+
+Item[role="label"]
+{
+  color: black;
 }
 
 Item[role="label_default"]

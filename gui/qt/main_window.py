@@ -74,7 +74,6 @@ import re
 from style import MyTreeWidget, MyStyleDelegate
 from util import HelpButton, EnterButton, line_dialog, text_dialog, ok_cancel_buttons, close_button, WaitingDialog
 from util import filename_field, ok_cancel_buttons2, address_field
-from util import MONOSPACE_FONT
 
 def format_status(x):
     if x == PR_UNPAID:
@@ -518,12 +517,6 @@ class ElectrumWindow(QMainWindow):
         for k, v in self.base_units.iteritems():
             if v == self.decimal_point:
                 return k
-#        if self.decimal_point == 2:
-#            return 'bits'
-#        if self.decimal_point == 5:
-#            return 'mBTC'
-#        if self.decimal_point == 8:
-#            return 'BTC'
         raise Exception('Unknown base unit')
 
     def change_favorites(self):
@@ -619,14 +612,6 @@ class ElectrumWindow(QMainWindow):
         item = self.history_list.currentItem()
         be = self.config.get('block_explorer', self.block_explorers.keys()[0])
         block_explorer = self.block_explorers[be]
-#        if be == 'Blockchain.info':
-#            block_explorer = 'https://blockchain.info/tx/'
-#        elif be == 'Blockr.io':
-#            block_explorer = 'https://blockr.io/tx/info/'
-#        elif be == 'Insight.is':
-#            block_explorer = 'http://live.insight.is/tx/'
-#        elif be == "Blocktrail.com":
-#            block_explorer = 'https://www.blocktrail.com/tx/'
 
         if not item: return
         tx_hash = str(item.data(0, Qt.UserRole).toString())
@@ -747,9 +732,6 @@ class ElectrumWindow(QMainWindow):
                 is_default_label = False
 
             item = QTreeWidgetItem( [ '', time_str, label, v_str, balance_str] )
-            item.setFont(2, QFont(MONOSPACE_FONT))
-            item.setFont(3, QFont(MONOSPACE_FONT))
-            item.setFont(4, QFont(MONOSPACE_FONT))
             if tx_hash:
                 item.setData(0, Qt.UserRole, tx_hash)
                 item.setToolTip(0, "%d %s\nTxId:%s" % (conf, _('Confirmations'), tx_hash) )
@@ -805,6 +787,7 @@ class ElectrumWindow(QMainWindow):
         self.receive_list.itemClicked.connect(self.receive_item_changed)
         self.receive_list.setHeaderLabels( [_('Address'), _('Message'), _('Amount')] )
         self.receive_list.setColumnWidth(0, 340)
+        self.receive_list.setItemDelegate(MyStyleDelegate(self, 'receive'))
         h = self.receive_list.header()
         h.setStretchLastSection(False)
         h.setResizeMode(1, QHeaderView.Stretch)
@@ -910,7 +893,6 @@ class ElectrumWindow(QMainWindow):
         for address, v in self.receive_requests.items():
             amount, message = v
             item = QTreeWidgetItem( [ address, message, self.format_amount(amount) if amount else ""] )
-            item.setFont(0, QFont(MONOSPACE_FONT))
             self.receive_list.addTopLevelItem(item)
 
 
@@ -1472,8 +1454,6 @@ class ElectrumWindow(QMainWindow):
             date_str = datetime.datetime.fromtimestamp(expiration_date).isoformat(' ')[:-3]
             item = QTreeWidgetItem( [ domain, memo, date_str, self.format_amount(amount, whitespaces=True), format_status(status)] )
             item.setData(0, 32, key)
-            item.setFont(0, QFont(MONOSPACE_FONT))
-            item.setFont(3, QFont(MONOSPACE_FONT))
             l.addTopLevelItem(item)
         l.setCurrentItem(l.topLevelItem(0))
 
@@ -1718,7 +1698,6 @@ class ElectrumWindow(QMainWindow):
                     c, u = self.wallet.get_addr_balance(address)
                     balance = self.format_amount(c + u)
                     item = QTreeWidgetItem( [ address, label, balance, "%d"%num] )
-                    item.setFont(0, QFont(MONOSPACE_FONT))
                     item.setData(0, 32, True) # label can be edited
                     if address in self.wallet.frozen_addresses:
                         item.setBackgroundColor(0, QColor('lightblue'))
@@ -1744,7 +1723,6 @@ class ElectrumWindow(QMainWindow):
             label = self.wallet.labels.get(address,'')
             n = self.wallet.get_num_tx(address)
             item = QTreeWidgetItem( [ address, label, "%d"%n] )
-            item.setFont(0, QFont(MONOSPACE_FONT))
             # 32 = label can be edited (bool)
             item.setData(0,32, True)
             # 33 = payto string

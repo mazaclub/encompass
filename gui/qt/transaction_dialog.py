@@ -102,7 +102,7 @@ class TxDialog(QDialog):
         cancelButton.setDefault(True)
 
         b = QPushButton()
-        b.setIcon(QIcon(":icons/qrcode.png"))
+        b.setIcon(self.parent.actuator.get_icon('qrcode.png'))
         b.clicked.connect(self.show_qr)
         buttons.insertWidget(1,b)
 

@@ -1,3 +1,40 @@
+/* Buttons */
+
+QPushButton, QToolButton
+{
+  background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop: 0 #454545, stop: 1 #2c2c2c);
+  border: 1px solid #747474;
+  border-radius: 3px;
+  color: #4CD93F;
+}
+QPushButton
+{
+  padding: 4px 5px;
+}
+
+QPushButton:pressed, QToolButton:pressed
+{
+  background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop: 0 #2c2c2c, stop: 1 #454545);
+}
+QPushButton:default
+{
+  border-color: #6ae25e;
+}
+QPushButton:flat, QToolButton:flat
+{
+  border: none;
+  background-color: transparent;
+}
+
+QRTextEdit QToolButton
+{
+  background: none;
+}
+
+/* Displayed areas and widgets */
+
 QDialog, QStatusBar, #plugins_area, #chains_area,
 #main_window, #send_tab, #receive_tab, #console_tab,
 #qr_window
@@ -17,6 +54,53 @@ QTextEdit, QPlainTextEdit
   color: #4CD93F;
 }
 
+QLineEdit, QLabel, QRadioButton, QCheckBox, QSpinBox, QGroupBox, QListView
+{
+  color: #4CD93F;
+  background-color: #333;
+}
+
+QSpinBox
+{
+  selection-background-color: #279630;
+  selection-color: white;
+}
+
+QLineEdit
+{
+  border: 2px groove #184F12;
+  border-radius: 2px;
+  padding: 2px;
+}
+
+/* Mostly the same rules as for menus, but is defined separately due to weird bug. */
+QComboBox
+{
+  background-color: #393B39;
+  border: 1px solid #747474;
+  border-radius: 3px;
+  selection-background-color: #279630;
+  selection-color: white;
+  color: #4CD93F;
+  /* Weird bug: Label color won't change unless padding is set. */
+  padding: 1px 0px 1px 3px;
+}
+
+/* Collections */
+
+QGroupBox
+{
+  border: 1px solid #298A25;
+  border-radius: 6px;
+  margin-top: 20px;
+}
+
+QGroupBox::title
+{
+  subcontrol-position: top center;
+  subcontrol-origin: margin;
+}
+
 QTabWidget::pane
 {
   background-color: #333;
@@ -33,19 +117,6 @@ QTabBar::tab:selected
 {
   color: #4CD93F;
   background-color: #1D1F1D;
-}
-
-QLineEdit, QLabel, QRadioButton, QCheckBox, QSpinBox, QGroupBox, QListView
-{
-  color: #4CD93F;
-  background-color: #333;
-}
-
-QLineEdit
-{
-  border: 2px groove #184F12;
-  border-radius: 2px;
-  padding: 2px;
 }
 
 QHeaderView::section
@@ -67,24 +138,13 @@ QTreeView::item:selected, QTreeView::branch:selected, QListView::item:selected
   color: white;
 }
 
-QMenuBar, QMenuBar::item, QMenu
+
+QMenuBar, QMenuBar::item, QMenu, QComboBox
 {
   background-color: #393B39;
   selection-background-color: #279630;
   selection-color: white;
   color: #4CD93F;
-}
-
-QGroupBox
-{
-  border: 1px solid #298A25;
-  border-radius: 6px;
-  margin-top: 20px;
-}
-QGroupBox::title
-{
-  subcontrol-position: top center;
-  subcontrol-origin: margin;
 }
 
 
