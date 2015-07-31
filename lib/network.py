@@ -136,7 +136,6 @@ class Network(util.DaemonThread):
         if active_chain is None:
             active_chain = chainparams.get_active_chain()
         self.active_chain = active_chain
-        self.use_ssl = config.get('use_ssl', True)
 
         self.num_server = 8 if not self.config.get('oneserver') else 0
         self.blockchain = Blockchain(self.config, self, self.active_chain)
@@ -146,14 +145,7 @@ class Network(util.DaemonThread):
         # A deque of interface header requests, processed left-to-right
         self.bc_requests = deque()
         # Server for addresses and transactions
-        self.default_server = self.config.get('server')
-        # Sanitize default server
-        try:
-            deserialize_server(self.default_server)
-        except:
-            self.default_server = None
-        if not self.default_server:
-            self.default_server = pick_random_server(active_chain = self.active_chain, protocol = get_protocol_letter(self.use_ssl))
+        self.sanitize_default_server()
 
         self.irc_servers = {} # returned by interface (list from irc)
         self.recent_servers = self.read_recent_servers()
@@ -198,14 +190,7 @@ class Network(util.DaemonThread):
         self.blockchain = Blockchain(self.config, self, self.active_chain)
         self.queue = Queue.Queue()
 
-        self.default_server = self.config.get('server')
-        # Sanitize default server
-        try:
-            deserialize_server(self.default_server)
-        except:
-            self.default_server = None
-        if not self.default_server:
-            self.default_server = pick_random_server(active_chain = self.active_chain, protocol = get_protocol_letter(self.use_ssl))
+        self.sanitize_default_server()
 
         self.irc_servers = {} # returned by interface (list from irc)
         self.recent_servers = self.read_recent_servers()
@@ -229,6 +214,19 @@ class Network(util.DaemonThread):
         # Start the new network
         self.start_network(deserialize_server(self.default_server)[2],
                            deserialize_proxy(self.config.get('proxy')))
+
+    def sanitize_default_server(self):
+        """Load the default server from config."""
+        self.default_server = self.config.get('server')
+        self.use_ssl = self.config.get('use_ssl', True)
+
+        try:
+            deserialize_server(self.default_server)
+        except Exception:
+            self.default_server = None
+
+        if not self.default_server:
+            self.default_server = pick_random_server(active_chain=self.active_chain, protocol=get_protocol_letter(self.use_ssl))
 
     def read_recent_servers(self):
         return self.config.get('recent_servers', [])

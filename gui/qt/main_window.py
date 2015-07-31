@@ -241,6 +241,10 @@ class ElectrumWindow(QMainWindow):
 
     def load_wallet(self, wallet):
         import chainkey
+
+        if not wallet.synchronizer and not wallet.verifier:
+            wallet.start_threads(self.network)
+
         self.wallet = wallet
         self.active_chain = wallet.active_chain
         self.update_wallet_format()
@@ -310,7 +314,6 @@ class ElectrumWindow(QMainWindow):
         self.close_wallet()
         # load new wallet
         wallet = Wallet(storage)
-        wallet.start_threads(self.network)
         self.load_wallet(wallet)
 
 
@@ -1887,7 +1890,6 @@ class ElectrumWindow(QMainWindow):
         import installwizard
         current_chain_code = self.active_chain.code
         self.close_wallet()
-        time.sleep(0.3)
         self.config.set_active_chain_code(chaincode)
         self.network.switch_to_active_chain()
         time.sleep(0.5)
@@ -1920,9 +1922,6 @@ class ElectrumWindow(QMainWindow):
                 time.sleep(0.5)
                 setup_network_callbacks()
                 wallet = self.wallet
-            wallet.start_threads(self.network)
-        else:
-            wallet.start_threads(self.network)
 
         self.load_wallet(wallet)
 
