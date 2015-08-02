@@ -69,15 +69,17 @@ class Blockchain():
         if os.path.exists(filename):
             self.active_chain.set_headers_path(filename)
             return
-        try:
-            import urllib, socket
-            socket.setdefaulttimeout(30)
-            self.print_error("downloading ", self.headers_url )
-            urllib.urlretrieve(self.headers_url, filename)
-            self.print_error("done.")
-        except Exception:
-            self.print_error( "download failed. creating file", filename )
-            open(filename,'wb+').close()
+        # Bootstraps are temporarily disabled
+#        try:
+#            import urllib, socket
+#            socket.setdefaulttimeout(30)
+#            self.print_error("downloading ", self.headers_url )
+#            urllib.urlretrieve(self.headers_url, filename)
+#            self.print_error("done.")
+#        except Exception:
+#            self.print_error( "download failed. creating file", filename )
+#            open(filename,'wb+').close()
+        open(filename,'wb+').close()
         self.active_chain.set_headers_path(self.path())
 
     def save_chunk(self, index, chunk):
