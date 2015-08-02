@@ -1,4 +1,5 @@
 import time
+import threading
 import Queue
 import os
 import sys
@@ -142,6 +143,9 @@ class Network(util.DaemonThread):
         self.queue = Queue.Queue()
         self.requests_queue = pipe.send_queue
         self.response_queue = pipe.get_queue
+        # run() will block while this event is cleared
+        self.chain_switched = threading.Event()
+        self.chain_switched.set()
         # A deque of interface header requests, processed left-to-right
         self.bc_requests = deque()
         # Server for addresses and transactions
@@ -181,11 +185,13 @@ class Network(util.DaemonThread):
             chain = chainparams.get_active_chain()
         else:
             chain = chainparams.get_chain_instance(chaincode)
+        self.chain_switched.clear()
         self.active_chain = chain
         if self.config.get_active_chain_code() != self.active_chain.code:
             self.config.set_active_chain_code(self.active_chain.code)
         self.print_error('switching chains to {}'.format(chain.code))
         self.stop_network()
+        time.sleep(0.2)
         self.bc_requests.clear()
         self.blockchain = Blockchain(self.config, self, self.active_chain)
         self.queue = Queue.Queue()
@@ -214,6 +220,8 @@ class Network(util.DaemonThread):
         # Start the new network
         self.start_network(deserialize_server(self.default_server)[2],
                            deserialize_proxy(self.config.get('proxy')))
+        time.sleep(0.2)
+        self.chain_switched.set()
 
     def sanitize_default_server(self):
         """Load the default server from config."""
@@ -625,6 +633,8 @@ class Network(util.DaemonThread):
     def run(self):
         self.blockchain.init()
         while self.is_running():
+            # wait if we're switching chains
+            self.chain_switched.wait()
             self.check_interfaces()
             self.handle_requests()
             self.handle_bc_requests()
