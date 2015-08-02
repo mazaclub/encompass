@@ -146,6 +146,13 @@ def is_valid(addr, active_chain=None):
 
 
 def is_address(addr, active_chain=None):
+    """Determines whether addr is a valid address.
+
+    Args:
+        active_chain (CryptoCur): The chain that addr should be valid for.
+            Specifying this makes the function more strict. Not only must addr
+            be in a valid format, but it must have one of this chain's address versions.
+    """
     ADDRESS_RE = re.compile('[1-9A-HJ-NP-Za-km-z]{26,}\\Z')
     if not ADDRESS_RE.match(addr): return False
     try:
