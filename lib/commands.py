@@ -279,8 +279,10 @@ class Commands:
         return [self.wallet.get_private_key(address, self.password) for address in domain]
 
     @command('c')
-    def validateaddress(self, address):
+    def validateaddress(self, address, above_chain=False):
         """Check that the address is valid. """
+        if above_chain:
+            return is_valid(address)
         return is_valid(address, chainparams.get_active_chain())
 
     @command('cw')
@@ -654,7 +656,7 @@ command_options = {
     'memo':        ("-m", "--memo",        "Description of the request"),
     'expiration':  (None, "--expiration",  "Time in seconds"),
     'status':      (None, "--status",      "Show status"),
-    'above_chain': ("-A", "--above_chain", "Act above the active chain's section"),
+    'above_chain': ("-A", "--above_chain", "Act above the active chain's section/rules"),
 }
 
 arg_choices = {
