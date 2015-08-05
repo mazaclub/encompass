@@ -157,6 +157,7 @@ setup(
         'chainkey_gui.qt.qrtextedit',
         'chainkey_gui.qt.receiving_widget',
         'chainkey_gui.qt.seed_dialog',
+        'chainkey_gui.qt.send_edit',
         'chainkey_gui.qt.style',
         'chainkey_gui.qt.theme_icons_rc',
         'chainkey_gui.qt.installwizard',

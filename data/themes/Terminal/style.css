@@ -35,9 +35,14 @@ QRTextEdit QToolButton
 
 /* Displayed areas and widgets */
 
+QWidget[scrollArea=true]
+{
+  border: 1px solid #3CA832;
+}
+
 QDialog, QStatusBar, #plugins_area, #chains_area,
 #main_window, #send_tab, #receive_tab, #console_tab,
-#qr_window
+#qr_window, QWidget[scrollArea=true]
 {
   background-color: #333;
 }
