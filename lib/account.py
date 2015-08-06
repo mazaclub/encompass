@@ -99,6 +99,7 @@ class Account(object):
 
 class PendingAccount(Account):
     def __init__(self, v):
+        super(PendingAccount, self).__init__(v)
         self.pending_address = v['pending']
 
     def synchronize(self, wallet):
@@ -124,6 +125,7 @@ class PendingAccount(Account):
 
 class ImportedAccount(Account):
     def __init__(self, d):
+        super(ImportedAccount, self).__init__(d)
         self.keypairs = d['imported']
 
     def synchronize(self, wallet):
