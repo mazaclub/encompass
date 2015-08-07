@@ -375,12 +375,11 @@ class Transaction:
     def sweep(klass, privkeys, network, to_address, fee, active_chain=None):
         if active_chain is None:
             active_chain = chainparams.get_active_chain()
-        self.active_chain = active_chain
         inputs = []
         for privkey in privkeys:
-            pubkey = public_key_from_private_key(privkey, self.active_chain.wif_version)
+            pubkey = public_key_from_private_key(privkey, active_chain.wif_version)
             address = address_from_private_key(privkey,
-                self.active_chain.p2pkh_version, self.active_chain.wif_version)
+                active_chain.p2pkh_version, active_chain.wif_version)
             u = network.synchronous_get([ ('blockchain.address.listunspent',[address])])[0]
             pay_script = klass.pay_script('address', address)
             for item in u:
@@ -390,7 +389,7 @@ class Transaction:
                 item['prevout_hash'] = item['tx_hash']
                 item['prevout_n'] = item['tx_pos']
                 item['pubkeys'] = [pubkey]
-                item['x_pubkeys'] = [None]
+                item['x_pubkeys'] = [pubkey]
                 item['signatures'] = [None]
                 item['num_sig'] = 1
             inputs += u
@@ -400,7 +399,7 @@ class Transaction:
 
         total = sum( map(lambda x:int(x.get('value')), inputs) ) - fee
         outputs = [('address', to_address, total)]
-        self = klass(inputs, outputs)
+        self = klass(inputs, outputs, active_chain=active_chain)
         self.sign({ pubkey:privkey })
         return self
 
