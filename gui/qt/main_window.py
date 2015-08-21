@@ -147,7 +147,6 @@ class ElectrumWindow(QMainWindow):
 
         self.create_status_bar()
         self.need_update = threading.Event()
-        self.prompted_ssl = False
 
         self.load_base_units()
         self.decimal_point = config.get('decimal_point', 8)
@@ -288,6 +287,7 @@ class ElectrumWindow(QMainWindow):
         if use_default_wallet == False:
             self.config.set_key_above_chain('current_wallet', os.path.basename(self.wallet.storage.path))
         run_hook('load_wallet', wallet, self)
+        QTimer.singleShot(1000, self.prompt_no_ssl)
 
 
     def update_wallet_format(self):
@@ -538,7 +538,6 @@ class ElectrumWindow(QMainWindow):
         if not self.wallet:
             return
 
-        prompt_for_no_ssl = False
 
         if self.network is None or not self.network.is_running():
             text = ' - '.join([ self.active_chain.code, _("Offline") ])
@@ -571,7 +570,6 @@ class ElectrumWindow(QMainWindow):
         else:
             text = _("Not connected")
             icon = self.actuator.get_icon("status_disconnected.png")
-            prompt_for_no_ssl = True
 
         self.balance_label.setText(text)
         self.status_button.setIcon( icon )
@@ -593,14 +591,11 @@ class ElectrumWindow(QMainWindow):
             else:
                 a.setEnabled(True)
 
-        if prompt_for_no_ssl:
-            self.prompt_no_ssl()
 
     def prompt_no_ssl(self):
         """Prompt to allow non-SSL connections."""
-        if self.prompted_ssl:
+        if self.balance_label.text() != _("Not connected"):
             return
-        self.prompted_ssl = True
 
         host, port, protocol, proxy, auto_connect = self.network.get_parameters()
         if protocol == 't':
