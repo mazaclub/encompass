@@ -936,7 +936,6 @@ class ElectrumWindow(QMainWindow):
         from paytoedit import PayToEdit
         self.send_e = SendEdit(self)
 
-        # TODO find a place for this
         self.payto_help = self.send_e.payto_help
 
         self.message_e = MyLineEdit()
@@ -962,7 +961,6 @@ class ElectrumWindow(QMainWindow):
 
         row += 1
 
-        # TODO find a place for this
         self.amount_help = self.send_e.amount_help
 
         # Number of payouts selector
@@ -1026,7 +1024,6 @@ class ElectrumWindow(QMainWindow):
         self.send_e.shortcut.connect(on_shortcut)
 
         def text_edited(is_fee):
-            # TODO outputs and amount, two separate lines, necessary?
             outputs = self.send_e.get_outputs()
             amount = self.send_e.active_paytoedit.getAmount()
             amount_sum = self.send_e.get_amount_sum()
@@ -1153,13 +1150,6 @@ class ElectrumWindow(QMainWindow):
         if fee is None:
             QMessageBox.warning(self, _('Error'), _('Invalid Fee'), _('OK'))
             return
-
-        amount = sum(map(lambda x:x[2], outputs))
-        confirm_amount = self.config.get('confirm_amount', 100000000)
-        if amount >= confirm_amount:
-            o = '\n'.join(map(lambda x:x[1], outputs))
-            if not self.question(_("send %(amount)s to %(address)s?")%{ 'amount' : self.format_amount(amount) + ' '+ self.base_unit(), 'address' : o}):
-                return
 
         coins = self.get_coins()
         return outputs, fee, label, coins
