@@ -38,7 +38,7 @@ import icons_rc
 from chainkey.util import format_satoshis
 from chainkey import Transaction
 from chainkey import mnemonic
-from chainkey import util, bitcoin, base58, commands, Interface, Wallet
+from chainkey import util, bitcoin, eckey, base58, commands, Interface, Wallet
 from chainkey import SimpleConfig, Wallet, WalletStorage
 from chainkey import Imported_Wallet
 import chainkey.chainparams
@@ -2129,7 +2129,7 @@ class ElectrumWindow(QMainWindow):
     def do_verify(self, address, message, signature):
         message = unicode(message.toPlainText())
         message = message.encode('utf-8')
-        if bitcoin.verify_message(address.text(), str(signature.toPlainText()), message):
+        if eckey.verify_message(address.text(), str(signature.toPlainText()), message):
             self.show_message(_("Signature verified"))
         else:
             self.show_message(_("Error: wrong signature"))
@@ -2189,7 +2189,7 @@ class ElectrumWindow(QMainWindow):
         message = unicode(message_e.toPlainText())
         message = message.encode('utf-8')
         try:
-            encrypted = bitcoin.encrypt_message(message, str(pubkey_e.text()))
+            encrypted = eckey.encrypt_message(message, str(pubkey_e.text()))
             encrypted_e.setText(encrypted)
         except BaseException as e:
             traceback.print_exc(file=sys.stdout)

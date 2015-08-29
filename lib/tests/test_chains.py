@@ -4,7 +4,7 @@ import sys
 import unittest
 
 from StringIO import StringIO
-from lib import bitcoin
+from lib import bitcoin, eckey
 from lib.bitcoin import bip32_root, bip32_private_derivation
 from lib.wallet import WalletStorage, NewWallet
 from lib import chainparams
@@ -167,13 +167,13 @@ class TestNewWallet(WalletTestCase):
             self.wallet.get_master_private_key("x/", new_password) )
 
 
-class ChainsBase58Test(unittest.TestCase):
+class ChainsTest(unittest.TestCase):
 
     def setUp(self):
-        super(ChainsBase58Test, self).setUp()
+        super(ChainsTest, self).setUp()
         chainparams.set_active_chain('BTC')
 
-class TestChainsBase58(ChainsBase58Test):
+class TestChainsBase58(ChainsTest):
 
     def setUp(self):
         super(TestChainsBase58, self).setUp()
@@ -195,4 +195,43 @@ class TestChainsBase58(ChainsBase58Test):
 
         addr = bitcoin.address_from_private_key(wif, addrtype = active_chain.p2pkh_version, wif_version = active_chain.wif_version)
         self.assertEqual('MC3JocFZncr3eL2yDuH5zDnb9is5GUzUJv', addr)
+
+class TestChainsMessages(ChainsTest):
+
+    def test_verify_message(self):
+        message = 'This is a signed message for purposes of unit testing.'
+        ## BTC ##
+        addr = '12maWtqajNngu3XGZahMQKMb6RnqZtMtqk'
+        sig = 'IGWi8NPeeGRbfm0FncBIp9gRRQbAnuJS9bSGNjRn7puppjV41LDinIehcJ4ZyYxWbFYmLNDN1whLHmtt3eAjpnU='
+
+        is_ok = eckey.verify_message(addr, sig, message)
+        self.assertTrue(is_ok, "Bitcoin verification failed")
+
+        ## MZC ##
+        chainparams.set_active_chain("MZC")
+
+        addr = 'MN46FX5bBJbJNuHA7kJb7b8xEekumLkis7'
+        sig = 'H/s+ZhZq+0ZrkQEOxmdAopGC62/gNV7/+fFHuJ2znTn6WdQdkvTIM95ic9A5/Hw80uV1DU7bhjsqus9JMt12gFw='
+
+        is_ok = eckey.verify_message(addr, sig, message)
+        self.assertTrue(is_ok, "Mazacoin verification failed")
+
+    def test_sign_message(self):
+        message = 'This is a signed message for purposes of unit testing.'
+        ## BTC ##
+        wif = 'L2Wn6DJDuviQJbEPQcLX7RLSSjyapHkT5je9S68hHoKudwRHqJst'
+        addr = '12maWtqajNngu3XGZahMQKMb6RnqZtMtqk'
+
+        actual_sig = 'IGWi8NPeeGRbfm0FncBIp9gRRQbAnuJS9bSGNjRn7puppjV41LDinIehcJ4ZyYxWbFYmLNDN1whLHmtt3eAjpnU='
+        key = eckey.regenerate_key(wif, addrtype = chainparams.get_active_chain().wif_version )
+        self.assertEqual(actual_sig, key.sign_message(message, True, addr), "Bitcoin signature is invalid")
+
+        ## LTC ##
+        chainparams.set_active_chain("LTC")
+        wif = '6urdDh4wMR1QujsVoMa45fjY84hVzqGL1xN9zFBsmgHk9yhYcKC'
+        addr = 'LPynMR5snDixkd8eGSiZ7Ryo81QzVkmLhs'
+
+        actual_sig = 'HPUPXr058K/zHoKOAf8qV+LntcpzhiZlwFdY2JLs2SH+jQutKchuadkXwehMOIqkygrVtta+E3wNZi+uZ3+d5F0='
+        key = eckey.regenerate_key(wif, addrtype = chainparams.get_active_chain().wif_version )
+        self.assertEqual(actual_sig, key.sign_message(message, False, addr), "Litecoin signature is invalid")
 

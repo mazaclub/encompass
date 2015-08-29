@@ -13,8 +13,11 @@ try:
 except ImportError:
     sys.exit("Error: AES does not seem to be installed. Try 'sudo pip install slowaes'")
 
+from util import print_error
 from util_coin import var_int, Hash
-from base58 import public_key_to_bc_address
+import base58
+from base58 import bc_address_to_hash_160, public_key_to_bc_address
+import chainparams
 
 # AES encryption
 EncodeAES = lambda secret, s: base64.b64encode(aes.encryptData(secret,s))
@@ -76,6 +79,29 @@ def pw_decode(s, password):
 
 
 ################# code from pywallet ######################
+def regenerate_key(sec, addrtype=128):
+    """Gets the EC Key represented by a WIF key."""
+    b = base58.ASecretToSecret(sec, addrtype)
+    if not b:
+        return False
+    b = b[0:32]
+    return EC_KEY(b)
+
+def public_key_from_private_key(sec, addrtype=128):
+    """Gets the public key of a WIF private key."""
+    # rebuild public key from private key, compressed or uncompressed
+    pkey = regenerate_key(sec, addrtype)
+    assert pkey
+    compressed = base58.is_compressed(sec, addrtype)
+    public_key = GetPubKey(pkey.pubkey, compressed)
+    return public_key.encode('hex')
+
+def address_from_private_key(sec, addrtype=0, wif_version=128):
+    """Gets the address for a WIF private key."""
+    public_key = public_key_from_private_key(sec, wif_version)
+    address = public_key_to_bc_address(public_key.decode('hex'), addrtype)
+    return address
+
 # pywallet openssl private key implementation
 
 def i2d_ECPrivateKey(pkey, compressed=False):
@@ -167,10 +193,16 @@ except Exception:
     exit()
 
 
-def msg_magic(message):
+def msg_magic(message, active_chain=None):
+    if active_chain is None:
+        active_chain = chainparams.get_active_chain()
     varint = var_int(len(message))
     encoded_varint = "".join([chr(int(varint[i:i+2], 16)) for i in xrange(0, len(varint), 2)])
-    return "\x18Bitcoin Signed Message:\n" + encoded_varint + message
+
+    # Put number of bytes before magic bytes
+    coin_msg_line = "".join([ active_chain.coin_name, " Signed Message:\n" ])
+    coin_msg_line = "".join([ hex(len(coin_msg_line))[2:].decode('hex'), coin_msg_line ])
+    return coin_msg_line + encoded_varint + message
 
 
 def verify_message(address, signature, message):
@@ -253,11 +285,12 @@ class MyVerifyingKey(ecdsa.VerifyingKey):
         return klass.from_public_point( Q, curve )
 
 class EC_KEY(object):
-    def __init__( self, k ):
+    def __init__( self, k, active_chain=None ):
         secret = string_to_number(k)
         self.pubkey = ecdsa.ecdsa.Public_key( generator_secp256k1, generator_secp256k1 * secret )
         self.privkey = ecdsa.ecdsa.Private_key( self.pubkey, secret )
         self.secret = secret
+        self.active_chain = active_chain
 
     def get_public_key(self, compressed=True):
         return point_to_ser(self.pubkey.point, compressed).encode('hex')
@@ -265,8 +298,8 @@ class EC_KEY(object):
     def sign_message(self, message, compressed, address):
         private_key = ecdsa.SigningKey.from_secret_exponent( self.secret, curve = SECP256k1 )
         public_key = private_key.get_verifying_key()
-        signature = private_key.sign_digest_deterministic( Hash( msg_magic(message) ), hashfunc=hashlib.sha256, sigencode = ecdsa.util.sigencode_string )
-        assert public_key.verify_digest( signature, Hash( msg_magic(message) ), sigdecode = ecdsa.util.sigdecode_string)
+        signature = private_key.sign_digest_deterministic( Hash( msg_magic(message, self.active_chain) ), hashfunc=hashlib.sha256, sigencode = ecdsa.util.sigencode_string )
+        assert public_key.verify_digest( signature, Hash( msg_magic(message, self.active_chain) ), sigdecode = ecdsa.util.sigdecode_string)
         for i in range(4):
             sig = base64.b64encode( chr(27 + i + (4 if compressed else 0)) + signature )
             try:
@@ -278,7 +311,9 @@ class EC_KEY(object):
             raise Exception("error: cannot sign message")
 
     @classmethod
-    def verify_message(self, address, signature, message):
+    def verify_message(self, address, signature, message, active_chain=None):
+        if getattr(self, 'active_chain', None) is not None:
+            active_chain = getattr(self, 'active_chain')
         sig = base64.b64decode(signature)
         if len(sig) != 65: raise Exception("Wrong encoding")
 
@@ -292,14 +327,15 @@ class EC_KEY(object):
             compressed = False
 
         recid = nV - 27
-        h = Hash( msg_magic(message) )
+        h = Hash( msg_magic(message, active_chain) )
         public_key = MyVerifyingKey.from_signature( sig[1:], recid, h, curve = SECP256k1 )
 
         # check public key
         public_key.verify_digest( sig[1:], h, sigdecode = ecdsa.util.sigdecode_string)
 
         # check that we get the original signing address
-        addr = public_key_to_bc_address( point_to_ser(public_key.pubkey.point, compressed) )
+        addrtype = bc_address_to_hash_160(address)[0]
+        addr = public_key_to_bc_address( point_to_ser(public_key.pubkey.point, compressed), addrtype )
         if address != addr:
             raise Exception("Bad signature")
 
