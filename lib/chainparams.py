@@ -72,6 +72,7 @@ def set_active_chain(chaincode):
     global active_chain
     active_chain = get_chain_instance(chaincode)
     hashes.set_base58_hash(active_chain.base58_hash)
+    hashes.set_merkle_hash(active_chain.merkle_hash)
     hashes.set_transaction_hash(active_chain.transaction_hash)
 
 def is_known_chain(code):

@@ -3,7 +3,7 @@ from decimal import Decimal
 _ = lambda x:x
 #from i18n import _
 from chainkey.util import format_satoshis, set_verbosity
-from chainkey.bitcoin import is_valid
+from chainkey.base58 import is_valid
 
 from chainkey import Wallet, WalletStorage
 

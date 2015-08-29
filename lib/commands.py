@@ -28,7 +28,8 @@ from functools import wraps
 import util
 from util import print_msg, format_satoshis, print_stderr
 from util_coin import COIN
-from bitcoin import is_valid, hash_160_to_bc_address, hash_160
+import base58
+from base58 import is_valid, hash_160_to_bc_address, hash_160
 from decimal import Decimal
 import bitcoin
 import script
@@ -422,7 +423,7 @@ class Commands:
             csvReader = csv.reader(csvfile, delimiter=',')
             for row in csvReader:
                 address, amount = row
-                assert bitcoin.is_address(address)
+                assert base58.is_address(address)
                 amount = Decimal(amount)
                 outputs.append((address, amount))
         return outputs

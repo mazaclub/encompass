@@ -22,8 +22,9 @@
 
 import bitcoin
 from bitcoin import *
+from base58 import public_key_to_bc_address, hash_160_to_bc_address, bc_address_to_hash_160, hash_160
 from util import print_error
-from util_coin import var_int, int_to_hex, op_push
+from util_coin import var_int, int_to_hex, op_push, hash_encode
 from script import *
 import time
 import chainparams

@@ -14,7 +14,7 @@ except ImportError:
 
 from decimal import Decimal as D
 from chainkey.util import get_resource_path as rsrc
-from chainkey.bitcoin import is_valid
+from chainkey.base58 import is_valid
 from chainkey.i18n import _
 import decimal
 import json

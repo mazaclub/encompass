@@ -25,7 +25,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GObject, cairo
 from decimal import Decimal
 from chainkey.util import print_error
-from chainkey.bitcoin import is_valid
+from chainkey.base58 import is_valid
 from chainkey import WalletStorage, Wallet
 
 Gdk.threads_init()

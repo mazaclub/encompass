@@ -23,7 +23,7 @@ from __future__ import absolute_import
 import android
 
 from chainkey import SimpleConfig, Wallet, WalletStorage, format_satoshis, mnemonic_encode, mnemonic_decode
-from chainkey.bitcoin import is_valid
+from chainkey.base58 import is_valid
 from chainkey import util
 from decimal import Decimal
 import datetime, re

@@ -4,7 +4,9 @@ import sys
 import unittest
 
 from StringIO import StringIO
-from lib.bitcoin import bip32_root, bip32_private_derivation, bip32_public_derivation, xpub_from_xprv, deserialize_xkey, hash_160, hash_160_to_bc_address, int_to_hex, DecodeBase58Check
+from lib.bitcoin import bip32_root, bip32_private_derivation, bip32_public_derivation, xpub_from_xprv, deserialize_xkey
+from lib.util_coin import int_to_hex
+from lib.base58 import DecodeBase58Check, hash_160, hash_160_to_bc_address
 from lib.account import BIP32_Account
 from lib.wallet import WalletStorage, Wallet_2of2, Wallet_MofN
 from lib import chainparams

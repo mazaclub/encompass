@@ -34,6 +34,7 @@ from bitcoin import *
 from eckey import pw_encode, pw_decode
 from account import *
 from version import *
+import base58
 
 from transaction import Transaction
 from plugins import run_hook
@@ -1961,7 +1962,7 @@ class Wallet(object):
         if not text:
             return False
         for x in text.split():
-            if not bitcoin.is_address(x):
+            if not base58.is_address(x):
                 return False
         return True
 
@@ -1970,7 +1971,7 @@ class Wallet(object):
         if not text:
             return False
         for x in text.split():
-            if not bitcoin.is_private_key(x, chainparams.get_active_chain().wif_version):
+            if not base58.is_private_key(x, chainparams.get_active_chain().wif_version):
                 return False
         return True
 

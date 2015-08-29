@@ -5,6 +5,8 @@ import threading
 from datetime import datetime
 is_verbose = False
 
+import base58
+
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
         from transaction import Transaction
@@ -198,7 +200,6 @@ def age(from_date, since_date = None, target_tz=None, include_seconds=False):
 
 def parse_URI(uri, active_chain=None):
     import urlparse
-    import bitcoin
     from decimal import Decimal
     import chainparams
 
@@ -206,7 +207,7 @@ def parse_URI(uri, active_chain=None):
         active_chain = chainparams.get_active_chain()
 
     if ':' not in uri:
-        assert bitcoin.is_address(uri, active_chain)
+        assert base58.is_address(uri, active_chain)
         return uri, None, None, None, None
 
     uri_scheme = active_chain.coin_name.lower()
@@ -214,7 +215,7 @@ def parse_URI(uri, active_chain=None):
     assert u.scheme == uri_scheme
 
     address = u.path
-    valid_address = bitcoin.is_address(address, active_chain)
+    valid_address = base58.is_address(address, active_chain)
 
     pq = urlparse.parse_qs(u.query)
 
@@ -423,7 +424,6 @@ class StoreDict(dict):
             self.save()
 
 
-import bitcoin
 from plugins import run_hook
 
 class Contacts(StoreDict):
@@ -432,7 +432,7 @@ class Contacts(StoreDict):
         StoreDict.__init__(self, config, 'contacts')
 
     def resolve(self, k, nocheck=False):
-        if bitcoin.is_address(k):
+        if base58.is_address(k):
             return {'address':k, 'type':'address'}
         if k in self.keys():
             _type, addr = self[k]

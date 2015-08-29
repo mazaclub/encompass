@@ -1,7 +1,7 @@
 import unittest
 import coinhash
 
-from lib.bitcoin import rev_hex
+from lib.util_coin import rev_hex
 
 class Test_hashes(unittest.TestCase):
 

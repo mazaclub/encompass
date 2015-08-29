@@ -57,35 +57,6 @@ def get_max_n(m):
         n -= 1
     return n
 
-
-def rev_hex(s):
-    """Deprecated."""
-    return util_coin.rev_hex(s)
-
-def int_to_hex(i, length=1):
-    """Deprecated."""
-    return util_coin.int_to_hex(i, length)
-
-def op_push(i):
-    """Deprecated."""
-    return util_coin.op_push(i)
-
-def sha256(x):
-    """Deprecated."""
-    return util_coin.sha256(x)
-
-def Hash(x):
-    """Deprecated."""
-    return util_coin.Hash(x)
-
-def hash_encode(x):
-    """Deprecated."""
-    return util_coin.hash_encode(x)
-
-def hash_decode(x):
-    """Deprecated."""
-    return util_coin.hash_decode(x)
-
 hmac_sha_512 = lambda x,y: hmac.new(x, y, hashlib.sha512).digest()
 
 def is_new_seed(x, prefix=version.SEED_BIP44):
@@ -115,89 +86,29 @@ def is_old_seed(seed):
 
 ############ functions from pywallet #####################
 
-def hash_160(public_key):
-    """Deprecated."""
-    return base58.hash_160(public_key)
-
-def public_key_to_bc_address(public_key, addrtype=0):
-    """Deprecated."""
-    return base58.public_key_to_bc_address(public_key, addrtype)
-
-def hash_160_to_bc_address(h160, addrtype = 0):
-    """Deprecated."""
-    return base58.hash_160_to_bc_address(h160, addrtype)
-
-def bc_address_to_hash_160(addr):
-    """Deprecated."""
-    return base58.bc_address_to_hash_160(addr)
-
-def b58encode(v):
-    """Deprecated."""
-    return base58.b58encode(v)
-
-def b58decode(v, length):
-    """Deprecated."""
-    return base58.b58decode(v)
-
-def EncodeBase58Check(vchIn):
-    """Deprecated."""
-    return base58.EncodeBase58Check(vchIn)
-
-def DecodeBase58Check(psz):
-    """Deprecated."""
-    return base58.DecodeBase58Check(psz)
-
-def SecretToASecret(secret, compressed=False, addrtype=128):
-    """Deprecated."""
-    return base58.SecretToASecret(secret, compressed, addrtype)
-
-def ASecretToSecret(key, addrtype=128):
-    """Deprecated."""
-    return base58.ASecretToSecret(key, addrtype)
-
 def regenerate_key(sec, addrtype=128):
-    b = ASecretToSecret(sec, addrtype)
+    b = base58.ASecretToSecret(sec, addrtype)
     if not b:
         return False
     b = b[0:32]
     return EC_KEY(b)
-
-def is_compressed(sec, addrtype=128):
-    """Deprecated."""
-    return base58.is_compressed(sec, addrtype)
 
 def public_key_from_private_key(sec, addrtype=128):
     """Gets the public key of a WIF private key."""
     # rebuild public key from private key, compressed or uncompressed
     pkey = regenerate_key(sec, addrtype)
     assert pkey
-    compressed = is_compressed(sec, addrtype)
+    compressed = base58.is_compressed(sec, addrtype)
     public_key = GetPubKey(pkey.pubkey, compressed)
     return public_key.encode('hex')
 
 def address_from_private_key(sec, addrtype=0, wif_version=128):
     """Gets the address for a WIF private key."""
     public_key = public_key_from_private_key(sec, wif_version)
-    address = public_key_to_bc_address(public_key.decode('hex'), addrtype)
+    address = base58.public_key_to_bc_address(public_key.decode('hex'), addrtype)
     return address
 
-def is_valid(addr, active_chain=None):
-    """Deprecated."""
-    return base58.is_valid(addr, active_chain)
-
-def is_address(addr, active_chain=None):
-    """Deprecated."""
-    return base58.is_address(addr, active_chain)
-
-def is_private_key(key, addrtype=128):
-    """Deprecated."""
-    return base58.is_private_key(key, addrtype)
-
-
 ########### end pywallet functions #######################
-def get_pubkeys_from_secret(secret):
-    """Deprecated."""
-    return eckey.get_pubkeys_from_secret(secret)
 
 ###################################### BIP32 ##############################
 
@@ -279,7 +190,7 @@ def deserialize_xkey(xkey):
 
     """
 
-    xkey = DecodeBase58Check(xkey)
+    xkey = base58.DecodeBase58Check(xkey)
     assert len(xkey) == 78
 
     xkey_header = xkey[0:4].encode('hex')
@@ -320,10 +231,10 @@ def get_xkey_name(xkey, testnet=False):
 
 def xpub_from_xprv(xprv, testnet=False):
     depth, fingerprint, child_number, c, k = deserialize_xkey(xprv)
-    K, cK = get_pubkeys_from_secret(k)
+    K, cK = eckey.get_pubkeys_from_secret(k)
     header_pub, _  = _get_headers(testnet)
     xpub = header_pub.decode('hex') + chr(depth) + fingerprint + child_number + c + cK
-    return EncodeBase58Check(xpub)
+    return base58.EncodeBase58Check(xpub)
 
 
 def bip32_root(seed, testnet=False):
@@ -333,10 +244,10 @@ def bip32_root(seed, testnet=False):
     I = hmac.new("Bitcoin seed", seed, hashlib.sha512).digest()
     master_k = I[0:32]
     master_c = I[32:]
-    K, cK = get_pubkeys_from_secret(master_k)
+    K, cK = eckey.get_pubkeys_from_secret(master_k)
     xprv = (header_priv + "00" + "00000000" + "00000000").decode("hex") + master_c + chr(0) + master_k
     xpub = (header_pub + "00" + "00000000" + "00000000").decode("hex") + master_c + cK
-    return EncodeBase58Check(xprv), EncodeBase58Check(xpub)
+    return base58.EncodeBase58Check(xprv), base58.EncodeBase58Check(xpub)
 
 
 def bip32_private_derivation(xprv, branch, sequence, testnet=False):
@@ -364,13 +275,13 @@ def bip32_private_derivation(xprv, branch, sequence, testnet=False):
         k, c = CKD_priv(k, c, i)
         depth += 1
 
-    _, parent_cK = get_pubkeys_from_secret(parent_k)
-    fingerprint = hash_160(parent_cK)[0:4]
+    _, parent_cK = eckey.get_pubkeys_from_secret(parent_k)
+    fingerprint = base58.hash_160(parent_cK)[0:4]
     child_number = ("%08X"%i).decode('hex')
-    K, cK = get_pubkeys_from_secret(k)
+    K, cK = eckey.get_pubkeys_from_secret(k)
     xprv = header_priv.decode('hex') + chr(depth) + fingerprint + child_number + c + chr(0) + k
     xpub = header_pub.decode('hex') + chr(depth) + fingerprint + child_number + c + cK
-    return EncodeBase58Check(xprv), EncodeBase58Check(xpub)
+    return base58.EncodeBase58Check(xprv), base58.EncodeBase58Check(xpub)
 
 
 def bip32_public_derivation(xpub, branch, sequence, testnet=False):
@@ -398,10 +309,10 @@ def bip32_public_derivation(xpub, branch, sequence, testnet=False):
         cK, c = CKD_pub(cK, c, i)
         depth += 1
 
-    fingerprint = hash_160(parent_cK)[0:4]
+    fingerprint = base58.hash_160(parent_cK)[0:4]
     child_number = ("%08X"%i).decode('hex')
     xpub = header_pub.decode('hex') + chr(depth) + fingerprint + child_number + c + cK
-    return EncodeBase58Check(xpub)
+    return base58.EncodeBase58Check(xpub)
 
 
 def bip32_private_key(sequence, k, chain, addrtype=128):
@@ -419,4 +330,4 @@ def bip32_private_key(sequence, k, chain, addrtype=128):
     """
     for i in sequence:
         k, chain = CKD_priv(k, chain, i)
-    return SecretToASecret(k, True, addrtype)
+    return base58.SecretToASecret(k, True, addrtype)

@@ -40,8 +40,8 @@ except ImportError:
     sys.exit("Error: requests does not seem to be installed. Try 'sudo pip install requests'")
 
 
-import bitcoin
 import util
+import util_coin
 import transaction
 import x509
 
@@ -114,7 +114,7 @@ class PaymentRequest:
             self.error = "cannot read"
             return
 
-        self.id = bitcoin.sha256(r)[0:16].encode('hex')
+        self.id = util_coin.sha256(r)[0:16].encode('hex')
         filename = os.path.join(self.dir_path, self.id)
         with open(filename,'w') as f:
             f.write(r)
@@ -134,7 +134,7 @@ class PaymentRequest:
         with open(filename,'r') as f:
             r = f.read()
 
-        assert key == bitcoin.sha256(r)[0:16].encode('hex')
+        assert key == util_coin.sha256(r)[0:16].encode('hex')
         self.id = key
         self.parse(r)
 

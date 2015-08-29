@@ -19,6 +19,8 @@
 
 import threading, time, Queue, os, sys, shutil
 from util import user_dir, appdata_dir, print_error
+from util_coin import hash_encode, hash_decode
+import hashes
 from bitcoin import *
 
 
@@ -155,7 +157,7 @@ class TxVerifier(threading.Thread):
         h = hash_decode(target_hash)
         for i in range(len(merkle_s)):
             item = merkle_s[i]
-            h = Hash( hash_decode(item) + h ) if ((pos >> i) & 1) else Hash( h + hash_decode(item) )
+            h = hashes.merkle_hash( hash_decode(item) + h ) if ((pos >> i) & 1) else hashes.merkle_hash( h + hash_decode(item) )
         return hash_encode(h)
 
 

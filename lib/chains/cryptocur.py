@@ -92,6 +92,7 @@ class CryptoCur(object):
     ### Hash Algorithms ###
     base58_hash = coinhash.SHA256dHash
     header_hash = coinhash.SHA256dHash
+    merkle_hash = coinhash.SHA256dHash
     transaction_hash = coinhash.SHA256dHash
 
     # Block explorers {name : URL}

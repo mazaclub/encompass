@@ -20,6 +20,7 @@ import util_coin
 import script
 import bitcoin
 from bitcoin import *
+from base58 import public_key_to_bc_address, EncodeBase58Check, DecodeBase58Check
 from i18n import _
 from transaction import is_extended_pubkey
 from util import print_msg
@@ -347,14 +348,14 @@ class BIP32_Account(Account):
         # unsorted
         s = ''.join(map(lambda x: util_coin.int_to_hex(x,2), (for_change,n)))
         xpubs = self.get_master_pubkeys()
-        return map(lambda xpub: 'ff' + bitcoin.DecodeBase58Check(xpub).encode('hex') + s, xpubs)
+        return map(lambda xpub: 'ff' + DecodeBase58Check(xpub).encode('hex') + s, xpubs)
 
     @classmethod
     def parse_xpubkey(self, pubkey):
         assert is_extended_pubkey(pubkey)
         pk = pubkey.decode('hex')
         pk = pk[1:]
-        xkey = bitcoin.EncodeBase58Check(pk[0:78])
+        xkey = EncodeBase58Check(pk[0:78])
         dd = pk[78:]
         s = []
         while dd:

@@ -30,7 +30,8 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import PyQt4.QtCore as QtCore
 
-from chainkey.bitcoin import MIN_RELAY_TX_FEE, is_valid
+from chainkey.bitcoin import MIN_RELAY_TX_FEE
+from chainkey.base58 import is_valid
 from chainkey.plugins import run_hook
 
 import icons_rc
@@ -879,7 +880,7 @@ class ElectrumWindow(QMainWindow):
 
 
     def receive_at(self, addr):
-        if not bitcoin.is_address(addr):
+        if not base58.is_address(addr):
             return
         self.tabs.setCurrentIndex(2)
         self.receive_address_e.setText(addr)
@@ -1139,7 +1140,7 @@ class ElectrumWindow(QMainWindow):
                 return
             if type == 'op_return':
                 continue
-            if type == 'address' and not bitcoin.is_address(addr):
+            if type == 'address' and not base58.is_address(addr):
                 QMessageBox.warning(self, _('Error'), _('Invalid coin Address'), _('OK'))
                 return
             if amount is None:
@@ -1747,7 +1748,7 @@ class ElectrumWindow(QMainWindow):
 
     def create_console_tab(self):
         from console import Console
-        self.console = console = Console()
+        self.console = console = Console(parent=self)
         console.setObjectName("console_tab")
         return console
 
@@ -1763,7 +1764,16 @@ class ElectrumWindow(QMainWindow):
         c = commands.Commands(self.config, self.wallet, self.network, lambda: self.console.set_json(True))
         methods = {}
         def mkfunc(f, method):
-            return lambda *args: apply( f, (method, args, self.password_dialog ))
+            def func_wrapper(*args):
+                return f(method, args, self.password_dialog)
+            # update command docstring so we can use help(command_name)
+            if getattr(c, method, None):
+                docstr = getattr(c, method).__doc__
+            else:
+                docstr = ''
+            func_wrapper.__doc__ = docstr
+            return func_wrapper
+
         for m in dir(c):
             if m[0]=='_' or m in ['network','wallet']: continue
             methods[m] = mkfunc(c._run, m)
@@ -2386,7 +2396,7 @@ class ElectrumWindow(QMainWindow):
         try:
             for position, row in enumerate(csvReader):
                 address = row[0]
-                if not bitcoin.is_address(address):
+                if not base58.is_address(address):
                     errors.append((position, address))
                     continue
                 amount = Decimal(row[1])
@@ -2684,7 +2694,7 @@ class ElectrumWindow(QMainWindow):
 
         def get_address():
             addr = str(address_e.text())
-            if bitcoin.is_address(addr):
+            if base58.is_address(addr):
                 return addr
 
         def get_pk():

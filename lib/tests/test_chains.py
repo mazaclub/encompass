@@ -4,7 +4,7 @@ import sys
 import unittest
 
 from StringIO import StringIO
-from lib import bitcoin
+from lib import bitcoin, base58
 from lib.bitcoin import bip32_root, bip32_private_derivation
 from lib.wallet import WalletStorage, NewWallet
 from lib import chainparams
@@ -182,7 +182,7 @@ class TestChainsBase58(ChainsBase58Test):
 
     def test_wif_encoding(self):
         active_chain = chainparams.get_active_chain()
-        wif = bitcoin.SecretToASecret(self.privkey, compressed=True, addrtype = active_chain.wif_version)
+        wif = base58.SecretToASecret(self.privkey, compressed=True, addrtype = active_chain.wif_version)
         self.assertEqual('L3PoHZXjsvP91C8WuyiwzYKgjzthZD2Q39Wzrwfsndov6Cwcu8zX', wif)
 
         addr = bitcoin.address_from_private_key(wif, addrtype = active_chain.p2pkh_version, wif_version = active_chain.wif_version)
@@ -190,7 +190,7 @@ class TestChainsBase58(ChainsBase58Test):
 
         chainparams.set_active_chain('MZC')
         active_chain = chainparams.get_active_chain()
-        wif = bitcoin.SecretToASecret(self.privkey, compressed=True, addrtype = active_chain.wif_version)
+        wif = base58.SecretToASecret(self.privkey, compressed=True, addrtype = active_chain.wif_version)
         self.assertEqual('aF4LB486ggLLYsQG1FcgRFQSdiBKhP4BfZKWaYvxvaAF7z6MGkAG', wif)
 
         addr = bitcoin.address_from_private_key(wif, addrtype = active_chain.p2pkh_version, wif_version = active_chain.wif_version)
