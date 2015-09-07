@@ -11,6 +11,7 @@ import blackcoin
 import feathercoin
 import groestlcoin
 import namecoin
+import startcoin
 
 
 # Thrown when an interface serves a header
