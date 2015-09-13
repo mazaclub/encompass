@@ -59,7 +59,7 @@ then
    cd /root/repo
    git checkout release/v${VERSION} || die 2
 
-else "Building from Tagged Version: ${VERSION}"
+else echo  "Building from Tagged Version: ${VERSION}"
   git clone https://github.com/mazaclub/encompass repo
   cd /root/repo
   git checkout v"${VERSION}" || die 2
@@ -71,6 +71,7 @@ test -d /root/release-packages || mkdir /root/release-packages
 mkdir ./packages
 install_pip
 pyrcc4 icons.qrc -o gui/qt/icons_rc.py
+pyrcc4 data/themes/theme_icons.qrc -o gui/qt/theme_icons_rc.py
 python setup.py install
 
 echo "Making Source"
@@ -110,10 +111,14 @@ cp -av dist/* /root/release-packages/Windows
 ## rm just isn't that expensive to run without fancy bash expansions
 cd /opt/wine-electrum/drive_c/encompass
 unzip Encompass-"$VERSION".zip
-cp -av /root/darkcoin_hash.pyd /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION"/lib
-cp -av /root/ltc_scrypt.pyd /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION"/lib
+#cp -av /root/darkcoin_hash.pyd /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION"/lib
+#cp -av /root/ltc_scrypt.pyd /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION"/lib
+cp -av /root/coinhash/*.pyd /opt/wine-electrum/drive_c/encompass/Encompass-"$VERSION"/lib
 cp -av /root/hid.pyd /opt/wine-electrum/drive_c/encompass/Encompass-"${VERSION}"/lib
 cp -av /root/hid.pyd /opt/wine-electrum/drive_c/encompass/Encompass-"${VERSION}"
+mkdir -v /opt/wine-electrum/drive_c/encompass/Encompass-"${VERSION}"/requests
+cp -av /root/cacert.pem  /opt/wine-electrum/drive_c/encompass/Encompass-"${VERSION}"/requests
+
 echo "Windows Complete"
 
 

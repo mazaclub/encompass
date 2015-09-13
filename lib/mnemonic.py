@@ -25,9 +25,21 @@ import string
 
 import ecdsa
 import pbkdf2
+import sys
+is_bundle = getattr(sys, 'frozen', False)      
+if is_bundle and sys.platform=='darwin':
+    import chainkey.util as util
+    import chainkey.util 
+    from chainkey.util import print_error
+else:
+    import util
+    from util import print_error
+#    script_dir = sys._MEIPASS
+#    basedir = sys._MEIPASS
+#    sys.path.append('packages')
+#    sys.path.append('lib')
+#    sys.path.append('plugins')
 
-import util
-from util import print_error
 from bitcoin import is_old_seed, is_new_seed
 import version
 import i18n

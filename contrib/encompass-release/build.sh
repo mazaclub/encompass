@@ -51,10 +51,12 @@ build_osx (){
   #mv Encompass-${VER}.dmg helpers/release-packages/OSX
   mv src/Encompass.app helpers/release-packages/OSX
   cp helpers/make_OSX-installer.sh helpers/release-packages/OSX
-  thisdir=$(pwd)
-  cd helpers/release-packages/OSX
+  #thisdir=$(pwd)
+  pushd helpers/release-packages/OSX
   ./make_OSX-installer.sh $VERSION
-  cd ${thisdir}
+  popd #cd ${thisdir}
+  mv helpers/release-packages/OSX helpers/release-packages/OSX-py2app
+  ./helpers/build_osx-pyinstaller.sh  ${VERSION} $TYPE
  else
   echo "OSX Build Requires OSX build host!"
  fi
@@ -73,7 +75,7 @@ buildBinary(){
   # echo "Making locales" 
   # $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/helpers:/root  -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-release:${VERSION} /bin/bash
   echo "Making Release packages for $VERSION"
-  $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/releases:/releases -v $(pwd)/helpers:/root  -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-release:${VERSION} /root/make_release $VERSION $TYPE \
+  $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/releases:/releases -v $(pwd)/helpers:/root  -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-release:${VERSION} /root/make_release $VERSION $TYPE  \
    && echo "Making Windows EXEs for $VERSION" \
    && $DOCKERBIN run --rm -it --privileged -e MKPKG_VER=${VERSION} -v $(pwd)/helpers:/root  -v $(pwd)/repo:/root/repo  -v $(pwd)/source:/opt/wine-electrum/drive_c/encompass/ -v $(pwd):/root/encompass-release mazaclub/encompass-winbuild:${VERSION} /root/build-binary $VERSION \
    && ls -la $(pwd)/helpers/release-packages/Windows/Encompass-${VERSION}-Windows-setup.exe \
@@ -129,6 +131,20 @@ buildImage(){
   esac
 }
 
+#https://pypi.python.org/packages/source/c/coinhash/coinhash-1.1.2.tar.gz
+#md5=426468d396b1c66173d2bf91a0349418
+buildCoinHash () {
+ # wget https://pypi.python.org/packages/source/c/coinhash/coinhash-1.1.2.tar.gz
+ # tar -xpzvf coinhash-1.1.2.tar.gz
+  git clone https://github.com/mazaclub/coinhash
+  docker run -ti --rm \
+   -e WINEPREFIX="/wine/wine-py2.7.8-32" \
+   -v $(pwd)/coinhash:/code \
+   -v $(pwd)/helpers:/helpers \
+   ogrisel/python-winbuilder wineconsole --backend=curses  Z:\\helpers\\coinhash-build.bat
+   cp -av coinhash/build/lib.win32-2.7/coinhash helpers/coinhash
+
+}
 
 buildLtcScrypt() {
 ## this will be integrated into the main build in a later release
@@ -140,7 +156,7 @@ buildLtcScrypt() {
     -v $(pwd)/helpers:/helpers \
     ogrisel/python-winbuilder wineconsole --backend=curses  Z:\\helpers\\ltc_scrypt-build.bat
    cp -av ltc_scrypt-1.0/build/lib.win32-2.7/ltc_scrypt.pyd helpers/ltc_scrypt.pyd
-   echo "Building ltc_scrypt for Linux/Android"
+   #echo "Building ltc_scrypt for Linux/Android"
    #docker run -ti --rm \
    # -v $(pwd)/ltc_scrypt-1.0:/code \
    # -v $(pwd)/helpers:/helpers \
@@ -249,14 +265,15 @@ else
 fi
 if [ "${TYPE}" = "rc" -o "${TYPE}" = "SIGNED" ]
 then 
-   ./clean
+   ./clean.sh
 fi
  git clone https://github.com/mazaclub/python-trezor
 prepare_repo
 get_archpkg
 build_win32trezor
-test -f helpers/ltc_scrypt.pyd || buildLtcScrypt
-test -f helpers/darkcoin_hash.pyd || buildDarkcoinHash
+#test -f helpers/ltc_scrypt.pyd || buildLtcScrypt
+#test -f helpers/darkcoin_hash.pyd || buildDarkcoinHash
+test -f helpers/coin_hash.pyd || buildCoinHash
 # Build docker image
 $DOCKERBIN images|awk '{print $1":"$2}'|grep "mazaclub/encompass-winbuild:${VERSION}" || buildImage winbuild
 $DOCKERBIN images|awk '{print $1":"$2}'|grep "mazaclub/encompass-release:${VERSION}" || buildImage release

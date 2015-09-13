@@ -2,7 +2,7 @@ from PyQt4.Qt import QMessageBox, QDialog, QVBoxLayout, QLabel, QThread, SIGNAL,
 import PyQt4.QtCore as QtCore
 from binascii import unhexlify
 from struct import pack
-from sys import stderr
+from sys import stderr 
 from time import sleep
 from base64 import b64encode, b64decode
 import unicodedata
@@ -15,7 +15,14 @@ from chainkey.i18n import _
 from chainkey.plugins import BasePlugin, hook
 from chainkey.transaction import deserialize
 from chainkey.wallet import NewWallet
-from chainkey.util import print_error
+#from chainkey.util import print_error
+import sys
+is_bundle = getattr(sys, 'frozen', False)      
+if is_bundle and sys.platform=='darwin':
+  from ..lib.util import print_error
+else:
+  from util import print_error
+
 from chainkey import chainparams
 from chainkey.wallet import pw_decode, bip32_private_derivation, bip32_root
 

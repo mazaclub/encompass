@@ -51,11 +51,11 @@ exe = EXE(pyz,
           a.binaries,
           a.datas,
           name=os.path.join('build/encompass/encompass', 'encompass-x86_64.bin'),
-          debug=False,
+          debug=True,
           strip=None,
           upx=False,
           icon='icons/encompass.ico',
-          console=False)
+          console=True)
           # The console True makes an annoying black box pop up, but it does make encompass output command line commands, with this turned off no output will be given but commands can still be used
 
 coll = COLLECT(exe,
@@ -64,7 +64,7 @@ coll = COLLECT(exe,
                a.datas,
                strip=None,
                upx=True,
-               debug=False,
+               debug=True,
                icon='icons/encompass.ico',
-               console=False,
+               console=True,
                name=os.path.join('dist', 'encompass'))

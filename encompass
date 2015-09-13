@@ -29,29 +29,34 @@ import traceback
 #if getattr( sys , 'frozen' , None ):  # keyword 'frozen' is for setting basedir while in onefile mode
 #    basedir = sys._MEIPASS
 #    sys.path.append('packages')
+#    sys.path.append('lib')
 #else:
 #    basedir = os.path.dirname( __file__ )
 #    basedir = os.path.normpath( basedir )
 #
 
 # TODO is_bundle
-is_bundle = is_local = os.path.dirname(os.path.realpath(__file__)) == os.getcwd()
-is_android = 'ANDROID_DATA' in os.environ
-
-if is_local:
-    sys.path.append('packages')
-#script_dir = os.path.dirname(os.path.realpath(__file__))
-#is_bundle = getattr(sys, 'frozen', False)
-#is_local = not is_bundle and script_dir == os.getcwd()
+#is_bundle = is_local = os.path.dirname(os.path.realpath(__file__)) == os.getcwd()
 #is_android = 'ANDROID_DATA' in os.environ
 
+#if is_local:
+#    sys.path.append('packages')
+script_dir = os.path.dirname(os.path.realpath(__file__))
+is_bundle = getattr(sys, 'frozen', False)
+is_local = not is_bundle and script_dir == os.getcwd()
+is_android = 'ANDROID_DATA' in os.environ
+
 #if is_local or is_android:
-#    sys.path.insert(0, os.path.join(script_dir, 'packages'))
-#elif is_bundle and sys.platform=='darwin':
-#    sys.path.insert(0, os.getcwd() + "/lib/python2.7/packages")
+if is_bundle and sys.platform=='darwin':
+    script_dir = sys._MEIPASS
+    basedir = sys._MEIPASS
+    sys.path.append('packages')
+    sys.path.append('lib')
+#    sys.path.insert(0, os.getcwd() + "lib")
+#    sys.path.insert(0, os.path.join(script_dir, 'lib'))
 
 import __builtin__
-__builtin__.use_local_modules = is_local or is_android
+__builtin__.use_local_modules = is_local or is_android or is_bundle
 
 # load local module as encompass
 if __builtin__.use_local_modules:
@@ -70,6 +75,7 @@ try:
     import mnemonic
     import google.protobuf
     import coinhash
+    import chainkey
     import trezorlib
     from trezorlib import client                                                
     from trezorlib.client import types, proto, BaseClient, ProtocolMixin
@@ -80,17 +86,26 @@ try:
     from trezorlib.transport import ConnectionError
     from trezorlib import transport_hid
     from trezorlib.transport_hid import HidTransport
+    from chainkey import util
+    from chainkey import i18n
+    from chainkey import SimpleConfig, Network, Wallet, WalletStorage, NetworkProxy, Commands, known_commands, pick_random_server
+    from chainkey.util import print_msg, print_stderr, print_json, set_verbosity, print_error
+    from chainkey.daemon import get_daemon
+    from chainkey.plugins import init_plugins, run_hook, always_hook
+    from chainkey import chainparams
+    from chainkey.commands import get_parser, known_commands, Commands, config_variables
 except ImportError as e:
-    sys.exit("Error: %s. Please use pip to install the missing modules"%e.message)
+    traceback.print_exc(file=sys.stdout)   
+    sys.exit("Error: %s. Please master python  to install the missing modules"%e.message)
 
-from chainkey import util
-from chainkey import SimpleConfig, Network, Wallet, WalletStorage, NetworkProxy, Commands, known_commands, pick_random_server
-from chainkey.util import print_msg, print_stderr, print_json, set_verbosity
-from chainkey.daemon import get_daemon
-from chainkey.plugins import init_plugins, run_hook, always_hook
-from chainkey import chainparams
-from chainkey.commands import get_parser, known_commands, Commands, config_variables
 
+#from chainkey import util
+#from chainkey import SimpleConfig, Network, Wallet, WalletStorage, NetworkProxy, Commands, known_commands, pick_random_server
+#from chainkey.util import print_msg, print_stderr, print_json, set_verbosity, print_error
+#from chainkey.daemon import get_daemon
+#from chainkey.plugins import init_plugins, run_hook, always_hook
+#from chainkey import chainparams
+#from chainkey.commands import get_parser, known_commands, Commands, config_variables
 
 
 # get password routine

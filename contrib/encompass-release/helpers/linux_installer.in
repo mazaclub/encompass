@@ -39,7 +39,7 @@ success (){
 }
 
 check_arch (){
-if [ "$(uname -p)" != "x86_64" ]
+if [ "$(uname -m)" != "x86_64" ]
 then
    error "Encompass for Linux supports x86_64 machines only"
    error "You're recommended to use a source installation:"
@@ -59,6 +59,8 @@ install_encompass() {
      success_msg "Installing to ${DIR}/encompass" \
       && test -d ${DIR} || ${SUDO} mkdir -p ${DIR} \
       && test -d ${BINDIR} || ${SUDO}  mkdir -p ${BINDIR} \
+      && test -d ${SHAREDIR} || ${SUDO}  mkdir -p ${SHAREDIR} \
+      && test -d ${SHAREDIR}/applications || ${SUDO}  mkdir -p ${SHAREDIR}/applications \
       && ${SUDO} mkdir -p ${SHAREDIR}/app-install/icons \
       && ${SUDO} cp /tmp/Encompass-ELECTRUM_VERSION/encompass.png ${SHAREDIR}/app-install/icons/encompass.png \
       && ${SUDO} mkdir -pv ${DIR}/encompass \
@@ -68,12 +70,18 @@ install_encompass() {
       && ${SUDO} mv /tmp/Encompass-ELECTRUM_VERSION/encompass-bindir.sh ${BINDIR}/encompass \
       && ${SUDO} chmod 555 ${BINDIR}/encompass  \
       && ${SUDO} cp /tmp/Encompass-ELECTRUM_VERSION/encompass.desktop ${SHAREDIR}/applications/ \
+      && echo " " \
+      && echo " " \
       && success_msg "Encompass-ELECTRUM_VERSION installation successful" \
       && success_msg "To start encompass run ${DIR}/encompass/encompass " \
       && success_msg "Your wallets will be in ${HOME}/.encompass/wallets" \
+      && echo " " \
+      && echo " " \
+      && success_msg "Scroll up to read README nots for Encompass-ELECTRUM_VERSION on Linux" \
       && if [ "${SUDO}X" = "X" ] ; then
             echo "You might wish to add ${HOME}/encompass to your PATH"
-	    echo "and copy ${HOME}/encompass/90-trezor.rules to /etc/udev/rules.d"
+	    echo "If you plan to use a Trezor hardware wallet "
+	    echo "copy ${HOME}/encompass/90-trezor.rules to /etc/udev/rules.d"
          else 
            ${SUDO} cp /tmp/Encompass-ELECTRUM_VERSION/90-trezor.rules /etc/udev/rules.d   
          fi \

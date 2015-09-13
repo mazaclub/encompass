@@ -18,6 +18,7 @@ if __name__ == '__main__':
 
     # os.system("python mki18n.py")
     os.system("pyrcc4 icons.qrc -o gui/qt/icons_rc.py")
+    os.system("pyrcc4 data/themes/theme_icons.prc -o gui/qt/theme_icons_rc.py")
     os.system("python setup.py sdist --format=zip,gztar")
     
     _tgz="Encompass-%s.tar.gz"%version

@@ -2,10 +2,10 @@
 
 # We don't put these files in to actually include them in the script but to make the Analysis method scan them for imports
 a = Analysis(['encompass', 'gui/qt/main_window.py', 'gui/qt/lite_window.py', 'gui/text.py',
-              'lib/util.py', 'lib/wallet.py', 'lib/simple_config.py',
+              'lib/util.py', 'lib/network.py','lib/wallet.py', 'lib/simple_config.py',
               'lib/bitcoin.py','lib/interface.py','packages/trezorctl.py'
               ],
-             hiddenimports=["lib","gui","plugins","hid"],
+             hiddenimports=["lib","gui","plugins","hid", "trezorlib" ],
              pathex=['lib','gui','plugins','packages','packages/requests'],
              hookspath=None)
 
@@ -39,8 +39,8 @@ a.datas += extra_datas('locale')
 a.datas += extra_datas('gui')
 a.datas += extra_datas('lib')
 a.datas += extra_datas('plugins')
-#a.datas += [ ('packages/requests/cacert.pem', 'packages/requests/cacert.pem', 'DATA') ]
-
+a.datas += [ ('requests/cacert.pem', 'requests/cacert.pem', 'DATA') ]
+#a.datas += [ ('packages/trezorctl.py', 'packages/trezorctl.py', 'DATA') ]
 # Dependencies
 a.datas += extra_datas('packages')
 
@@ -50,11 +50,11 @@ exe = EXE(pyz,
           a.binaries,
           a.datas,
           name=os.path.join('build\\pyi.win32\\encompass', 'encompass.exe'),
-          debug=False,
+          debug=True,
           strip=None,
           upx=False,
           icon='icons/encompass.ico',
-          console=False)
+          console=True)
           # The console True makes an annoying black box pop up, but it does make encompass output command line commands, with this turned off no output will be given but commands can still be used
 
 coll = COLLECT(exe,
@@ -63,7 +63,7 @@ coll = COLLECT(exe,
                a.datas,
                strip=None,
                upx=True,
-               debug=False,
+               debug=True,
                icon='icons/encompass.ico',
-               console=False,
+               console=True,
                name=os.path.join('dist', 'encompass'))

@@ -31,6 +31,8 @@ rm -rf helpers/debian_installer.sh
 rm -rf helpers/trezorctl.py
 rm -rf cython-hidapi
 rm -rf python-trezor
+rm -rf coinhash*
+rm -rf helpers/coinhash*
 
 if [ "${1}" = all ]
 then 

@@ -20,9 +20,14 @@
 import hashlib
 import sys
 import hmac
-
+import sys
 import version
-from util import print_error
+is_bundle = getattr(sys, 'frozen', False)
+if is_bundle and sys.platform=='darwin':
+  from chainkey.util import print_error
+else:
+  from util import print_error
+
 import util_coin
 import base58
 
