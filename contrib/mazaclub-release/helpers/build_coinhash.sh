@@ -4,4 +4,5 @@ git clone https://github.com/mazaclub/coinhash
    -v $(pwd)/coinhash:/code \
    -v $(pwd)/helpers:/helpers \
    ogrisel/python-winbuilder wineconsole --backend=curses  Z:\\helpers\\coinhash-build.bat
-   cp -av coinhash/build/lib.win32-2.7/coinhash helpers/coinhash
+   test -d helpers/coinhash || mkdir helpers/coinhash
+   cp -av coinhash/build/lib.win32-2.7/coinhash/* helpers/coinhash
