@@ -1,0 +1,133 @@
+#!/bin/bash
+error() {
+  printf '\E[31m'; echo "$@"; printf '\E[0m'
+}
+success_msg (){
+  printf '\E[32m'; echo "$@"; printf '\E[0m'
+}
+
+  
+if [[ $EUID -eq 0 ]]; then
+   error "This script should not be run using sudo or as the root user"
+   exit 1
+fi
+PREFIX="/"
+
+echo ""
+echo "Encompass-ELECTRUM_VERSION for Linux-x86_64"
+echo "by mazaclub - Lead Author, Tyler Willis, release manager, Rob Nelson"
+echo ""
+echo "based on Electrum, By Thomas Voegtlin"
+echo "Global install Requires root privileges, installs Encompass"
+echo ""
+echo "Extracting file into /tmp/Encompass-ELECTRUM_VERSION"
+SKIP=`awk '/^__TARFILE_FOLLOWS__/ { print NR + 1; exit 0; }' $0`
+
+#remember our file name
+THIS=`pwd`/$0
+
+# take the tarfile and pipe it into tar
+tail -n +$SKIP $THIS | tar -C /tmp -xpvz
+
+# Any script here will happen after the tar file extract.
+success (){
+ cat /tmp/Encompass-ELECTRUM_VERSION/README-Linux-x86_64.md
+ success_msg  "Encompass-ELECTRUM_VERSION is installed to ${DIR} - start script in ${BINDIR}"
+ error "Remember to save your seeds in a safe place!!" 
+ success_msg "Finished"
+ exit 0
+}
+
+check_arch (){
+if [ "$(uname -m)" != "x86_64" ]
+then
+   error "Encompass for Linux supports x86_64 machines only"
+   error "You're recommended to use a source installation:"
+   error "git clone https://github.com/mazaclub/encompass"
+   error "cd encompass"
+   error "git checkout ELECTRUM_VERSION"
+   error "pyrcc4 icons.prc -o gui/qt/icons_qrc.py"
+   error "sudo apt-get install python-qt4 pip"
+   error "sudo pip install --upgrade -r requirements.txt"
+   error "sudo python setup.py install"
+   exit 2
+fi
+}
+
+install_encompass() {
+     cat /tmp/Encompass-ELECTRUM_VERSION/LICENSE
+     success_msg "Installing to ${DIR}/encompass" \
+      && test -d ${DIR} || ${SUDO} mkdir -p ${DIR} \
+      && test -d ${BINDIR} || ${SUDO}  mkdir -p ${BINDIR} \
+      && test -d ${SHAREDIR} || ${SUDO}  mkdir -p ${SHAREDIR} \
+      && test -d ${SHAREDIR}/applications || ${SUDO}  mkdir -p ${SHAREDIR}/applications \
+      && ${SUDO} mkdir -p ${SHAREDIR}/app-install/icons \
+      && ${SUDO} cp /tmp/Encompass-ELECTRUM_VERSION/encompass.png ${SHAREDIR}/app-install/icons/encompass.png \
+      && ${SUDO} mkdir -pv ${DIR}/encompass \
+      && ${SUDO} cp -a /tmp/Encompass-ELECTRUM_VERSION/encompass ${DIR} \
+      && seddir=$(echo "${DIR}" | sed 's/\//\\\//g') \
+      && sed -e 's/INSTALL_DIR/'${seddir}'/g' /tmp/Encompass-ELECTRUM_VERSION/encompass.sh > /tmp/Encompass-ELECTRUM_VERSION/encompass-bindir.sh \
+      && ${SUDO} mv /tmp/Encompass-ELECTRUM_VERSION/encompass-bindir.sh ${BINDIR}/encompass \
+      && ${SUDO} chmod 555 ${BINDIR}/encompass  \
+      && ${SUDO} cp /tmp/Encompass-ELECTRUM_VERSION/encompass.desktop ${SHAREDIR}/applications/ \
+      && echo " " \
+      && echo " " \
+      && success_msg "Encompass-ELECTRUM_VERSION installation successful" \
+      && success_msg "To start encompass run ${DIR}/encompass/encompass " \
+      && success_msg "Your wallets will be in ${HOME}/.encompass/wallets" \
+      && echo " " \
+      && echo " " \
+      && success_msg "Scroll up to read README nots for Encompass-ELECTRUM_VERSION on Linux" \
+      && if [ "${SUDO}X" = "X" ] ; then
+            echo "You might wish to add ${HOME}/encompass to your PATH"
+	    echo "If you plan to use a Trezor hardware wallet "
+	    echo "copy ${HOME}/encompass/90-trezor.rules to /etc/udev/rules.d"
+         else 
+           ${SUDO} cp /tmp/Encompass-ELECTRUM_VERSION/90-trezor.rules /etc/udev/rules.d   
+         fi \
+      && success
+}
+
+get_config () {
+  cd /tmp/Encompass-ELECTRUM_VERSION
+  success_msg "Encompass has been extracted to /tmp/Encompass-ELECTRUM_VERSION"
+  echo "This install script will be available at /tmp/Encompass/ELECTRUM_VERSION/linux_installer.sh"
+  echo " "
+  echo "Would you like to install Encompass to:"
+  echo "1) /opt/encompass"
+  echo "2) $HOME/encompass"
+  echo "3) Bail - Don't install Encompass!"
+  read dir
+  case ${dir} in 
+    1) export DIR="/opt"
+       BINDIR="/usr/local/bin"
+       SHAREDIR="/usr/share"
+       SUDO="sudo" 
+       install_encompass
+       ;;
+    2) export DIR="${HOME}"
+       SUDO=""
+       BINDIR="${HOME}/encompass"
+       SHAREDIR="${HOME}/.local/share"
+       install_encompass 
+       ;;
+     3) error "Not installing encompass" 
+        error "You can view encompass in /tmp/Encompass-ELECTRUM_VERSION"
+        error "Along with the full contents of this installer."
+        exit 0
+	;;
+     *) error "Please choose 1, 2, or 3"
+        get_config 
+        ;;
+  esac 
+}  
+error "Installing Encompass-ELECTRUM_VERSION"
+echo ""
+check_arch
+get_config
+
+error "Install appears to have failed - please ensure you have root permissions and try again"
+exit 1
+
+# NOTE: Don't place any newline characters after the last line below.
+__TARFILE_FOLLOWS__

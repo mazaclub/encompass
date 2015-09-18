@@ -1,0 +1,35 @@
+#!/bin/bash
+source /root/build-config.sh
+source /root/build-common.sh
+check_vars
+
+if [[ -z "$1" ]]; then
+	echo "Please supply version number"
+	exit
+else
+	VERSION=$1
+fi
+
+function cleanup(){
+	# Remove stale wine sockets
+	rm -rf /tmp/.wine-*
+}
+
+cleanup
+
+SOURCEDIR=/opt/wine-electrum/drive_c/encompass/Encompass-$VERSION
+
+
+cd $SOURCEDIR
+
+$PYTHON "C:/PyInstaller/pyinstaller.py" -y "C:/encompass/deterministic.spec"
+cp /opt/wine-electrum/drive_c/encompass/encompass.nsi $SOURCEDIR/
+
+echo "Running c:/encompass/Encompass-$VERSION/encompass.nsi for install"
+xvfb-run wine c:\\"Program Files"\\NSIS\\makensis.exe -V1 c:/encompass/Encompass-$VERSION/encompass.nsi
+
+
+cleanup
+test -d /root/release-packages/Windows || mkdir -pv /root/release-packages/Windows
+mv /opt/wine-electrum/drive_c/encompass/Encompass-${VERSION}/dist/encompass-setup.exe /root/release-packages/Windows/Encompass-${VERSION}-Windows-setup.exe
+mv /opt/wine-electrum/drive_c/encompass/Encompass-${VERSION}/dist/encompass.exe /root/release-packages/Windows/Encompass-${VERSION}-Windows.exe
