@@ -58,6 +58,9 @@ known_chains = (
 
     # Clam
     ChainParams(23, 'Clam', 'CLAMS', 'clam'),
+
+    # StartCoin
+    ChainParams(38, 'StartCOIN', 'START', 'startcoin')
 )
 
 known_chain_dict = dict((i.code, i) for i in known_chains)
