@@ -10,7 +10,7 @@ class Groestlcoin(CryptoCur):
     code = 'GRS'
     p2pkh_version = 36
     p2sh_version = 5
-    wif_version = 164
+    wif_version = 128
     ext_pub_version = '0488b21e'
     ext_priv_version = '0488ade4'
 
