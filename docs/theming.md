@@ -50,6 +50,7 @@ the `background-color` rule for these.
 |`#console_tab`  |Tab containing the console.|
 |`#plugins_area` |Scrolling area where plugins are listed.|
 |`#chains_area`  |Scrolling area where chains are listed.|
+|`QWidget[scrollArea=true]`|Generic scrolling area.|
 |`#qr_window`    |Window that shows a QR code and address.|
 
 ### Miscellaneous

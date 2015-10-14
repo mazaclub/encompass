@@ -53,8 +53,8 @@ class SettingsDialog(QDialog):
         self.setWindowTitle(_('Encompass Settings'))
         self.setModal(1)
         self.setMinimumWidth(500)
-        # Contains all settings widgets
-        self.settings_stack = QStackedWidget()
+        # There are tabs for each category of settings.
+        self.pages_tabs = QTabWidget()
 
         # Global options
         global_rows = self.create_global_options()
@@ -62,9 +62,9 @@ class SettingsDialog(QDialog):
         for r in global_rows:
             r.add_to_layout(global_options_grid)
 
-        global_group_box = QGroupBox(_('Global Settings'))
-        global_group_box.setLayout(global_options_grid)
-        self.settings_stack.addWidget(global_group_box)
+        global_description = _("These settings are not limited to any coin.")
+        global_widget = self.create_page_widget(global_description, global_options_grid)
+        self.pages_tabs.addTab(global_widget, _('Global'))
 
         # Per-chain options
         chain_rows = self.create_chain_options()
@@ -72,32 +72,33 @@ class SettingsDialog(QDialog):
         for r in chain_rows:
             r.add_to_layout(chain_options_grid)
 
-        chain_group_box = QGroupBox(_('{} ({}) Settings'.format(self.active_chain.coin_name, self.active_chain.code)))
-        chain_group_box.setLayout(chain_options_grid)
-        self.settings_stack.addWidget(chain_group_box)
-
-        vbox = QVBoxLayout()
+        chain_description = _("These settings only affect") + " {}.".format(self.active_chain.coin_name)
+        chain_widget = self.create_page_widget(chain_description, chain_options_grid)
+        self.pages_tabs.addTab(chain_widget, self.actuator.get_coin_icon(self.active_chain.code), self.active_chain.coin_name)
 
         pages_explanation = QLabel(_('Select a category of settings below:'))
         pages_explanation.setWordWrap(True)
 
+        vbox = QVBoxLayout()
         vbox.addWidget(pages_explanation)
-
-        # For changing pages
-        pages_list = QListWidget()
-        pages_list.setMaximumHeight(50)
-        pages_list.addItem(_('Global settings'))
-        pages_list.addItem(_('{} ({}) settings'.format(self.active_chain.coin_name, self.active_chain.code)))
-        pages_list.currentRowChanged.connect(self.switch_to_page)
-        vbox.addWidget(pages_list)
-
-        vbox.addWidget(self.settings_stack)
+        vbox.addWidget(self.pages_tabs, stretch=1)
         vbox.addLayout(close_button(self))
-        vbox.setStretch(1, 1)
+
         self.setLayout(vbox)
 
-    def switch_to_page(self, index):
-        self.settings_stack.setCurrentIndex(index)
+    def create_page_widget(self, description, grid):
+        w = QWidget()
+        vbox = QVBoxLayout()
+        desc_label = QLabel(description)
+        desc_label.setWordWrap(True)
+        desc_label.setAlignment(Qt.AlignHCenter)
+        separator = QFrame()
+        separator.setFrameShape(QFrame.HLine)
+        vbox.addWidget(desc_label)
+        vbox.addWidget(separator)
+        vbox.addLayout(grid, stretch=1)
+        w.setLayout(vbox)
+        return w
 
     def create_global_options(self):
         rows = []
@@ -261,7 +262,7 @@ class SettingsDialog(QDialog):
             if gui.base_unit() == unit_result:
                 return
             gui.decimal_point = gui.base_units[unit_result]
-            self.config.set_key('decimal_point', self.decimal_point, True)
+            self.config.set_key('decimal_point', gui.decimal_point, True)
             gui.update_history_tab()
             gui.update_receive_tab()
             gui.update_address_tab()

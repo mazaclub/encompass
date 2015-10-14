@@ -63,7 +63,6 @@ class MyTreeWidget(QTreeWidget):
         QTreeWidget.__init__(self, parent)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.itemActivated.connect(self.on_activated)
-        self.header_labels = None
 
     def on_activated(self, item):
         if not item: return
@@ -87,6 +86,8 @@ class MyStyleDelegate(QStyledItemDelegate):
         # roles define which view we're displaying (e.g. history, addresses)
         if role == 'history':
             self.column_types = ['', 'date', 'label', 'amount', 'balance']
+        elif role == 'receive':
+            self.column_types = ['address', 'message', 'amount']
         elif role == 'addresses':
             self.column_types = ['address', 'label', 'balance', 'tx_count']
         elif role == 'contacts':
@@ -105,13 +106,42 @@ class MyStyleDelegate(QStyledItemDelegate):
         super(MyStyleDelegate, self).__init__(parent)
 
     def paint(self, painter, option, index):
-        self.apply_style(option, index, index.column())
-        super(MyStyleDelegate, self).paint(painter, option, index)
+        applied = self.apply_style(option, index, index.column())
+        if applied:
+            painter.save()
+
+            # background
+            painter.setPen(QPen(Qt.NoPen))
+            if option.state & QStyle.State_Selected:
+                painter.setBrush(option.palette.brush(QPalette.Highlight))
+            else:
+                painter.setBrush(option.palette.background())
+            painter.drawRect(option.rect)
+
+            # foreground
+            if option.state & QStyle.State_Selected:
+                painter.setPen(option.palette.brush(QPalette.HighlightedText).color())
+            else:
+                painter.setPen(QPen(option.palette.text().color()))
+            painter.setFont(option.font)
+            value = index.data(Qt.DisplayRole)
+            if value.isValid():
+                text = value.toString()
+                painter.drawText(option.rect, Qt.AlignLeft, text)
+
+            painter.restore()
+        else:
+            super(MyStyleDelegate, self).paint(painter, option, index)
 
     def apply_style(self, option, index, column):
+        style_applied = False
         if self.column_types:
             col_type = self.column_types[column]
         data = index.data()
+
+        # icon goes in this column
+        if col_type == '':
+            return style_applied
 
         if col_type in ['address', 'tx_count', 'date', 'balance', 'text_item']:
             txt = Item(col_type)
@@ -143,8 +173,37 @@ class MyStyleDelegate(QStyledItemDelegate):
         else:
             txt = Item('text_item')
 
+        # monospace columns
+        if col_type in ['label', 'amount', 'balance', 'address', 'requestor']:
+            txt.setFont(QFont(MONOSPACE_FONT))
+
         qApp.style().polish(txt)
-        option.palette.setBrush(QPalette.Text, txt.palette().foreground())
+
+        # http://pyqt.sourceforge.net/Docs/PyQt4/qpalette.html#ColorRole-enum
+
+        # Text color
+        if txt.palette().isBrushSet(QPalette.Active, QPalette.Text):
+            style_applied = True
+            option.palette.setBrush(QPalette.Text, txt.palette().foreground())
+
+        # A general foreground color
+        if txt.palette().isBrushSet(QPalette.Active, QPalette.WindowText):
+            style_applied = True
+            option.palette.setBrush(QPalette.WindowText, txt.palette().windowText())
+
+        # A general background color
+        if txt.palette().isBrushSet(QPalette.Active, QPalette.Window):
+            style_applied = True
+            option.palette.setBrush(QPalette.Window, txt.palette().window())
+
+        # A background color
+        if txt.palette().isBrushSet(QPalette.Active, QPalette.Base):
+            style_applied = True
+            option.palette.setBrush(QPalette.Base, txt.palette().base())
+
+        option.font = txt.font()
+
+        return style_applied
 
 
 

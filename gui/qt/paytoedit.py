@@ -31,9 +31,10 @@ frozen_style = "QWidget { background-color:none; border:none;}"
 normal_style = "QPlainTextEdit { }"
 
 class PayToEdit(ScanQRTextEdit):
-    def __init__(self, win):
+    def __init__(self, win, amount_edit):
         super(PayToEdit,self).__init__(win=win)
-        self.amount_edit = win.amount_e
+        self.amount_edit = amount_edit
+        self.amount_edit.setObjectName('amount_edit')
         self.document().contentsChanged.connect(self.update_size)
         self.heightMin = 0
         self.heightMax = 150
@@ -51,6 +52,12 @@ class PayToEdit(ScanQRTextEdit):
 
     def unlock_amount(self):
         self.amount_edit.setFrozen(False)
+
+    def setAmount(self, amount):
+        self.amount_edit.setAmount(amount)
+
+    def getAmount(self):
+        return self.amount_edit.get_amount()
 
     def setFrozen(self, b):
         self.setReadOnly(b)
@@ -237,6 +244,7 @@ class PayToEdit(ScanQRTextEdit):
 
     def qr_input(self):
         data = super(PayToEdit,self).qr_input()
+        # TODO chain specific
         if data.startswith("bitcoin:"):
             self.scan_f(data)
             # TODO: update fee
