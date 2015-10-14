@@ -34,7 +34,8 @@ class StartCOIN(CryptoCur):
     DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}
 
     DEFAULT_SERVERS = {
-        'localhost':DEFAULT_PORTS # TODO
+        'start.electrum.maza.club':{'t':'50151', 's':'50152', 'h':'8081', 'g':'8082'},
+        'start.mercury.maza.club':{'t':'50051', 's':'50052', 'h':'8081', 'g':'8082'},
     }
 
 
