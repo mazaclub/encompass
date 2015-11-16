@@ -24,7 +24,7 @@ Attributes:
 
 known_chains = (
     # Bitcoin
-    ChainParams(0, 'Bitcoin', 'BTC', 'bitcoin'),
+    ChainParams(0, 'Bitcoin', 'BTC', 'bitcoin_chainkey'),
 
     # Litecoin
     ChainParams(2, 'Litecoin', 'LTC', 'litecoin'),
