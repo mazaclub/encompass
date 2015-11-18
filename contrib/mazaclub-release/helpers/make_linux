@@ -17,15 +17,15 @@ pip install  --target packages -r ../requirements.txt
 cp  /root/encompass-release/python-trezor/trezorctl packages/trezorctl.py
 cp -av /root/packages/google/__init__.py /root/repo/packages/google
 cp /root/encompass-release/source/linux.spec /root/repo
-if [ -d ${TRAVIS_BUILD_DIR} ] ; then 
-  echo "Building on Travis - moving /root/repo because permissions"
-  test -d /repo || cp -av /root/repo /
-  cd /repo
-  su build -c 'pyinstaller --windowed linux.spec'
-  cp -av /repo /root/
-else 
+#if [ -d ${TRAVIS_BUILD_DIR} ] ; then 
+#  echo "Building on Travis - moving /root/repo because permissions"
+#  test -d /repo || cp -av /root/repo /
+#  cd /repo
+#  su build -c 'pyinstaller --windowed linux.spec'
+#  cp -av /repo /root/
+#else 
  su build -c 'pyinstaller --windowed linux.spec'
-fi
+#fi
 cd /root/repo
 cd dist
 #mv encompass Encompass-"${VERSION}"

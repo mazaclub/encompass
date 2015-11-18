@@ -58,5 +58,5 @@ pkgutil --expand "${TMP1_ARCHIVE}" "${TMP2_ARCHIVE}"
 # Patches and Workarounds
 
 pkgutil --flatten "${TMP2_ARCHIVE}" "${TMP3_ARCHIVE}"
-cp ${TMP3_ARCHIVE} ${PRODUCT_NAME}-Installer.pkg
+cp ${TMP3_ARCHIVE} ${PRODUCT_NAME}-${VERSION}_OSX-Installer.pkg
 

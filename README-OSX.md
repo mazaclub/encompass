@@ -5,18 +5,18 @@ Encompass consolidates support for various currencies into one wallet. It is a B
 Homepage: https://maza.club/encompass
 ## Encompass on OSX
 
-1. Download the .dmg from https://maza.club/encompass
-2. Open .dmg in Finder
-3. Double Click Encompass.pkg
-4. Follow instructions to install Encompass
+1. Download the Encompass-0.6.0_OSX-Installer.pkg from https://maza.club/encompass
+2. Double click downloaded .pkg file to run Installer
+3. Follow instructions to install Encompass 
 
 Encompass will be installed by default to /Applications
 
 Your Wallets will be stored in /Users/YOUR_LOGIN_NAME/.encompass/wallets
 
+
+
 ### KNOWN ISSUES
-1. Certain dialog boxes fail to open in the foreground
-   ** Click the Encompass Icon in the Dock to bring correct window to top **
+ - If Using the standalone executable, Themes are not available
 
 
 

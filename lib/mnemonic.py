@@ -116,7 +116,10 @@ class Mnemonic(object):
             lang = i18n.language.info().get('language', 'en')
         print_error('language', lang)
         filename = filenames.get(lang[0:2], 'english.txt')
-        path = os.path.join(util.data_dir(), 'wordlist', filename)
+        if getattr( sys, 'frozen' , None):
+             path = os.path.join(sys._MEIPASS + "/data/wordlist", filename)
+        else:
+             path = os.path.join(util.data_dir(), 'wordlist', filename)
         s = open(path,'r').read().strip()
         s = unicodedata.normalize('NFKD', s.decode('utf8'))
         lines = s.split('\n')

@@ -40,6 +40,11 @@ a.datas += extra_datas('gui')
 a.datas += extra_datas('lib')
 a.datas += extra_datas('plugins')
 a.datas += [ ('requests/cacert.pem', 'requests/cacert.pem', 'DATA') ]
+#a.datas += [ ('data/wordlist/english.txt', 'data/wordlist/english.txt', 'DATA') ]
+#a.datas += [ ('data/wordlist/japanese.txt', 'data/wordlist/japanese.txt', 'DATA') ]
+#a.datas += [ ('data/wordlist/spanish.txt', 'data/wordlist/spanish.txt', 'DATA') ]
+#a.datas += [ ('data/wordlist/portuguese.txt', 'data/wordlist/portuguese.txt', 'DATA') ]
+
 #a.datas += [ ('packages/trezorctl.py', 'packages/trezorctl.py', 'DATA') ]
 # Dependencies
 a.datas += extra_datas('packages')

@@ -4,7 +4,22 @@ import importlib
 import traceback, sys
 import hashes
 import chains
-import chains.cryptocur
+#
+# pyinstaller hackery 
+# we want linux pyinstaller versions to import chains.cryptocur,
+# as well as source, but Windows and OSX pyinstaller versions 
+# want to import cryptocur here 
+# #PyinstallerBlackArts
+if getattr(sys, 'frozen', False) and sys.platform=='linux2':
+     import chains.cryptocur
+elif getattr(sys, 'frozen', False) and sys.platform=='linux3':
+     import chains.cryptocur
+elif getattr(sys, 'frozen', False) and sys.platform=='win32':
+     import chains.cryptocur
+elif not getattr(sys, 'frozen', False):
+     import chains.cryptocur
+else:
+     import cryptocur
 
 # This makes the tests work with importing the active chain
 testing_mode = False

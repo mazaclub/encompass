@@ -5,6 +5,27 @@ from util import print_error
 import traceback, sys
 from util import *
 from i18n import _
+import bitcoin
+
+class Contacts(StoreDict):
+
+    def __init__(self, config):
+        StoreDict.__init__(self, config, 'contacts')
+
+    def resolve(self, k, nocheck=False):
+        if bitcoin.is_address(k):
+            return {'address':k, 'type':'address'}
+        if k in self.keys():
+            _type, addr = self[k]
+            if _type == 'address':
+                return {'address':addr, 'type':'contact'}
+        out = run_hook('resolve_address', k)
+        if out:
+            if not nocheck and out.get('validated') is False:
+                raise Exception("cannot validate alias")
+            return out
+        raise Exception("invalid coin address", k)
+
 
 plugins = {}
 plugin_data = []

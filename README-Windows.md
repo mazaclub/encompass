@@ -11,7 +11,11 @@ Homepage: https://maza.club/encompass
  
  Your Wallet files will be in one of the following places, based on the version of Windows installed:
   - C:\Users\YOUR_LOGIN_NAME\Application Data\Encompass\wallets
+  - C:\Users\YOUR_LOGIN_NAME\AppData\Roaming\Encompass\wallets
   -
+
+  ### Known Issues
+    - If Using the standalone executable, Themes are not available
 
 
 

@@ -3,10 +3,11 @@
 # We don't put these files in to actually include them in the script but to make the Analysis method scan them for imports
 a = Analysis(['encompass', 'gui/qt/main_window.py', 'gui/qt/lite_window.py', 'gui/text.py',
               'lib/util.py', 'lib/wallet.py', 'lib/simple_config.py','gui/gtk.py',
-              'lib/bitcoin.py','lib/interface.py', 'packages/trezorctl.py',
+              'lib/bitcoin.py','lib/interface.py', 'packages/trezorctl.py', 'lib/chainparams.py',
+              'lib/chains/cryptocur.py',
               ],
-             hiddenimports=["PyQt4","lib","gui","plugins","trezorlib","hid"],
-             pathex=['lib','gui','plugins','packages'],
+             hiddenimports=["PyQt4","lib","gui","plugins","cryptocur","trezorlib","hid","chains"],
+             pathex=['lib','gui','plugins','packages','lib/chains'],
              hookspath=None)
 
 ##### include mydir in distribution #######
@@ -38,9 +39,11 @@ a.datas += extra_datas('locale')
 # Py folders that are needed because of the magic import finding
 a.datas += extra_datas('gui')
 a.datas += extra_datas('lib')
+a.datas += extra_datas('lib/chains')
 a.datas += extra_datas('plugins')
 a.datas += [ ('packages/requests/cacert.pem', 'packages/requests/cacert.pem', 'DATA') ]
 a.datas += [ ('packages/trezorctl.py', 'packages/trezorctl.py', 'DATA') ]
+a.datas += [ ('data/wordlist/english.txt', 'encompass/data/wordlist/english.txt', 'DATA') ]
 
 # Dependencies
 a.datas += extra_datas('packages')

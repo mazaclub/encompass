@@ -94,6 +94,7 @@ try:
     from chainkey.plugins import init_plugins, run_hook, always_hook
     from chainkey import chainparams
     from chainkey.commands import get_parser, known_commands, Commands, config_variables
+    from chainkey import chains
 except ImportError as e:
     traceback.print_exc(file=sys.stdout)   
     sys.exit("Error: %s. Please master python  to install the missing modules"%e.message)

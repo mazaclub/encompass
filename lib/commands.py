@@ -35,6 +35,7 @@ import script
 from transaction import deserialize, Transaction
 import paymentrequest
 import chainparams
+import plugins
 
 known_commands = {}
 
@@ -89,7 +90,7 @@ class Commands:
         self.network = network
         self._callback = callback
         self.password = None
-        self.contacts = util.Contacts(self.config)
+        self.contacts = plugins.Contacts(self.config)
 
     def _run(self, method, args, password_getter):
         cmd = known_commands[method]
