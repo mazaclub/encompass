@@ -21,7 +21,7 @@ is_bundle = getattr(sys, 'frozen', False)
 if is_bundle and sys.platform=='darwin':
   from ..lib.util import print_error
 else:
-  from util import print_error
+  from chainkey.util import print_error
 
 from chainkey import chainparams
 from chainkey.wallet import pw_decode, bip32_private_derivation, bip32_root
