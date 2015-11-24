@@ -62,7 +62,7 @@ then
    git checkout release/v${VERSION} || localdie 2
    check_ver
 
-else "Building from Tagged Version: ${VERSION}"
+else echo  "Building from Tagged Version: ${VERSION}"
   git clone https://github.com/mazaclub/encompass repo
   cd /root/repo
   git checkout v"${VERSION}" || localdie 2
