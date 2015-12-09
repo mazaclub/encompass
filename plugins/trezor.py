@@ -15,13 +15,7 @@ from chainkey.i18n import _
 from chainkey.plugins import BasePlugin, hook
 from chainkey.transaction import deserialize
 from chainkey.wallet import NewWallet
-#from chainkey.util import print_error
-import sys
-is_bundle = getattr(sys, 'frozen', False)      
-if is_bundle and sys.platform=='darwin':
-  from ..lib.util import print_error
-else:
-  from chainkey.util import print_error
+from chainkey.util import print_error
 
 from chainkey import chainparams
 from chainkey.wallet import pw_decode, bip32_private_derivation, bip32_root
