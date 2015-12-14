@@ -6,8 +6,8 @@ if __name__ == '__main__':
     import imp
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-    imp.load_module('electrum', *imp.find_module('lib'))
-    from electrum.version import ELECTRUM_VERSION as version
+    imp.load_module('chainkey', *imp.find_module('lib'))
+    from chainkey.version import ELECTRUM_VERSION as version
 
     if not ( os.path.exists('packages')):
         print "The packages directory is missing."
