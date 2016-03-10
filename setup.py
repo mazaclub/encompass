@@ -139,6 +139,7 @@ setup(
         'chainkey.chains.groestlcoin',
         'chainkey.chains.namecoin',
         'chainkey.chains.startcoin',
+        'chainkey.chains.parkbyte',
         'chainkey_gui.gtk',
         'chainkey_gui.qt.__init__',
         'chainkey_gui.qt.amountedit',

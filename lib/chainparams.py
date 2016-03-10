@@ -58,6 +58,9 @@ known_chains = (
     # Clam
     ChainParams(23, 'Clam', 'CLAMS', 'clam'),
 
+    # ParkByte
+    ChainParams(36, 'ParkByte', 'PKB', 'parkbyte'),
+
     # StartCoin
     ChainParams(38, 'StartCOIN', 'START', 'startcoin')
 )

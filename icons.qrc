@@ -24,6 +24,7 @@
     <file>icons/coin_ppc.png</file>
     <file>icons/coin_start.png</file>
     <file>icons/coin_via.png</file>
+    <file>icons/coin_pkb.png</file>
     <file>icons/qrcode.png</file>
   </qresource>
 </RCC>

@@ -20,6 +20,7 @@ try:
           from chains import groestlcoin
           from chains import namecoin
           from chains import startcoin
+          from chains import parkbyte
 
     else:
           import bitcoin_chainkey
@@ -35,6 +36,7 @@ try:
           import groestlcoin
           import namecoin
           import startcoin
+          import parkbyte
 except Exception:
     traceback.print_exc(file=sys.stdout)
     print('ERROR: Cannot load modules for cryptocurrencies.')
