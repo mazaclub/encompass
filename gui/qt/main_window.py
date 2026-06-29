@@ -2506,53 +2506,9 @@ class ElectrumWindow(QMainWindow):
 
 
     def do_export_history(self, wallet, fileName, is_csv):
-        history = wallet.get_tx_history()
-        lines = []
-        for item in history:
-            tx_hash, confirmations, is_mine, value, fee, balance, timestamp = item
-            if confirmations:
-                if timestamp is not None:
-                    try:
-                        time_string = datetime.datetime.fromtimestamp(timestamp).isoformat(' ')[:-3]
-                    except [RuntimeError, TypeError, NameError] as reason:
-                        time_string = "unknown"
-                        pass
-                else:
-                    time_string = "unknown"
-            else:
-                time_string = "pending"
-
-            if value is not None:
-                value_string = format_satoshis(value, True)
-            else:
-                value_string = '--'
-
-            if fee is not None:
-                fee_string = format_satoshis(fee, True)
-            else:
-                fee_string = '0'
-
-            if tx_hash:
-                label, is_default_label = wallet.get_label(tx_hash)
-                label = label.encode('utf-8')
-            else:
-                label = ""
-
-            balance_string = format_satoshis(balance, False)
-            if is_csv:
-                lines.append([tx_hash, label, confirmations, value_string, fee_string, balance_string, time_string])
-            else:
-                lines.append({'txid':tx_hash, 'date':"%16s"%time_string, 'label':label, 'value':value_string})
-
-        with open(fileName, "w+") as f:
-            if is_csv:
-                transaction = csv.writer(f)
-                transaction.writerow(["transaction_hash","label", "confirmations", "value", "fee", "balance", "timestamp"])
-                for line in lines:
-                    transaction.writerow(line)
-            else:
-                import json
-                f.write(json.dumps(lines, indent = 4))
+        from history_export import write_history_export
+        export_format = 'csv' if is_csv else 'json'
+        write_history_export(wallet, fileName, export_format)
 
 
     def sweep_key_dialog(self):
