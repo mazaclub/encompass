@@ -2,6 +2,7 @@
 #
 # Electrum - lightweight Bitcoin client
 # Copyright (C) 2011 thomasv@gitorious
+# Modified 2026-10-05: preserve clean stdout transaction export streams.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -85,6 +86,7 @@ register_command('getseed',              0, 0, False, True,  True,  'Print the g
 register_command('getmpk',               0, 0, False, True,  False, 'Return your wallet\'s master public key', 'getmpk')
 register_command('help',                 0, 1, False, False, False, 'Prints this help')
 register_command('history',              0, 0, True,  True,  False, 'Returns the transaction history of your wallet')
+register_command('exporttxhistory',      1, 2, False, True,  False, 'Export wallet transaction ids/history for external apps and databases', 'exporttxhistory <file|-> [json|csv|txids]\nUse "-" as the file name to write to stdout for piping into other tools.')
 register_command('importprivkey',        1, 1, False, True,  True,  'Import a private key', 'importprivkey <privatekey>')
 register_command('listaddresses',        2, 2, False, True,  False, 'Returns your list of addresses.', '', listaddr_options)
 register_command('listunspent',          0, 0, True,  True,  False, 'Returns the list of unspent inputs in your wallet.')
@@ -343,6 +345,14 @@ class Commands:
 
             out.append({'txid':tx_hash, 'date':"%16s"%time_str, 'label':label, 'value':format_satoshis(value), 'confirmations':conf})
         return out
+
+    def exporttxhistory(self, file_name, export_format='json'):
+        from history_export import write_history_export
+        count = write_history_export(self.wallet, file_name, export_format)
+        # The helper owns stdout; run_command prints non-None results.
+        if file_name == '-':
+            return None
+        return {'exported': count, 'format': export_format or 'json', 'file': file_name}
 
     def setlabel(self, key, label):
         self.wallet.set_label(key, label)
