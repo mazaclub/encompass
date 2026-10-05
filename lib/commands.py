@@ -2,6 +2,7 @@
 #
 # Electrum - lightweight Bitcoin client
 # Copyright (C) 2011 thomasv@gitorious
+# Modified 2026-10-05: preserve clean stdout transaction export streams.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -348,6 +349,9 @@ class Commands:
     def exporttxhistory(self, file_name, export_format='json'):
         from history_export import write_history_export
         count = write_history_export(self.wallet, file_name, export_format)
+        # The helper owns stdout; run_command prints non-None results.
+        if file_name == '-':
+            return None
         return {'exported': count, 'format': export_format or 'json', 'file': file_name}
 
     def setlabel(self, key, label):
